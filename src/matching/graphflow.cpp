@@ -1020,7 +1020,7 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
     Print_Time2("UpdateIndex ", start);
     size_t num_results = 0ul;
 
-/*
+
     this->data_.UpdateLabelIndex(v1,v2,label,1);
     std::vector<int>mCandidate;
     for(int i=0;i<match.size();i++){
@@ -1083,9 +1083,9 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
                 std::swap(v1,v2);// round 2 need
             }
         }
-    }*/
+    }
 
-    start=Get_Time();
+  /*  start=Get_Time();
     if (max_num_results_ == 0) return;
     for (uint i = 0; i < query_.NumEdges(); i++) {
         uint u1 = order_vs_[i][0], u2 = order_vs_[i][1];
@@ -1134,7 +1134,7 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
     }
     END_ENUMERATION:
     num_positive_results_ += num_results;
-    Print_Time2("SearchMatches ", start);
+    Print_Time2("SearchMatches ", start);*/
     start=Get_Time();
     updateTopK(num_results);
     Print_Time2("PrintTopk ", start);
