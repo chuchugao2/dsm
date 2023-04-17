@@ -499,7 +499,9 @@ void Graphflow::updateTopK(uint num) {
 }
 
 void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
-
+    /*if(this->visited_[61070]==true){
+        std::cout<<"depth:"<<match.size()<<endl;
+    }*/
     //1.找到前向邻居，找到候选解
     uint depth=this->match.size();
     std::vector<uint>& matchOrder= this->order_vs_[matchorderindex];
@@ -586,7 +588,11 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
            }
        }
     }
-
+    std::sort(singleVertexCandidate.begin(),singleVertexCandidate.end(), tupleSumWeightCmp);
+    candidate.clear();
+    for(int i=0;i<singleVertexCandidate.size();i++){
+        candidate.emplace_back(std::get<0>(singleVertexCandidate[i]));
+    }
 
     //2.1若是其前向邻居中有LD节点，展开，利用LD节点的候选解递归
     if(!LDVertexs.empty()){
@@ -620,7 +626,7 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
             setBatchVisited(r, true);
             query_.setBatchVertexType(matchorderindex,LDVertexs,freeVertex);
             if(currentSearchVertextype==freeVertex){
-                densityFilter(matchorderindex,depth,intersectResult,singleVertexCandidate,false);
+                densityFilter(matchorderindex,depth,intersectResult,singleVertexCandidate, false);
                 for(int i=0;i<intersectResult.size();i++){
                     uint v=intersectResult[i];
                     this->matchVertex(v,i,depth,singleVertexCandidate);
@@ -642,7 +648,7 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
 
             singleVertexCandidate=singleVertexCopy;
            // this->matchCandidate.pop_back();
-            recoverLDVertexMatchResult(LDVertexs);
+            recoverLDVertexMatchResult(r,LDVertexs);
             setBatchVisited(r, false);
             query_.setBatchVertexType(matchorderindex,LDVertexs,LDVertex);
 
@@ -653,7 +659,7 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
         //this->matchCandidate.push_back(singleVertexCandidate);
         if(currentSearchVertextype==freeVertex){
             //密度剪枝
-            densityFilter(matchorderindex,depth,candidate, singleVertexCandidate,true);
+            densityFilter(matchorderindex,depth,candidate, singleVertexCandidate, false);
             for(int i=0;i<candidate.size();i++){
                 uint dataV=candidate[i];
                 //递归
@@ -1020,7 +1026,7 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
     Print_Time2("UpdateIndex ", start);
     size_t num_results = 0ul;
 
-
+    start=Get_Time();
     this->data_.UpdateLabelIndex(v1,v2,label,1);
     std::vector<int>mCandidate;
     for(int i=0;i<match.size();i++){
@@ -1061,6 +1067,7 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
             //todo
             this->matchCandidate.clear();
             this->matchVertexCandidate.clear();
+            this->match.clear();
             this->matchVertex(v1,INT_MAX,float(0));
             this->matchVertex(v2,tmin,weight);
             searchMatches(m,positive);
@@ -1084,6 +1091,7 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
             }
         }
     }
+    Print_Time2("SearchMatches ", start);
 
   /*  start=Get_Time();
     if (max_num_results_ == 0) return;
@@ -1409,8 +1417,34 @@ void Graphflow::matchVertex(uint data_v,int tmin,float density) {
 
 void Graphflow::matchVertex(uint data_v,int index,uint depth,std::vector<tuple<int,int,float>>&singleVertexCandidate) {
     int len=match.size();
-    float weight=std::get<2>(match[len-1])+std::get<2>(singleVertexCandidate[index]);
-    uint tmin=std::min(std::get<1>(match[len-1]),std::get<1>(singleVertexCandidate[index]));
+    int preindex=0;
+    for(int i=len-1;i>=0;i--){
+        if(std::get<0>(match[i])!=-1){
+            preindex=i;
+            break;
+        }
+    }
+
+    float weight=std::get<2>(match[preindex])+std::get<2>(singleVertexCandidate[index]);
+    uint tmin=std::min(std::get<1>(match[preindex]),std::get<1>(singleVertexCandidate[index]));
+    this->match.emplace_back(make_tuple(data_v,tmin,weight));
+    this->matchCandidate.push_back(singleVertexCandidate);
+    this->matchVertexCandidate.push_back({});
+    this->visited_[data_v]= true;
+}
+
+void Graphflow::matchVertex(float LDBeforeWeight,uint data_v,int index,uint depth,std::vector<tuple<int,int,float>>&singleVertexCandidate) {
+    int len=match.size();
+    int preindex=0;
+    for(int i=len-1;i>=0;i--){
+        if(std::get<0>(match[i])!=-1){
+            preindex=i;
+            break;
+        }
+    }
+
+    float weight=LDBeforeWeight+std::get<2>(match[preindex])+std::get<2>(singleVertexCandidate[index]);
+    uint tmin=std::min(std::get<1>(match[preindex]),std::get<1>(singleVertexCandidate[index]));
     this->match.emplace_back(make_tuple(data_v,tmin,weight));
     this->matchCandidate.push_back(singleVertexCandidate);
     this->matchVertexCandidate.push_back({});
@@ -1447,22 +1481,53 @@ void Graphflow::densityFilter(uint matchorder_index,uint depth,std::vector<uint>
         return;
     }
     float kw=topKSet.back()->getDensity();
+    std::sort(singleVertexCandidate.begin(), singleVertexCandidate.end(), tupleVertexIdCmp);
+    std::sort(candidate.begin(), candidate.end(), greater());
     if(isSychronized) {
-        std::sort(singleVertexCandidate.begin(), singleVertexCandidate.end(), tupleVertexIdCmp);
-        std::sort(candidate.begin(), candidate.end(), greater());
         //1.同步singleVertex
         sychronizeSingleVertexAndCandidate(singleVertexCandidate, candidate);
     }
     //2.利用singleVertex剪枝
     std::sort(singleVertexCandidate.begin(),singleVertexCandidate.end(), tupleSumWeightCmp);
-
-
     std::vector<uint>isolatedVertexs=query_.GetIsolateVertexBeforeDepth(matchorder_index,depth);
-    if(isolatedVertexs.size()==0){
+    int preIndex=0;
+    std::vector<int>LDRecords;
+    for(int i=len-1;i>=0;i--){
+        if(query_.GetVertexType(matchorder_index,i)==LDVertex){
+            LDRecords.emplace_back(i);
+        }
+    }
+    for(int i=len-1;i>=0;i--) {
+        if (std::get<0>(match[i]) != -1) {
+            preIndex = i;
+            break;
+        }
+    }
+    float LDWeight=0;
+    for(auto ldindex:LDRecords){
+        LDWeight+=std::get<2>(matchCandidate[ldindex].front());
+    }
+    float isolateWeight=0;
+    for(int i=0;i<isolatedVertexs.size();i++){
+        isolateWeight+=std::get<2>(matchCandidate[isolatedVertexs[i]].front());
+    }
+    float backWeight=GetBackWeight(matchorder_index,depth+1);
+    auto iter=singleVertexCandidate.begin();
+    while(iter!=singleVertexCandidate.end()){
+        float tmpweight=std::get<2>(this->match[preIndex])+std::get<2>(*iter)+ backWeight+isolateWeight+LDWeight;
+        if(tmpweight/(sqrt(n)*(n-1))<kw){
+            break;
+        }
+        iter++;
+    }
+    singleVertexCandidate.erase(iter,singleVertexCandidate.end());
+
+   /* if(isolatedVertexs.size()==0){
+
         float backWeight=GetBackWeight(matchorder_index,depth+1);
         auto iter=singleVertexCandidate.begin();
         while(iter!=singleVertexCandidate.end()){
-            float tmpweight=std::get<2>(this->match[len-1])+std::get<2>(*iter)+backWeight;
+            float tmpweight=std::get<2>(this->match[preIndex])+std::get<2>(*iter)+backWeight+LDWeight;
             if(tmpweight/(sqrt(n)*(n-1))<kw){
                 break;
             }
@@ -1472,23 +1537,24 @@ void Graphflow::densityFilter(uint matchorder_index,uint depth,std::vector<uint>
     }
     else{
         float backWeight=GetBackWeight(matchorder_index,depth+1);
-        float tmpweight=0;
-        float beforeweight= std::get<2>(this->match[len-1]);
+        float isolateweight=0;
+
 
         for(int i=0;i<isolatedVertexs.size();i++){
-            tmpweight+=std::get<2>(matchCandidate[isolatedVertexs[i]].front());
+           isolateweight+=std::get<2>(matchCandidate[isolatedVertexs[i]].front());
         }
+
         auto iter=singleVertexCandidate.begin();
         while(iter!=singleVertexCandidate.end()){
-            tmpweight=tmpweight+std::get<2>(*iter)+ backWeight+beforeweight;
+            float tmpweight=std::get<2>(this->match[preIndex])+std::get<2>(*iter)+ backWeight+isolateweight+LDWeight;
             if(tmpweight/(sqrt(n)*(n-1))<kw){
                 break;
             }
             iter++;
         }
             singleVertexCandidate.erase(iter,singleVertexCandidate.end());
-    }
-    //3.更新candidate
+    }*/
+    //3.更新candidate 可以变成resize形式
     candidate.clear();
     for(int i=0;i<singleVertexCandidate.size();i++){
         candidate.emplace_back(std::get<0>(singleVertexCandidate[i]));
@@ -1650,17 +1716,27 @@ void Graphflow::setLDVertexMatchResult(std::vector<int>&r,std::vector<uint>&LDVe
              if(std::get<0>(item)==r[i]){
                  uint pre_index=LDVertexs[i]-1;
                  auto preItem=this->match[pre_index];
-                 if(std::get<0>(preItem)!=-1){
-                     int tmin=std::min(std::get<1>(preItem),std::get<1>(item));
-                     float density=std::get<2>(item)+std::get<2>(preItem);
-                     this->match[LDVertexs[i]]= make_tuple(r[i],tmin,density);
-                 }else{
-                     this->match[LDVertexs[i]]= make_tuple(r[i],std::get<1>(item),std::get<2>(item));
+                 while(pre_index>0){
+                     if(std::get<0>(preItem)!=-1){
+                         int tmin=std::min(std::get<1>(preItem),std::get<1>(item));
+                         float density=std::get<2>(item)+std::get<2>(preItem);
+                         this->match[LDVertexs[i]]= make_tuple(r[i],tmin,density);
+                         for(int k=LDVertexs[i]+1;k<match.size();k++){
+                             //更新LD节点之后的密度和
+                             if(std::get<0>(this->match[k])!=-1){
+                                 std::get<2>(this->match[k])=std::get<2>(this->match[k])+std::get<2>(item);
+                             }
+                         }
+                         break;
+                     }else{
+                         pre_index--;
+//                         this->match[LDVertexs[i]]= make_tuple(r[i],std::get<1>(item),std::get<2>(item));
+                     }
                  }
-
                  break;
              }
          }
+
      }
 }
 void Graphflow::setIsolateVertexMatchResult(std::vector<int> &r, std::vector<int> &isolateVertex,uint tmin,float density) {
@@ -1678,13 +1754,34 @@ void Graphflow::setIsolateVertexMatchResult(std::vector<int> &r, std::vector<int
 
 void Graphflow::setBatchVisited(std::vector<int> &r,bool flag) {
     for(auto item:r){
+      /*  if(item==61070){
+            std::cout<<"setBatchVisited 61070: "<<flag<<std::endl;
+        }*/
         this->visited_[item]= flag;
     }
 }
-void Graphflow::recoverLDVertexMatchResult(std::vector<uint> &LDVertexs) {
+void Graphflow::recoverLDVertexMatchResult(std::vector<int>&r,std::vector<uint> &LDVertexs) {
     for(int i=0;i<LDVertexs.size();i++)
     this->match[LDVertexs[i]]= make_tuple(-1,-1,-1);
-}
+
+    for(int i=0;i<LDVertexs.size();i++){
+        const auto candidate=this->matchCandidate[LDVertexs[i]];
+        for(auto item:candidate){
+            if(std::get<0>(item)==r[i]){
+                for(int k=LDVertexs[i]+1;k<match.size();k++){
+                            //更新LD节点之后的密度和
+                            if(std::get<0>(this->match[k])!=-1){
+                                std::get<2>(this->match[k])=std::get<2>(this->match[k])-std::get<2>(item);
+                            }
+                        }
+                break;
+                }
+
+            }
+        }
+
+    }
+
 void Graphflow::recoverIsolateVertexMatchResult(std::vector<int> &IsolateVertexs) {
     for(int i=0;i<IsolateVertexs.size();i++)
         this->match[IsolateVertexs[i]]= make_tuple(-1,-1,-1);
@@ -1765,6 +1862,8 @@ void Graphflow::addMatchResult(uint matchorderindex, searchType type) {
             bool matchResult= addMatchRecords(r);
             if(!matchResult){
                 flag= false;
+                recoverIsolateVertexMatchResult(isolateVertexs);
+                setBatchVisited(std::get<0>(result[i]), false);
                 break;
             }
             else{
