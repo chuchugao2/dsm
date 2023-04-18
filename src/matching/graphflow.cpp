@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <set>
 #include "../utils/types.h"
 #include "../utils/globals.h"
 #include "../utils/utils.h"
@@ -32,6 +33,14 @@ bool tupleVertexIdCmp(const std::tuple<int, int, float>& a, const std::tuple<int
         return std::get<0>(a) >std::get<0>(b);
     } else {
         return std::get<1>(a) > std::get<1>(b);
+    }
+}
+
+bool tupleVertexIdCmp2(const std::tuple<int, int, float>& a, const std::tuple<int, int, float>& b) {
+    if (std::get<0>(a) != std::get<0>(b)) {
+        return std::get<0>(a) <std::get<0>(b);
+    } else {
+        return std::get<1>(a) < std::get<1>(b);
     }
 }
 
@@ -604,6 +613,7 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
         uint len=LDVertexs.size();
         std::vector<std::vector<int>>results= combination(combinezLDVertexs);//得到所有的LD节点的组合解决
         std::vector<uint>intersectResult;
+        std::sort(candidate.begin(),candidate.end(),less());//set_intersection需要保证有序
         for(int i=0;i<results.size();i++){
             //只要有result中有一个点和candidate无交集，或者有一个点visited为true，跳过这个选项
             intersectResult.clear();
@@ -1056,6 +1066,8 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
         uint u2=order_vs_[m][1];
         uint u1label= this->query_.GetVertexLabel(u1);
         uint u2label=this->query_.GetVertexLabel(u2);
+        uint v1label=this->data_.GetVertexLabel(v1);
+        uint v2label=this->data_.GetVertexLabel(v2);
         uint tmin=this->data_.GetEdgeTime(v1,v2);
         float weight=this->data_.GetEdgeWeight(v1,v2);
         const auto & matchOrder=order_vs_[m];
@@ -1715,8 +1727,8 @@ void Graphflow::setLDVertexMatchResult(std::vector<int>&r,std::vector<uint>&LDVe
          for(auto item:candidate){
              if(std::get<0>(item)==r[i]){
                  uint pre_index=LDVertexs[i]-1;
-                 auto preItem=this->match[pre_index];
                  while(pre_index>0){
+                     auto preItem=this->match[pre_index];
                      if(std::get<0>(preItem)!=-1){
                          int tmin=std::min(std::get<1>(preItem),std::get<1>(item));
                          float density=std::get<2>(item)+std::get<2>(preItem);
@@ -1788,6 +1800,7 @@ void Graphflow::recoverIsolateVertexMatchResult(std::vector<int> &IsolateVertexs
 }
 void Graphflow::sychronizeSingleVertexAndCandidate(std::vector<tuple<int, int, float>> &singleVertex,
                                                    std::vector<uint> &intersectresult) {
+    std::sort(singleVertex.begin(),singleVertex.end(), tupleVertexIdCmp2);
     if(singleVertex.size()==0){
         //todo
         for(auto item:intersectresult){
@@ -1796,25 +1809,17 @@ void Graphflow::sychronizeSingleVertexAndCandidate(std::vector<tuple<int, int, f
         return;
     }
     auto iter1=singleVertex.begin();
-    uint left=intersectresult[0];
-    uint right=intersectresult[intersectresult.size()-1];
+    auto iter2=intersectresult.begin();
     while(iter1!=singleVertex.end()){
-        if(std::get<0>((*iter1))==left)
+        if(std::get<0>((*iter1))==(*iter2))
         {
-            break;
+            iter1++;
+            iter2++;
+        }else{
+            iter1=singleVertex.erase(iter1);
         }
-        iter1++;
     }
-    iter1=singleVertex.erase(singleVertex.begin(),iter1);
-    while(iter1!=singleVertex.end()){
-        if(std::get<0>((*iter1))==right)
-        {
-            break;
-        }
-        iter1++;
-    }
-    iter1++;
-    singleVertex.erase(iter1,singleVertex.end());
+
 }
 void Graphflow::addMatchResult(uint matchorderindex, searchType type) {
     int n=query_.NumVertices();
@@ -1842,6 +1847,14 @@ void Graphflow::addMatchResult(uint matchorderindex, searchType type) {
             if(isVisted){
                 continue;
             }
+            //result中的元素可能重复
+            std::vector<int>tmpresult=std::get<0>(result[i]);
+            std::set<int>isrepeat (tmpresult.begin(),tmpresult.end());
+            if(isrepeat.size()!=tmpresult.size())
+            {
+                continue;
+            }
+
             //更新match record
             //find weight/tmin before
             auto wt=findWeightAndTminBeforeIsolated();
@@ -1904,6 +1917,7 @@ void Graphflow::combinationMatchResultHelp(std::vector<tuple<std::vector<int>, i
         return;
     }
     for(int i=0;i<combinezIsolateVertexs[k].size();i++){
+
         int copytmin=tmin;
         float copydensity=density;
         tmin=std::min(std::get<1>(combinezIsolateVertexs[k][i]),tmin);
