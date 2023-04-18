@@ -8,8 +8,7 @@
 #include "../utils/utils.h"
 #include "../graph/graph.h"
 #include "graphflow.h"
-#include "../graph/MatchRecord.h"
-#include "../graph/StarGraph.h"
+
 
 bool matchRecordCmp (MatchRecord* d1, MatchRecord* d2) {
     if(d1->getDensity()!=d2->getDensity()) {
@@ -508,10 +507,12 @@ void Graphflow::updateTopK(uint num) {
 }
 
 void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
+    std::chrono::high_resolution_clock::time_point start;
     /*if(this->visited_[61070]==true){
         std::cout<<"depth:"<<match.size()<<endl;
     }*/
     //1.找到前向邻居，找到候选解
+   // start=Get_Time();
     uint depth=this->match.size();
     std::vector<uint>& matchOrder= this->order_vs_[matchorderindex];
     uint queryVertex=matchOrder[depth];
@@ -592,9 +593,6 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
                density+=tmp;
                singleVertexCandidate.push_back(std::make_tuple(v,tmin, density));
        }
-           if(candidate.size()==0){
-               return;
-           }
        }
     }
     std::sort(singleVertexCandidate.begin(),singleVertexCandidate.end(), tupleSumWeightCmp);
@@ -602,16 +600,19 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
     for(int i=0;i<singleVertexCandidate.size();i++){
         candidate.emplace_back(std::get<0>(singleVertexCandidate[i]));
     }
-
+   // Print_Time2("findCandidate ",start);
     //2.1若是其前向邻居中有LD节点，展开，利用LD节点的候选解递归
     if(!LDVertexs.empty()){
+
         std::vector<std::vector<uint>>combinezLDVertexs;
         combinezLDVertexs.reserve(LDVertexs.size());
         for(int i=0;i<LDVertexs.size();i++){
             combinezLDVertexs.push_back(matchVertexCandidate[LDVertexs[i]]);
         }
         uint len=LDVertexs.size();
+        start=Get_Time();
         std::vector<std::vector<int>>results= combination(combinezLDVertexs);//得到所有的LD节点的组合解决
+        Print_Time2("combination ",start);
         std::vector<uint>intersectResult;
         std::sort(candidate.begin(),candidate.end(),less());//set_intersection需要保证有序
         for(int i=0;i<results.size();i++){
@@ -631,7 +632,6 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
             //r的对应解成立，因此递归
             std::vector<tuple<int,int,float>>singleVertexCopy=singleVertexCandidate;
             setSingleVertexByIntersectionResult(singleVertexCandidate,intersectResult,r);
-           // this->matchCandidate.push_back(singleVertexCandidate);
             setLDVertexMatchResult(r,LDVertexs);
             setBatchVisited(r, true);
             query_.setBatchVertexType(matchorderindex,LDVertexs,freeVertex);
@@ -663,11 +663,16 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
             query_.setBatchVertexType(matchorderindex,LDVertexs,LDVertex);
 
         }
+
     }
         //2.2若没有LD节点，那么从候选解决中加入此节点，继续递归
     else{
+        if(candidate.size()==0){
+            return;
+        }
         //this->matchCandidate.push_back(singleVertexCandidate);
         if(currentSearchVertextype==freeVertex){
+          //  start=Get_Time();
             //密度剪枝
             densityFilter(matchorderindex,depth,candidate, singleVertexCandidate, false);
             for(int i=0;i<candidate.size();i++){
@@ -677,9 +682,10 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
                 searchMatches(matchorderindex,flag);
                 popVertex(dataV,i,depth);
             }
-
+        //    Print_Time2("FreeVertexAndRecurtion ",start);
         }
         else{
+           // start=Get_Time();
             //LD顶点或者孤立顶点
             this->matchVertex(candidate,singleVertexCandidate);
             //2.3 若递归到终点，释放所有的局部不连通节点
@@ -693,10 +699,8 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
             this->popVertex();
 
         }
+        //Print_Time2("isolateOrLDVertexAndRecurtion",start);
     }
-
-
-
 }
 
 
@@ -1061,6 +1065,7 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
             }
         }
     }
+    Print_Time2("Labelfilter ",start);
     for(auto m:mCandidate){
         uint u1=order_vs_[m][0];
         uint u2=order_vs_[m][1];
@@ -1659,10 +1664,13 @@ void Graphflow::combination_helper(std::vector<std::vector<int>>& result, std::v
 }
 
 std::vector<std::vector<int>>  Graphflow::combination(const std::vector<std::vector<uint>>& nums) {
+    std::chrono::high_resolution_clock::time_point start;
+   // start=Get_Time();
     std::vector<std::vector<int>> result;
     std::vector<int> current;
     combination_helper(result, current, nums, 0);
     return result;
+   // Print_Time2("combination ",start);
 }
 bool Graphflow::LDVertexCandidateCheck(uint vertex, uint queryVertexLabel, const std::vector<uint> &needToIntersection,
                                        std::vector<uint> &intersectresult) {
@@ -1822,6 +1830,8 @@ void Graphflow::sychronizeSingleVertexAndCandidate(std::vector<tuple<int, int, f
 
 }
 void Graphflow::addMatchResult(uint matchorderindex, searchType type) {
+    std::chrono::high_resolution_clock::time_point starttime;
+
     int n=query_.NumVertices();
     auto &isolateVertexs=query_.isolatedRecord[matchorderindex];
     std::vector<std::vector<tuple<int,int,float>>>combinezIsolateVertexs;
@@ -1830,8 +1840,10 @@ void Graphflow::addMatchResult(uint matchorderindex, searchType type) {
         std::vector<tuple<int,int,float>>singleVertex=matchCandidate[isolateVertexs[i]];
         combinezIsolateVertexs.push_back(singleVertex);
     }
+    starttime=Get_Time();
     std::vector<tuple<std::vector<int>,int,float>>result= combinationMatchResult(combinezIsolateVertexs);
     sort(result.begin(),result.end(), tupleResultCmp);
+    Print_Time2("combinationMatchResult ",starttime);
     bool flag=true;
     bool isVisted= false;
     int i;
@@ -1896,16 +1908,15 @@ void Graphflow::addMatchResult(uint matchorderindex, searchType type) {
         }
     }
 
-
-
 }
-std::vector<tuple<std::vector<int>,int,float>> Graphflow::combinationMatchResult(
-        std::vector<std::vector<tuple<int, int, float>>> combinezIsolateVertexs) {
+std::vector<tuple<std::vector<int>,int,float>> Graphflow::combinationMatchResult(std::vector<std::vector<tuple<int, int, float>>> combinezIsolateVertexs) {
+    std::chrono::high_resolution_clock::time_point start;
+   // start=Get_Time();
     std::vector<tuple<std::vector<int>, int, float>> result;
     std::vector<int>current;
     combinationMatchResultHelp(result,current,combinezIsolateVertexs,0,INT_MAX,0);
+  //  Print_Time2("combinationMatchResult ",start);
     return result;
-
 }
 void Graphflow::combinationMatchResultHelp(std::vector<tuple<std::vector<int>, int, float>> &result,
                                            std::vector<int> &current,

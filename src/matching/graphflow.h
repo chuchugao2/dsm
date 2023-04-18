@@ -55,7 +55,7 @@ public:
     std::vector<tuple<int,int,float>>match;//每个节点的匹配结果  vertex,tmin,density
     std::vector<std::vector<tuple<int,int,float>>>matchCandidate;//匹配序中，每个顶点的与其前邻居的密度和
     std::vector<std::vector<uint>>matchVertexCandidate;
-    std::vector<std::vector<std::vector<uint>>>interserctionResult;
+
 
 
 public:
