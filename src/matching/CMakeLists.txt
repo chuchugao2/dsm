@@ -1,4 +1,4 @@
-set(MATCHING matching.cpp graphflow.cpp)
+set(MATCHING matching.cpp graphflow.cpp Instopk.cpp Instopk.h)
 FIND_PACKAGE( OpenMP REQUIRED)
 #[[if(OPENMP_FOUND)
     message("OPENMP FOUND")

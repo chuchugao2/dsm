@@ -25,6 +25,7 @@ private:
     uint v2Label;
     uint eLabel;
     float eWeight;
+    bool flag= true;
 public:
     Edge(uint v1_, uint v2_, uint v1Label_, uint v2Label_, uint eLabel_,float eweight_):v1(v1_),v2(v2_),v1Label(v1Label_),v2Label(v2Label_),eLabel(eLabel_),eWeight(eweight_){
     }
@@ -40,6 +41,13 @@ public:
             return true;
         }
         return false;
+    }
+    bool operator <(const Edge &edge)const{
+        if(v1!=edge.v1){
+            return v1<edge.v1;
+        }
+        else
+            return v2<edge.v2;
     }
 };
 
@@ -57,7 +65,6 @@ protected:
     std::vector<std::vector<float>>weights_;//邻接表对应的边的权重
     std::vector<std::vector<uint>>timestamp_;//邻接表对应的边的时间戳
     std::vector<std::vector<vertexType>> matchVertexTypes;
-
 
 
 public:

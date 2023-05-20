@@ -27,6 +27,7 @@ public:
     std::string toString();
     std::string printMatchRecord();//print density tmin vetexs
     bool operator>(MatchRecord&m);
+    bool operator==(MatchRecord&m);
 };
 
 

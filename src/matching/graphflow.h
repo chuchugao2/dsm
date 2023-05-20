@@ -90,7 +90,6 @@ private:
     void searchMatches(uint matchorderindex,searchType flag);
     bool LabelFilter(uint data_v,uint query_v);
     void matchVertex(uint data_v,int tmin,float density);
-    void matchVertex(float LDBeforeWeight,uint data_v,int index,uint depth,std::vector<tuple<int,int,float>>&singleVertexCandidate);
     void matchVertex(uint data_v,int index,uint depth,std::vector<tuple<int,int,float>>&singleVertexCandidate);
     void matchVertex(std::vector<uint> & vertexCandidate,std::vector<tuple<int,int,float>>&singleVertexCandidate);
     void popVertex(uint data_v);
@@ -101,10 +100,10 @@ private:
     void combination_helper(std::vector<std::vector<int>>& result, std::vector<int>& current, const std::vector<std::vector<uint>>& nums, int k);
     std::vector<std::vector<int>> combination(const std::vector<std::vector<uint>>& nums);
     bool LDVertexCandidateCheck(uint vertex, uint queryVertexLabel, const std::vector<uint> & needToIntersection,  std::vector<uint> &intersectresult);
-
     void setSingleVertexByIntersectionResult( std::vector<tuple<int,int,float>>&singleVertex,std::vector<uint> &intersectresult,std::vector<int>&r);
     void setLDVertexMatchResult(std::vector<int>&r,std::vector<uint>&LDVertexs);
     void setIsolateVertexMatchResult(std::vector<int>&r,std::vector<int>&isolateVertex,uint tmin,float density);
+    void setIsolateVertexMatchResult(std::vector<pair<int,int>>&r,std::vector<int>&isolateVertex,uint tmin,float density);
     void setBatchVisited(std::vector<int>&r,bool flag);
     void recoverLDVertexMatchResult(std::vector<int>&r,std::vector<uint>&LDVertexs);
     void recoverIsolateVertexMatchResult(std::vector<int>&IsolateVertexs);

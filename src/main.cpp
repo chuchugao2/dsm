@@ -10,14 +10,16 @@
 #include "graph/graph.h"
 #include "matching/matching.h"
 #include "matching/graphflow.h"
+#include "Instopk.h"
 
 #ifndef TEST_MAIN
 int main(int argc, char *argv[])
 {
     CLI::App app{"App description"};
 
-    std::string query_path = "", initial_path = "", stream_path = "",result_path="",query_info="";
+    std::string query_path = "", initial_path = "", stream_path = "",result_path="",query_info="",algorithm="Instopk";
     uint max_num_results = UINT_MAX, time_limit = UINT_MAX, initial_time_limit = UINT_MAX;
+    uint dist=2;
     bool print_prep = true, print_enum = false, homo = false, report_initial = true;
     std::vector<std::vector<uint>> orders;
 
@@ -25,7 +27,7 @@ int main(int argc, char *argv[])
     app.add_option("-d,--data", initial_path, "initial data graph path")->required();
     app.add_option("-u,--update", stream_path, "data graph update stream path")->required();
     app.add_option("--result-path",result_path,"topk result with each update");
-//    app.add_option("-a,--algorithm", algorithm, "algorithm");
+    app.add_option("-a,--algorithm", algorithm, "algorithm");
     app.add_option("--max-results", max_num_results, "max number of results for one edge update");
     app.add_option("--time-limit", time_limit, "time limit for the incremental matching (second)");
     app.add_option("--print-prep", print_prep, "print processing results or not");
@@ -35,6 +37,7 @@ int main(int argc, char *argv[])
     app.add_option("--initial-time-limit", initial_time_limit, "time limit for the initial matching (second)");
     app.add_option("--orders", orders, "pre-defined matching orders");
     app.add_option("--qInfo",query_info,"the path of query graph");
+    app.add_option("--d",dist,"the dist");
 
     CLI11_PARSE(app, argc, argv);
 
@@ -43,7 +46,7 @@ int main(int argc, char *argv[])
     Log::init_track1("/home/gaochuchu/gcc/dsm/src/log/loginfo1.txt");
 
     std::string path="/home/gaochuchu/gcc/dsm/src/log/";
-    std::string initial_result_path="/home/gaochuchu/gcc/dsm/src/result/";
+    std::string initial_result_path="/home/gaochuchu/gcc/baseline/src/result/";
     if(result_path==""){
         path+="topkResult.txt";
     }else{
@@ -64,24 +67,23 @@ int main(int argc, char *argv[])
     query_graph.PrintMetaData();
 
     Graph data_graph {};
-   data_graph.LoadFromFile(initial_path,1);
+    data_graph.LoadFromFile(initial_path,1);
     data_graph.PrintMetaData();
     Print_Time("Load Graphs: ", start);
 
     std::cout << "------------ Preprocessing ------------" << std::endl;
     matching *mm = nullptr;
-
     Graphflow *graphflow = nullptr;
-
+    Instopk *instopk= nullptr;
     start = Get_Time();
-
-    mm = graphflow      = new Graphflow     (query_graph, data_graph, max_num_results, print_prep, print_enum, homo);
-
-
+    if(algorithm=="graphflow")
+        mm = graphflow      = new Graphflow     (query_graph, data_graph, max_num_results, print_prep, print_enum, homo);
+    else
+        mm = instopk     = new Instopk     (query_graph, data_graph, max_num_results, print_prep, print_enum, homo,dist);
 
     mm->Preprocessing();
     Print_Time("Preprocessing: ", start);
-    if (report_initial)
+   /* if (report_initial)
     {
         std::cout << "----------- Initial Matching ----------" << std::endl;
 
@@ -180,7 +182,7 @@ int main(int argc, char *argv[])
 
     std::cout << "\nPeak Virtual Memory: " << mem::getValue() << " KB";
     std::cout << "\n\n----------------- End -----------------" << std::endl;
-
+*/
 
     Log::finalize();
     delete mm;

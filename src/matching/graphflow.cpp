@@ -3,6 +3,7 @@
 #include <vector>
 #include <math.h>
 #include <set>
+#include <map>
 #include "../utils/types.h"
 #include "../utils/globals.h"
 #include "../utils/utils.h"
@@ -96,7 +97,6 @@ void Graphflow::Preprocessing()//预处理过程
     this->query_.InitMatchOrderType(this->order_vs_,this->qForwardNeighbors, this->order_vertex_index);
     //todo make starindex
     CreateStarIndex();
-
     std::cout<<"Preprocess end"<<endl;
 
 }
@@ -512,7 +512,7 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
         std::cout<<"depth:"<<match.size()<<endl;
     }*/
     //1.找到前向邻居，找到候选解
-   // start=Get_Time();
+    start=Get_Time();
     uint depth=this->match.size();
     std::vector<uint>& matchOrder= this->order_vs_[matchorderindex];
     uint queryVertex=matchOrder[depth];
@@ -577,7 +577,7 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
                    uint data_v_index=order_vertex_index[matchorderindex][fneighbors[k].GetVetexId()];
                    uint data_v=std::get<0>(this->match[data_v_index]);
                    uint elabel=fneighbors[k].GetElabel();
-                   const auto dataNeighbors=this->data_.GetNeighbors(data_v);
+                   const auto & dataNeighbors=this->data_.GetNeighbors(data_v);
                    auto it =std::lower_bound(dataNeighbors.begin(),dataNeighbors.end(),v);
                    uint dis=std::distance(dataNeighbors.begin(),it);
                    if(it==dataNeighbors.end()||this->data_.GetNeighborLabels(data_v)[dis]!=elabel||*it!=v){
@@ -595,15 +595,14 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
        }
        }
     }
+    Print_Time2("findCandidate ",start);
     std::sort(singleVertexCandidate.begin(),singleVertexCandidate.end(), tupleSumWeightCmp);
     candidate.clear();
     for(int i=0;i<singleVertexCandidate.size();i++){
         candidate.emplace_back(std::get<0>(singleVertexCandidate[i]));
     }
-   // Print_Time2("findCandidate ",start);
     //2.1若是其前向邻居中有LD节点，展开，利用LD节点的候选解递归
     if(!LDVertexs.empty()){
-
         std::vector<std::vector<uint>>combinezLDVertexs;
         combinezLDVertexs.reserve(LDVertexs.size());
         for(int i=0;i<LDVertexs.size();i++){
@@ -612,10 +611,11 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
         uint len=LDVertexs.size();
         start=Get_Time();
         std::vector<std::vector<int>>results= combination(combinezLDVertexs);//得到所有的LD节点的组合解决
-        Print_Time2("combination ",start);
         std::vector<uint>intersectResult;
         std::sort(candidate.begin(),candidate.end(),less());//set_intersection需要保证有序
+        Print_Time2("combination ",start);
         for(int i=0;i<results.size();i++){
+          
             //只要有result中有一个点和candidate无交集，或者有一个点visited为true，跳过这个选项
             intersectResult.clear();
             std::vector<int>r=results[i];
@@ -636,7 +636,9 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
             setBatchVisited(r, true);
             query_.setBatchVertexType(matchorderindex,LDVertexs,freeVertex);
             if(currentSearchVertextype==freeVertex){
-                densityFilter(matchorderindex,depth,intersectResult,singleVertexCandidate, false);
+                start=Get_Time();
+                densityFilter(matchorderindex,depth,intersectResult,singleVertexCandidate, true);
+                Print_Time2("densityFilter ",start);
                 for(int i=0;i<intersectResult.size();i++){
                     uint v=intersectResult[i];
                     this->matchVertex(v,i,depth,singleVertexCandidate);
@@ -648,7 +650,9 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
                 this->matchVertex(intersectResult,singleVertexCandidate);
                 if(depth==this->query_.NumVertices()-1){
                     //todo addMatchResult
+                    start=Get_Time();
                     addMatchResult(matchorderindex,flag);
+                    Print_Time2("addMatchResult ",start);
                 }
                 else{
                     searchMatches(matchorderindex,flag);
@@ -661,7 +665,6 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
             recoverLDVertexMatchResult(r,LDVertexs);
             setBatchVisited(r, false);
             query_.setBatchVertexType(matchorderindex,LDVertexs,LDVertex);
-
         }
 
     }
@@ -674,7 +677,9 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
         if(currentSearchVertextype==freeVertex){
           //  start=Get_Time();
             //密度剪枝
+             start=Get_Time();
             densityFilter(matchorderindex,depth,candidate, singleVertexCandidate, false);
+            Print_Time2("densityFilter ",start);
             for(int i=0;i<candidate.size();i++){
                 uint dataV=candidate[i];
                 //递归
@@ -691,7 +696,9 @@ void Graphflow::searchMatches(uint matchorderindex, searchType flag)  {
             //2.3 若递归到终点，释放所有的局部不连通节点
             if(depth==this->query_.NumVertices()-1){
                 //todo addMatchResult
+                start=Get_Time();
                 addMatchResult(matchorderindex,flag);
+                Print_Time2("addMatchResult ",start);
             }
             else{
                 searchMatches(matchorderindex,flag);
@@ -1008,7 +1015,6 @@ void Graphflow::InitialMatching(const std::string &path) {
 //动态的加边操作
 void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timestamp) {
     std::chrono::high_resolution_clock::time_point start;
-    start=Get_Time();
     data_.AddEdge(v1, v2, label, weight, timestamp, 1);
 
     std::vector<uint> m(query_.NumVertices(), UNMATCHED);
@@ -1066,7 +1072,8 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
         }
     }
     Print_Time2("Labelfilter ",start);
-    for(auto m:mCandidate){
+    start=Get_Time();
+    for(auto m:match){
         uint u1=order_vs_[m][0];
         uint u2=order_vs_[m][1];
         uint u1label= this->query_.GetVertexLabel(u1);
@@ -1387,14 +1394,6 @@ bool Graphflow::LabelFilter(uint data_v, uint query_v) {
     uint queryElabelNum=this->query_.NumELabels();
     const auto & dataLabelIndex= this->data_.labelIndex[data_v];
     const auto & queryLabelIndex=this->query_.labelIndex[query_v];
-/*    for(int i=0;i<queryVlabelNum;i++){
-        std::cout<<this->query_.labelIndex[query_v][i]<<" ";
-    }
-    std::cout<<std::endl;
-    for(int i=0;i<dataVlabelNum;i++){
-        std::cout<<this->data_.labelIndex[data_v][i]<<" ";
-    }
-    std::cout<<std::endl;*/
 
     for(int i=0;i<queryVlabelNum;i++){
         if(i<dataVlabelNum){
@@ -1450,23 +1449,6 @@ void Graphflow::matchVertex(uint data_v,int index,uint depth,std::vector<tuple<i
     this->visited_[data_v]= true;
 }
 
-void Graphflow::matchVertex(float LDBeforeWeight,uint data_v,int index,uint depth,std::vector<tuple<int,int,float>>&singleVertexCandidate) {
-    int len=match.size();
-    int preindex=0;
-    for(int i=len-1;i>=0;i--){
-        if(std::get<0>(match[i])!=-1){
-            preindex=i;
-            break;
-        }
-    }
-
-    float weight=LDBeforeWeight+std::get<2>(match[preindex])+std::get<2>(singleVertexCandidate[index]);
-    uint tmin=std::min(std::get<1>(match[preindex]),std::get<1>(singleVertexCandidate[index]));
-    this->match.emplace_back(make_tuple(data_v,tmin,weight));
-    this->matchCandidate.push_back(singleVertexCandidate);
-    this->matchVertexCandidate.push_back({});
-    this->visited_[data_v]= true;
-}
 void Graphflow::matchVertex(std::vector<uint> &vertexCandidate,std::vector<tuple<int,int,float>>&singleVertexCandidate) {
     this->match.push_back(std::make_tuple(-1,-1,-1));
     this->matchCandidate.push_back(singleVertexCandidate);
@@ -1498,14 +1480,15 @@ void Graphflow::densityFilter(uint matchorder_index,uint depth,std::vector<uint>
         return;
     }
     float kw=topKSet.back()->getDensity();
-    std::sort(singleVertexCandidate.begin(), singleVertexCandidate.end(), tupleVertexIdCmp);
-    std::sort(candidate.begin(), candidate.end(), greater());
+//    std::sort(singleVertexCandidate.begin(), singleVertexCandidate.end(), tupleVertexIdCmp);
+//    std::sort(candidate.begin(), candidate.end(), greater());
     if(isSychronized) {
         //1.同步singleVertex
-        sychronizeSingleVertexAndCandidate(singleVertexCandidate, candidate);
+        std::sort(singleVertexCandidate.begin(),singleVertexCandidate.end(), tupleSumWeightCmp);
+        //sychronizeSingleVertexAndCandidate(singleVertexCandidate, candidate);
     }
     //2.利用singleVertex剪枝
-    std::sort(singleVertexCandidate.begin(),singleVertexCandidate.end(), tupleSumWeightCmp);
+
     std::vector<uint>isolatedVertexs=query_.GetIsolateVertexBeforeDepth(matchorder_index,depth);
     int preIndex=0;
     std::vector<int>LDRecords;
@@ -1539,39 +1522,7 @@ void Graphflow::densityFilter(uint matchorder_index,uint depth,std::vector<uint>
     }
     singleVertexCandidate.erase(iter,singleVertexCandidate.end());
 
-   /* if(isolatedVertexs.size()==0){
-
-        float backWeight=GetBackWeight(matchorder_index,depth+1);
-        auto iter=singleVertexCandidate.begin();
-        while(iter!=singleVertexCandidate.end()){
-            float tmpweight=std::get<2>(this->match[preIndex])+std::get<2>(*iter)+backWeight+LDWeight;
-            if(tmpweight/(sqrt(n)*(n-1))<kw){
-                break;
-            }
-            iter++;
-        }
-            singleVertexCandidate.erase(iter,singleVertexCandidate.end());
-    }
-    else{
-        float backWeight=GetBackWeight(matchorder_index,depth+1);
-        float isolateweight=0;
-
-
-        for(int i=0;i<isolatedVertexs.size();i++){
-           isolateweight+=std::get<2>(matchCandidate[isolatedVertexs[i]].front());
-        }
-
-        auto iter=singleVertexCandidate.begin();
-        while(iter!=singleVertexCandidate.end()){
-            float tmpweight=std::get<2>(this->match[preIndex])+std::get<2>(*iter)+ backWeight+isolateweight+LDWeight;
-            if(tmpweight/(sqrt(n)*(n-1))<kw){
-                break;
-            }
-            iter++;
-        }
-            singleVertexCandidate.erase(iter,singleVertexCandidate.end());
-    }*/
-    //3.更新candidate 可以变成resize形式
+    //3.更新candidate
     candidate.clear();
     for(int i=0;i<singleVertexCandidate.size();i++){
         candidate.emplace_back(std::get<0>(singleVertexCandidate[i]));
@@ -1770,7 +1721,17 @@ void Graphflow::setIsolateVertexMatchResult(std::vector<int> &r, std::vector<int
     std::get<2>(this->match[depth-1])=density;
 
     }
+void Graphflow::setIsolateVertexMatchResult(std::vector<pair<int, int>> &r, std::vector<int> &isolateVertex, uint tmin,
+                                            float density) {
+    for(int i=0;i<isolateVertex.size();i++){
+        uint index=isolateVertex[i];
 
+        std::get<0>(this->match[index])=r[i].first;
+    }
+    int depth=this->match.size();
+    std::get<1>(this->match[depth-1])=tmin;
+    std::get<2>(this->match[depth-1])=density;
+}
 
 void Graphflow::setBatchVisited(std::vector<int> &r,bool flag) {
     for(auto item:r){
@@ -1838,9 +1799,168 @@ void Graphflow::addMatchResult(uint matchorderindex, searchType type) {
     combinezIsolateVertexs.reserve(isolateVertexs.size());
     for(int i=0;i<isolateVertexs.size();i++){
         std::vector<tuple<int,int,float>>singleVertex=matchCandidate[isolateVertexs[i]];
+        std::sort(singleVertex.begin(),singleVertex.end(), tupleSumWeightCmp);
         combinezIsolateVertexs.push_back(singleVertex);
     }
+    //starttime=Get_Time();
+
+    //初始化
+   /* auto wt=findWeightAndTminBeforeIsolated();
+    std::vector<pair<int,int>>matchresult;
+    for(int j=0;j<combinezIsolateVertexs.size();j++){
+        matchresult.push_back(make_pair(std::get<0>(combinezIsolateVertexs[j][0]),0));//id号，以及在该列中的索引位置
+    }
+    //说明没有重复
+    std::queue<std::vector<pair<int,int>>>que;
+     que.push(matchresult);
+        while(!que.empty()) {
+            float weight = 0;
+            int tmin = INT_MAX;
+            auto ms = que.front();
+            que.pop();
+            bool isRepeat= false;
+            //判断是否有已经访问过节点
+            for(int i=0;i<ms.size();i++){
+                int id=ms[i].first;
+                int index=ms[i].second;
+                if(visited_[id]==true){
+                    if(index+1==combinezIsolateVertexs[i].size())
+                        return;
+                    int newId=std::get<0>(combinezIsolateVertexs[i][index+1]);
+                    ms[i].first=newId;
+                    ms[i].second=index+1;
+                    isRepeat= true;
+                }
+            }
+            if(isRepeat){
+                que.push(ms);
+                continue;
+            }
+            std::set<int> isrepeat;
+            for (auto item: ms) {
+                isrepeat.insert(item.first);
+            }
+            if (ms.size() == isrepeat.size()) {
+                for (int j = 0; j < ms.size(); j++) {
+                    int index = ms[j].second;
+                    weight += std::get<2>(combinezIsolateVertexs[j][index]);
+                    tmin = std::min(tmin, std::get<1>(combinezIsolateVertexs[j][index]));
+                }
+                tmin = std::min(tmin, wt.first);
+                float t = (sqrt(n) * (n - 1));
+                float density = (weight + wt.second) / t;
+                setIsolateVertexMatchResult(ms, isolateVertexs, tmin, density);
+                //加入结果集
+                std::vector<uint> m(n);
+                for (int i = 0; i < match.size(); i++) {
+                    m[order_vs_[matchorderindex][i]] = std::get<0>(match[i]);
+                }
+                MatchRecord *r = new MatchRecord(density, tmin, m);
+                if(!addMatchRecords(r))
+                {
+                    recoverIsolateVertexMatchResult(isolateVertexs);
+                    return;
+                }
+                else{
+                    num_positive_results_++;
+                }
+                recoverIsolateVertexMatchResult(isolateVertexs);
+                //找到下一行中的差值最小的替换点
+                std::map<float, vector<std::pair<int, int>>> minWeight;//列号，索引位置
+                float diffmin = INT_MAX;
+                for (int i = 0; i < ms.size(); i++) {
+                    auto index = ms[i].second;
+                    if (index == combinezIsolateVertexs[i].size() - 1) {
+                        continue;
+                    }
+                    float d = std::get<2>(combinezIsolateVertexs[i][index]) -
+                              std::get<2>(combinezIsolateVertexs[i][index+1]);
+                    diffmin = std::min(diffmin, d);
+                    minWeight[d].emplace_back(i, index + 1);
+                }
+                for (auto item: minWeight[diffmin]) {
+                    std::vector<pair<int, int>> mscopy = ms;
+                    int id = std::get<0>(combinezIsolateVertexs[item.first][item.second]);
+                    ms[item.first] = make_pair(id, item.second);
+                    que.push(ms);
+                    ms = mscopy;
+                }
+            }
+            else {
+                //有重复的，首先找到各个重复的key，并将diff差值较小的替换，较大的留下，然后进行下一次循环
+                std::map<float, vector<std::pair<int, int>>> minWeight;//列号，索引位置
+                std::unordered_map<int,vector<pair<int,int>>>sumId;//id号，（列号，索引号）
+                std::unordered_map<int,float>idMaxDiff;//id号，最大的差值
+                for(int i=0;i<ms.size();i++){
+                    int id=ms[i].first;
+                    int index=ms[i].second;
+                    sumId[id].emplace_back(i,index);
+                    if(idMaxDiff.find(id)!=idMaxDiff.end()){
+                        float d = std::get<2>(combinezIsolateVertexs[i][index]) -
+                                  std::get<2>(combinezIsolateVertexs[i][index+1]);
+                        idMaxDiff[id]=std::max(d,idMaxDiff[id]);
+                    }
+                    else{
+                        if (index == combinezIsolateVertexs[i].size() - 1) {
+                          idMaxDiff[id]=-1;
+                        }
+                        else{
+                            float d = std::get<2>(combinezIsolateVertexs[i][index]) -
+                                      std::get<2>(combinezIsolateVertexs[i][index+1]);
+                            idMaxDiff[id]=d;
+                        }
+
+                    }
+                }
+                for(auto iter=sumId.begin();iter!=sumId.end();iter++){
+                    if((*iter).second.size()>1){
+                        int vertexId=(*iter).first;
+                        int maxdiff=idMaxDiff[vertexId];
+                        if(maxdiff==-1){
+                            return;
+                        }
+                        auto ids=(*iter).second;
+                        for(auto item:ids){
+                            float d=std::get<2>(combinezIsolateVertexs[item.first][item.second]) -
+                                    std::get<2>(combinezIsolateVertexs[item.first][item.second+1]);
+                            if(d<maxdiff){
+                             ms[item.first]= make_pair(vertexId,item.second+1);
+                            }
+                        }
+
+                    }
+                }
+                que.push(ms);
+            }
+
+        }*/
+
+
+    //先剪枝再笛卡尔积
     starttime=Get_Time();
+    auto wt=findWeightAndTminBeforeIsolated();
+    std::vector<float>colmax;
+    if(topKSet.size()==k){
+        float topkdensity=topKSet.back()->getDensity();
+        for(int i=0;i<combinezIsolateVertexs.size();i++){
+            int max=0;
+            for(int j=0;j<combinezIsolateVertexs.size();j++){
+                if(j==i)
+                    continue;
+                max+=std::get<2>(combinezIsolateVertexs[j][0]);
+            }
+            colmax.emplace_back(max);
+        }
+        for(int i=0;i<combinezIsolateVertexs.size();i++){
+            for(int j=1;j<combinezIsolateVertexs[i].size();j++){
+                float weight=wt.second+std::get<2>(combinezIsolateVertexs[i][j])+colmax[i];
+                float density=weight/(sqrt(n)*(n-1));
+                if(density<topkdensity)
+                    combinezIsolateVertexs[i].erase(combinezIsolateVertexs[i].begin()+j,combinezIsolateVertexs[i].end());
+            }
+        }
+    }
+
     std::vector<tuple<std::vector<int>,int,float>>result= combinationMatchResult(combinezIsolateVertexs);
     sort(result.begin(),result.end(), tupleResultCmp);
     Print_Time2("combinationMatchResult ",starttime);
@@ -1869,10 +1989,9 @@ void Graphflow::addMatchResult(uint matchorderindex, searchType type) {
 
             //更新match record
             //find weight/tmin before
-            auto wt=findWeightAndTminBeforeIsolated();
+
             uint tmin=std::min(std::get<1>(result[i]),wt.first);
             float weight=std::get<2>(result[i]);
-            float tmp=(weight+wt.second);
             float t=(sqrt(n)*(n-1));
             float density=(weight+wt.second)/ (sqrt(n)*(n-1));
             setIsolateVertexMatchResult(std::get<0>(result[i]),isolateVertexs,tmin,density);
