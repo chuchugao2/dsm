@@ -982,35 +982,34 @@ float Instopk::GetUperBoundWithPath(std::set<int> consideredEdgeIndex, std::vect
 void Instopk::InitialqueryCandidate() {
     //初始化每个查询点的候选顶点
     matchVertexCandidate.reserve(query_.NumVertices());
-    for(int i=0;i<query_.NumVertices();i++)
-    {
-        int qlabel=query_.GetVertexLabel(i);
-        for(int j=0;j<data_.NumVertices();j++){
-            if(data_.GetVertexLabel(j)==qlabel){
+    for (int i = 0; i < query_.NumVertices(); i++) {
+        int qlabel = query_.GetVertexLabel(i);
+        for (int j = 0; j < data_.NumVertices(); j++) {
+            if (data_.GetVertexLabel(j) == qlabel) {
                 //filter
-                bool flag= true;
-                for(int d=1;d<=dist;d++){
-                    auto it=TopologyIndex[d][i].begin();
-                    auto it2=queryTopologyIndex[d][i].begin();
-                    flag= true;
-                    while(it2!=queryTopologyIndex[d][i].end()){
-                        if(it2->second>it->second)
-                        {
-                            flag= false;
+                bool flag = true;
+                for (int d = 1; d <= dist; d++) {
+                    auto it = TopologyIndex[d][i].begin();
+                    auto it2 = queryTopologyIndex[d][i].begin();
+                    flag = true;
+                    while (it2 != queryTopologyIndex[d][i].end()) {
+                        if (it2->second > it->second) {
+                            flag = false;
                             break;
                         }
                         it++;
                         it2++;
                     }
-                    if(!flag){
+                    if (!flag) {
                         break;
                     }
                 }
-                if(flag){
+                if (flag) {
                     matchVertexCandidate[i].emplace_back(j);
                 }
             }
         }
+    }
 }
 bool Instopk::addMatchRecords(MatchRecord *r) {
     //sort(r->getVetex()->begin(),r->getVetex()->end());

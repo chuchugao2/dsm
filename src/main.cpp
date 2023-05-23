@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 
     mm->Preprocessing();
     Print_Time("Preprocessing: ", start);
-   /* if (report_initial)
+    if (report_initial)
     {
         std::cout << "----------- Initial Matching ----------" << std::endl;
 
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
 
     std::cout << "\nPeak Virtual Memory: " << mem::getValue() << " KB";
     std::cout << "\n\n----------------- End -----------------" << std::endl;
-*/
+
 
     Log::finalize();
     delete mm;

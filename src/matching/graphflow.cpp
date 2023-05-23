@@ -1792,7 +1792,6 @@ void Graphflow::sychronizeSingleVertexAndCandidate(std::vector<tuple<int, int, f
 }
 void Graphflow::addMatchResult(uint matchorderindex, searchType type) {
     std::chrono::high_resolution_clock::time_point starttime;
-
     int n=query_.NumVertices();
     auto &isolateVertexs=query_.isolatedRecord[matchorderindex];
     std::vector<std::vector<tuple<int,int,float>>>combinezIsolateVertexs;
@@ -1802,6 +1801,121 @@ void Graphflow::addMatchResult(uint matchorderindex, searchType type) {
         std::sort(singleVertex.begin(),singleVertex.end(), tupleSumWeightCmp);
         combinezIsolateVertexs.push_back(singleVertex);
     }
+    int len=combinezIsolateVertexs.size();
+    int*pmax=new int[len]{};//最大pmax在组中的列号
+    std::unordered_map<int,int>visitedId;
+    auto wt=findWeightAndTminBeforeIsolated();
+    float Tmax=wt.second;
+    int Tmin=wt.first;
+    int cnt=0;
+    for(int i=0;i<len;i++){
+        int index=0;
+        int id=std::get<0>(combinezIsolateVertexs[i][index]);
+        bool flag= true;
+        while(visited_[id]){
+            combinezIsolateVertexs[i].erase(combinezIsolateVertexs[i].begin()+index);
+            if(index==combinezIsolateVertexs[i].size())
+            {
+                flag= false;
+                cnt++;
+                break;
+            }
+            id=std::get<0>(combinezIsolateVertexs[i][index]);
+        }
+        if(!flag)
+            continue;
+        if(!visitedId.count(id)){
+            visitedId[id]=i;
+        }
+        else{
+            int pre_group_id=visitedId[id];
+            float gap1=std::get<2>(combinezIsolateVertexs[pre_group_id][pmax[pre_group_id]])-std::get<2>(combinezIsolateVertexs[pre_group_id][pmax[pre_group_id]+1]);
+            float gap2=std::get<2>(combinezIsolateVertexs[i][pmax[i]])-std::get<2>(combinezIsolateVertexs[i][pmax[i]+1]);
+            if(gap1<gap2){
+                pmax[pre_group_id]++;
+                visitedId[id]=i;
+            }
+            else{
+                pmax[i]++;
+            }
+        }
+    }
+    //1.计算Tmax阈值
+    std::vector<int>r(isolateVertexs.size());
+    for(int i=0;i<len;i++){
+        r[i]=std::get<1>(combinezIsolateVertexs[i][pmax[i]]);
+       Tmax+=std::get<2>(combinezIsolateVertexs[i][pmax[i]]);
+       Tmin=std::min(Tmin,std::get<1>(combinezIsolateVertexs[i][pmax[i]]));
+    }
+
+    float density=Tmax/(sqrt(n)*(n-1));
+    setIsolateVertexMatchResult(r,isolateVertexs,Tmin,density);
+    std::vector<uint>m(n);
+    for(int i=0;i<match.size();i++){
+        m[order_vs_[matchorderindex][i]]=std::get<0>(match[i]);
+    }
+    MatchRecord *record=new MatchRecord(Tmax,Tmin,m);
+    bool matchResult= addMatchRecords(record);
+    if(matchResult){
+        if(type==positive)
+            num_positive_results_++;
+        else
+            num_negative_results_++;
+    }
+    if(topKSet.size()==k){
+        float cur_density=topKSet.back()->getDensity();
+        float density=Tmax/ sqrt(n)*(n-1);
+        if(cur_density>=density)
+        {
+            delete[]pmax;
+            return;
+        }
+    }
+    //2.选择下一个迭代的点
+    int*hash=new int[len];
+    for(int i=0;i<len;i++)
+        hash[i]=pmax[i];
+    float *Tbound=new float[len];
+    std::fill(Tbound,Tbound+len,Tmax);
+
+    int next_vertex_group=0;
+    bool isover=false;
+    while(true){
+        next_vertex_group= findTboundMaxIndex(Tbound,hash,combinezIsolateVertexs,len,cnt);
+        if(cnt==len)
+        {
+          isover= true;
+            break;
+        }
+        int pre=hash[next_vertex_group];
+        hash[next_vertex_group]++;
+        Tbound[next_vertex_group]=Tbound[next_vertex_group]-std::get<2>(combinezIsolateVertexs[next_vertex_group][pre])+std::get<2>(combinezIsolateVertexs[next_vertex_group][hash[next_vertex_group]]);
+        if(Tbound[next_vertex_group]>Tmax)
+            Tmax=Tbound[next_vertex_group];
+        auto next_item=combinezIsolateVertexs[next_vertex_group][hash[next_vertex_group]];
+        float tmpdensity=std::get<2>(next_item)+wt.second;
+        int tmptmin=std::min(wt.first,std::get<1>(next_item));
+        //3. 递归
+        int id=std::get<0>(next_item);
+        CatesianProductWithIndex(matchorderindex,type,next_vertex_group,0,len,hash,combinezIsolateVertexs,isolateVertexs,tmptmin,tmpdensity);
+        if(topKSet.size()==k){
+            float cur_density=topKSet.back()->getDensity();
+            float density=Tmax/ sqrt(n)*(n-1);
+            if(cur_density>=density)
+            {
+               isover= false;
+                break;
+            }
+        }
+    }
+    if(isover)
+    {
+       delete[]pmax;
+       delete[]hash;
+       delete[]Tbound;
+    }
+
+
     //starttime=Get_Time();
 
     //初始化
@@ -1938,7 +2052,7 @@ void Graphflow::addMatchResult(uint matchorderindex, searchType type) {
 
     //先剪枝再笛卡尔积
     starttime=Get_Time();
-    auto wt=findWeightAndTminBeforeIsolated();
+
     std::vector<float>colmax;
     if(topKSet.size()==k){
         float topkdensity=topKSet.back()->getDensity();
@@ -2071,4 +2185,90 @@ std::pair<int,float>Graphflow::findWeightAndTminBeforeIsolated() {
             return make_pair(tmin,weight);
         }
     }
+}
+void Graphflow::CatesianProductWithIndex(int matchorderindex,searchType type,int curIndex,int depth,int len,int*hash,std::vector<std::vector<tuple<int,int,float>>>&combinezIsolateVertexs,std::vector<int>&isolateVertexs,int &tmin,float &weight) {
+    if(depth==len-1){
+        int n=query_.NumVertices();
+        std::vector<uint>m(n);
+        for(int i=0;i<match.size();i++){
+            m[order_vs_[matchorderindex][i]]=std::get<0>(match[i]);
+        }
+        float density=weight/ sqrt(n)*(n-1);
+        MatchRecord *record=new MatchRecord(density,tmin,m);
+        bool matchResult= addMatchRecords(record);
+        if(matchResult){
+            if(type==positive)
+                num_positive_results_++;
+            else
+                num_negative_results_++;
+        }
+        return;
+    }
+    if(depth!=curIndex){
+        int right=hash[depth];
+        for(int i=0;i<=right;i++){
+            int id=std::get<0>(combinezIsolateVertexs[depth][i]);
+            if(visited_[id])
+                continue;
+            visited_[id]=true;
+            int copytmin=tmin;
+            float copyweight=weight;
+            std::get<0>(this->match[isolateVertexs[depth]])=id;
+            tmin=std::min(tmin,std::get<1>(combinezIsolateVertexs[depth][i]));
+            weight+=std::get<2>(combinezIsolateVertexs[depth][i]);
+            CatesianProductWithIndex(matchorderindex,type,curIndex,depth+1,len,hash,combinezIsolateVertexs,isolateVertexs,tmin,weight);
+            visited_[id]=false;
+            std::get<0>(this->match[isolateVertexs[depth]])=-1;
+            tmin=copytmin;
+            weight=copyweight;
+        }
+    }else{
+        int id=std::get<0>(combinezIsolateVertexs[depth][hash[curIndex]]);
+        visited_[id]=true;
+        int copytmin=tmin;
+        float copyweight=weight;
+        std::get<0>(this->match[isolateVertexs[depth]])=id;
+        tmin=std::min(tmin,std::get<1>(combinezIsolateVertexs[depth][hash[curIndex]]));
+        weight+=std::get<2>(combinezIsolateVertexs[depth][hash[curIndex]]);
+        CatesianProductWithIndex(matchorderindex, type,curIndex,depth+1,len,hash,combinezIsolateVertexs,isolateVertexs,tmin,weight);
+        visited_[id]=false;
+        std::get<0>(this->match[isolateVertexs[depth]])=-1;
+        tmin=copytmin;
+        weight=copyweight;
+    }
+
+}
+int Graphflow::findTboundMaxIndex(float *Tbound,int*hash,std::vector<std::vector<tuple<int,int,float>>>&combinezIsolateVertexs,int len,int&cnt) {
+    float max=Tbound[0];
+    int maxindex=0;
+    for(int i=1;i<len;i++){
+        int index=hash[i]+1;
+        if(index==combinezIsolateVertexs[i].size())
+        {
+            cnt++;
+            continue;
+        }
+        int id=std::get<0>(combinezIsolateVertexs[i][index]);
+        bool flag= true;
+        while(visited_[id])
+        {
+            combinezIsolateVertexs[i].erase(combinezIsolateVertexs[i].begin()+index);
+            if(index==combinezIsolateVertexs[i].size()){
+                flag= false;
+                cnt++;
+                break;
+            }
+            else{
+                int id=std::get<0>(combinezIsolateVertexs[i][index]);
+            }
+        }
+        if(!flag)
+            continue;
+        if(Tbound[i]>max)
+        {
+            max=Tbound[i];
+            maxindex=i;
+        }
+    }
+    return maxindex;
 }

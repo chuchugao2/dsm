@@ -78,6 +78,7 @@ private:
     bool addMatchRecords(MatchRecord* r);
     void InitialqueryCandidate();//初始化查询节点的候选节点
     bool isContainMatchRecord(MatchRecord *m);
+
 };
 
 

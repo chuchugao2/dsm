@@ -114,8 +114,8 @@ private:
                                     std::vector<std::vector<tuple<int,int,float>>>&combinezIsolateVertexs,int k,int tmin,float density
     );
     std::pair<int,float>findWeightAndTminBeforeIsolated();
-
-
+    void CatesianProductWithIndex(int matchorderindex,searchType type,int curIndex,int depth,int len,int*hash,std::vector<std::vector<tuple<int,int,float>>>&combinezIsolateVertexs,std::vector<int>&isolateVertexs,int &tmin,float &weight);
+    int findTboundMaxIndex(float *Tbound,int*hash,std::vector<std::vector<tuple<int,int,float>>>&combinezIsolateVertexs,int len,int&cnt);
 
 };
 
