@@ -115,8 +115,7 @@ int main(int argc, char *argv[])
     {
         while (!data_graph.updates_.empty())
         {
-            std::cout<<"update num: "<<data_graph.updates_.size()<<std::endl;
-            stringstream _ss;
+            std::cout<<"update num: "<<data_graph.updates_.size()<<std::endl;stringstream _ss;
             _ss<<"update num:"<<data_graph.updates_.size()<<"\n";
             Log::track2(_ss);
 #ifdef PRINT_DEBUG

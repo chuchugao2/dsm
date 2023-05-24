@@ -65,7 +65,7 @@ bool MatchRecord::operator>(MatchRecord &m) {
         return this->vetexs>m.vetexs;
     }
 }
-bool MatchRecord::operator==(MatchRecord &m) {
+bool MatchRecord::operator==(const MatchRecord &m) const{
     return density==m.density&&tmin==m.tmin&&vetexs==m.vetexs;
 }
 

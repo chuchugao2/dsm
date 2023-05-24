@@ -1057,7 +1057,7 @@ bool Instopk::addMatchRecords(MatchRecord *r) {
 }
 bool Instopk::isContainMatchRecord(MatchRecord*m) {
     for(auto it=topKSet.begin();it!=topKSet.begin();it++){
-        if(*(*it)==*m)
+        if((*(*it))==(*m))
         return true;
     }
     return false;

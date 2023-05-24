@@ -513,7 +513,7 @@ void Graph::InitLabelIndex() {
     }
 }
 void Graph::InitMatchOrderType(const std::vector<std::vector<uint> > &order_vs_,const std::vector<std::vector<StarGraph*>>&qForwardNeighbors, const std::vector<std::vector<uint>>&order_vertex_index) {
-    //标记所有的查询顶点为自由点/局部不连通顶点/或者孤立顶点
+    //标记所有的查询顶点为自由匹配点和/或者孤立顶点
     for(uint i=0;i<this->NumEdges();i++){
         std::vector<vertexType> currentMatchOrderTypes;
         std::vector<std::vector<int>>currentMatchOrderLDvertex;

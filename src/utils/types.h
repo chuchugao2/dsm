@@ -27,7 +27,8 @@ enum searchType{
 
 enum vertexType
 {
-    freeVertex, LDVertex, isolatedVertex
+    freeVertex,isolatedVertex
+    //LDVertex
 };
 
 
