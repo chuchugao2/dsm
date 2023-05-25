@@ -528,24 +528,18 @@ void Graph::InitMatchOrderType(const std::vector<std::vector<uint> > &order_vs_,
                     auto forwardneighbor=qForwardNeighbors[i][k]->GetqueryVertex();
                     for(int m=0;m<forwardneighbor.size();m++){
                         if(order_vertex_index[i][forwardneighbor[m]->GetVetexId()]==j){
-                            if(k==j+1){
                                 type=freeVertex;
-                            }
-                            if(k!=j+1){
-                                type=LDVertex;
-                                currentMatchOrderLDvertex[k].emplace_back(j);
-                            }
                             break;
                         }
                     }
-                    if(type==freeVertex||type==LDVertex)
+                    if(type==freeVertex)
                         break;
                 }
             }
             currentMatchOrderTypes.emplace_back(type);
         }
         this->matchVertexTypes.push_back(currentMatchOrderTypes);
-        this->LDRecord.push_back(currentMatchOrderLDvertex);
+//        this->LDRecord.push_back(currentMatchOrderLDvertex);
     }
     //在前向邻居中删除LDRecord
    /* for(int i=0;i<order_vs_.size();i++){
