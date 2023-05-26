@@ -11,6 +11,7 @@
 #include "../utils/globals.h"
 #include "../graph/MatchRecord.h"
 #include "../graph/StarGraph.h"
+#include "algorithm"
 
 
 /*class Vertex{
@@ -55,6 +56,7 @@ public:
     std::vector<tuple<int,int,float>>match;//每个节点的匹配结果  vertex,tmin,density
     std::vector<std::vector<tuple<int,int,float>>>matchCandidate;//匹配序中，每个顶点的与其前邻居的密度和
     std::vector<std::vector<uint>>matchVertexCandidate;
+    std::vector<std::vector<uint>>sameLabelVertex;
 
 
 
@@ -117,7 +119,11 @@ private:
     void CatesianProductWithIndex(int matchorderindex,searchType type,int curIndex,int depth,int len,int*hash,std::vector<std::vector<tuple<int,int,float>>>&combinezIsolateVertexs,std::vector<int>&isolateVertexs,int &tmin,float &weight);
     int findTboundMaxIndex(float *Tbound,int*hash,int*nocan,std::vector<std::vector<tuple<int,int,float>>>&combinezIsolateVertexs,int len);
     bool isnoNextVertex(int*noscan,int len);
-
+    void createSameLabelVertex();
+    void addMatchResultWithHeap(uint matchorderindex,searchType type);
+    void CatesianProductWithHeap(int matchorderindex, searchType type, int depth, int len, int *hash,
+                                 std::vector<std::vector<tuple<int, int, float>>> &combinezIsolateVertexs,
+                                 std::vector<int> &isolateVertexs, std::vector<int> &isolatedIndex, int &tmin, float &weight,float &Tma);
 };
 
 #endif //MATCHING_GRAPHFLOW

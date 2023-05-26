@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 {
     CLI::App app{"App description"};
 
-    std::string query_path = "", initial_path = "", stream_path = "",result_path="",query_info="",algorithm="Instopk";
+    std::string query_path = "", initial_path = "", stream_path = "",result_path="",query_info="",algorithm="graphflow";
     uint max_num_results = UINT_MAX, time_limit = UINT_MAX, initial_time_limit = UINT_MAX;
     uint dist=2;
     bool print_prep = true, print_enum = false, homo = false, report_initial = true;
