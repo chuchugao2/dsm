@@ -1,5 +1,5 @@
-set(MATCHING matching.cpp graphflow.cpp Instopk.cpp Instopk.h)
-FIND_PACKAGE( OpenMP REQUIRED)
+set(MATCHING matching.cpp graphflow.cpp Instopk.cpp LocalIndex.cpp  )
+#FIND_PACKAGE( OpenMP REQUIRED)
 #[[if(OPENMP_FOUND)
     message("OPENMP FOUND")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")

@@ -73,7 +73,7 @@ public:
     std::vector<Edge>vEdge;//存储初始化载入所有的数据边
     std::vector<std::vector<Neighbor>> vNeighbors;//每个数据节点的邻居信息
     std::vector<int*>labelIndex;//记录每个节点邻居节点的点标签和边标签的个数
-    std::vector<std::vector<std::vector<int>>> LDRecord;//冰冻节点
+    std::vector<std::vector<std::vector<int>>> LDRecord;
     std::vector<std::vector<std::vector<ForwardNeighbor>>> forwardNeighbors;//前向邻居
     std::vector<std::vector<int>>isolatedRecord;//孤立节点的集合索引
 

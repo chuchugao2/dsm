@@ -12,30 +12,9 @@
 #include "../graph/MatchRecord.h"
 #include "../graph/StarGraph.h"
 #include "algorithm"
+#include "cfloat"
+#include "LocalIndex.h"
 
-
-/*class Vertex{
-private:
-    uint vertexId;
-    uint tmin;
-    float sumWeight;
-public:
-    Vertex(uint vertexId_,uint tmin_,uint sumWeight_):vertexId(vertexId_),tmin(tmin_),sumWeight(sumWeight_){};
-    const bool operator>(const Vertex &v) const{
-        if(this->sumWeight!=v.sumWeight){
-            return this->sumWeight>v.sumWeight;
-        }
-        else if(this->vertexId!=v.vertexId){
-            return this->vertexId>v.vertexId;
-        }
-    }
-    const float GetSumWeight() const{
-        return sumWeight;
-    }
-    const uint GetVertexId()const{
-        return vertexId;
-    }
-};*/
 
 class Graphflow : public matching
 {
@@ -55,8 +34,11 @@ public:
     std::vector<std::vector<StarGraph*>>qForwardNeighbors;//记录每种匹配下每个节点前向邻居以及最大权值
     std::vector<tuple<int,int,float>>match;//每个节点的匹配结果  vertex,tmin,density
     std::vector<std::vector<tuple<int,int,float>>>matchCandidate;//匹配序中，每个顶点的与其前邻居的密度和
-    std::vector<std::vector<uint>>matchVertexCandidate;
-    std::vector<std::vector<uint>>sameLabelVertex;
+    std::vector<float>suffixMax;
+    std::vector<float>isolatedMax;
+    std::vector<std::vector<std::vector<uint>>>rightNeighbor;
+    std::vector<LocalIndex>queryLocalIndexs;
+
 
 
 
@@ -93,12 +75,11 @@ private:
     bool LabelFilter(uint data_v,uint query_v);
     void matchVertex(uint data_v,int tmin,float density);
     void matchVertex(uint data_v,int index,uint depth,std::vector<tuple<int,int,float>>&singleVertexCandidate);
-    void matchVertex(std::vector<uint> & vertexCandidate,std::vector<tuple<int,int,float>>&singleVertexCandidate);
+    void matchVertex(std::vector<tuple<int,int,float>>&singleVertexCandidate);
     void popVertex(uint data_v);
     void popVertex(uint data_v,int index,uint depth);
     void popVertex();
-   // void densityFilter(uint matchorder_index,uint depth,std::vector<Vertex>&singleVertexCandidate,std::vector<uint>& candidate);
-    void densityFilter(uint matchorder_index,uint depth,std::vector<uint>& candidate, std::vector<tuple<int,int,float>>&singleVertexCandidate,bool isSychronized);
+    void densityFilter(uint matchorder_index,uint depth, std::vector<tuple<int,int,float>>&singleVertexCandidate);
     void combination_helper(std::vector<std::vector<int>>& result, std::vector<int>& current, const std::vector<std::vector<uint>>& nums, int k);
     std::vector<std::vector<int>> combination(const std::vector<std::vector<uint>>& nums);
     bool LDVertexCandidateCheck(uint vertex, uint queryVertexLabel, const std::vector<uint> & needToIntersection,  std::vector<uint> &intersectresult);
@@ -117,13 +98,15 @@ private:
     );
     std::pair<int,float>findWeightAndTminBeforeIsolated();
     void CatesianProductWithIndex(int matchorderindex,searchType type,int curIndex,int depth,int len,int*hash,std::vector<std::vector<tuple<int,int,float>>>&combinezIsolateVertexs,std::vector<int>&isolateVertexs,int &tmin,float &weight);
-    int findTboundMaxIndex(float *Tbound,int*hash,int*nocan,std::vector<std::vector<tuple<int,int,float>>>&combinezIsolateVertexs,int len);
+    int  findTboundMaxIndex(float *Tbound,int*hash,int*nocan,std::vector<std::vector<tuple<int,int,float>>>&combinezIsolateVertexs,int len);
     bool isnoNextVertex(int*noscan,int len);
-    void createSameLabelVertex();
     void addMatchResultWithHeap(uint matchorderindex,searchType type);
     void CatesianProductWithHeap(int matchorderindex, searchType type, int depth, int len, int *hash,
                                  std::vector<std::vector<tuple<int, int, float>>> &combinezIsolateVertexs,
                                  std::vector<int> &isolateVertexs, std::vector<int> &isolatedIndex, int &tmin, float &weight,float &Tma);
+    void createQueryCandidate(int matchorderindex,uint v1,uint v2);
+    void updateDensityCandidate(int matchorderindex,uint u1,uint v1,  std::vector<uint>&u1_rn);
+    void clearDensityCandidate(std::vector<uint>&u1_rn);
 };
 
 #endif //MATCHING_GRAPHFLOW
