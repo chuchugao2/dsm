@@ -10,20 +10,23 @@
 #include "limits.h"
 
 class LocalIndex {
-public:
+protected:
     std::vector<std::pair<int,float>>candidate;//data vertex/weight
     float maxWeight=FLT_MAX;
-    int maxIndex=INT_MAX;
+    int maxId=INT_MAX;
+    bool isFirst= true;
 public:
     LocalIndex(){};
     ~LocalIndex(){};
     std::vector<std::pair<int,float>>& getCandidate();
     void setMaxWeght(float max_weight);
-    void setmaxIndex(int max_index);
+    void setmaxId(int max_id);
     float getMaxWeight();
-    int getMaxIndex();
+    int getMaxId();
     void insertCandidate(int id,float weight);
     void clearCandidate();
+    void setIsFirst(bool flag);
+    bool getIsFirst();
 };
 
 #endif //BASELINE_LOCALINDEX_H

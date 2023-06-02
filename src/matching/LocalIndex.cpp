@@ -9,20 +9,27 @@ std::vector<std::pair<int,float>>& LocalIndex::getCandidate() {
 void LocalIndex::setMaxWeght(float max_weight) {
     maxWeight=max_weight;
 }
-void LocalIndex::setmaxIndex(int max_index) {
-    maxIndex=max_index;
+void LocalIndex::setmaxId(int max_id) {
+    maxId=max_id;
 }
 float LocalIndex::getMaxWeight() {
     return maxWeight;
 }
-int LocalIndex::getMaxIndex() {
-    return maxIndex;
+int LocalIndex::getMaxId() {
+    return maxId;
 }
 void LocalIndex::insertCandidate(int id, float weight) {
-    candidate.push_back(std::make_pair(id,weight));
+    candidate.emplace_back(id,weight);
 }
 void LocalIndex::clearCandidate() {
     candidate.resize(0);
     maxWeight=FLT_MAX;
-    maxIndex=INT_MAX;
+    maxId=INT_MAX;
+    isFirst= true;
+}
+void LocalIndex::setIsFirst(bool flag) {
+    isFirst= flag;
+}
+bool LocalIndex::getIsFirst() {
+    return isFirst;
 }

@@ -29,7 +29,7 @@ public:
     };
     const float GetMaxWeight();
     const std::pair<uint,uint> GetelabelAndVertexLabel() ;
-    uint GetVetexId();
+    const uint GetVetexId();
     const uint GetElabel();
 };
 
