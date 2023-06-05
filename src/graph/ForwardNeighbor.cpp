@@ -9,9 +9,12 @@ const std::pair<uint,uint> ForwardNeighbor::GetelabelAndVertexLabel()  {
 const float ForwardNeighbor::GetMaxWeight() {
     return maxWeight;
 }
- const uint ForwardNeighbor::GetVetexId() {
-    return toVetexId;
+ const uint ForwardNeighbor::GetVetexId() const{
+    return toVertexId;
 }
-const uint ForwardNeighbor::GetElabel(){
+const uint ForwardNeighbor::GetElabel()const{
     return edgeLabel;
+}
+const uint ForwardNeighbor::GetVetexIndex() const{
+    return toVertexIndex;
 }

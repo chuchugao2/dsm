@@ -1,4 +1,4 @@
-set(MATCHING matching.cpp graphflow.cpp Instopk.cpp LocalIndex.cpp  )
+set(MATCHING matching.cpp graphflow.cpp Instopk.cpp LocalIndex.cpp SingleCandidate.cpp)
 #FIND_PACKAGE( OpenMP REQUIRED)
 #[[if(OPENMP_FOUND)
     message("OPENMP FOUND")
@@ -11,5 +11,5 @@ add_library(match SHARED ${MATCHING})
 target_include_directories(match PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 SET(CMAKE_BUILD_TYPE "Debug")
 #PRINT_DEBUG LOG_TRACK RESULT_TRACK
-add_compile_definitions(RESULT_TRACK PRINT_DEBUG)
+add_compile_definitions(RESULT_TRACK)
 

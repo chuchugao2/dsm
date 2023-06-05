@@ -525,9 +525,9 @@ void Graph::InitMatchOrderType(const std::vector<std::vector<uint> > &order_vs_,
             }
             else{
                 for(int k=j+1;k<order_vs_[i].size();k++){
-                    auto forwardneighbor=qForwardNeighbors[i][k]->GetqueryVertex();
+                    const auto &forwardneighbor=forwardNeighbors[i][k];
                     for(int m=0;m<forwardneighbor.size();m++){
-                        if(order_vertex_index[i][forwardneighbor[m]->GetVetexId()]==j){
+                        if(forwardneighbor[m].GetVetexIndex()==j){
                                 type=freeVertex;
                             break;
                         }

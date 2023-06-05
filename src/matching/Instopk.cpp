@@ -755,7 +755,7 @@ void Instopk::SearchMatchesWithSortedList() {
                 }
                 float density = actualSCore / sqrt(n) * (n - 1);
                 //是否会与topk结果重复？？
-                MatchRecord *r = new MatchRecord(density, 0, m);
+                MatchRecord *r = new MatchRecord(density, m);
                 if(!isContainMatchRecord(r))
                 {
                     addMatchRecords(r);

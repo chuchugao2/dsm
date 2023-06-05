@@ -12,18 +12,16 @@
 class MatchRecord {
 protected:
     float density;//密度
-    uint tmin;//最小边时间戳
+   // uint tmin;//最小边时间戳
     std::vector<uint> vetexs=std::vector<uint>();//节点集合
 public:
     MatchRecord(){};
-    MatchRecord(float density_, uint tmin_, std::vector<uint>vetexs_);
+    MatchRecord(float density_,std::vector<uint>vetexs_);
     ~MatchRecord(){};
     void AddVetex(uint u);
     void setDensity(float d);
-    void setTmin(uint t);
-    uint getTmin();
     float getDensity();
-    std::vector<uint> *getVetex();
+    std::vector<uint> &getVetex();
     std::string toString();
     std::string printMatchRecord();//print density tmin vetexs
     bool operator>(MatchRecord&m);

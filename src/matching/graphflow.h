@@ -14,6 +14,7 @@
 #include "algorithm"
 #include "cfloat"
 #include "LocalIndex.h"
+#include "SingleCandidate.h"
 
 
 class Graphflow : public matching
@@ -32,13 +33,12 @@ public:
     //记录所有匹配的结果
     std::vector<MatchRecord*> allMatchRecords;
     std::vector<std::vector<StarGraph*>>qForwardNeighbors;//记录每种匹配下每个节点前向邻居以及最大权值
-    std::vector<tuple<int,int,float>>match;//每个节点的匹配结果  vertex,tmin,density
-    std::vector<std::vector<tuple<int,int,float>>>matchCandidate;//匹配序中，每个顶点的与其前邻居的密度和
+    std::vector<SingleCandidate>match;//每个节点的匹配结果  vertex density
+    std::vector<std::vector<SingleCandidate>>matchCandidate;//id density
     std::vector<float>suffixMax;
     std::vector<float>isolatedMax;
     std::vector<std::vector<std::vector<uint>>>rightNeighbor;
     std::vector<LocalIndex>queryLocalIndexs;
-
 
 
 
@@ -63,7 +63,7 @@ public:
 private:
     void GenerateMatchingOrder();
     void FindMatches(uint flag,uint order_index, uint depth,
-                     std::vector<uint> m, size_t &num_results,float density_s,uint tmin); //flag==0 initial flag==1 update
+                     std::vector<uint> m, size_t &num_results,float density_s); //flag==0 initial flag==1 update
     bool addMatchRecords(MatchRecord* r);
     void addStarGraph(StarGraph *s);
     void CreateStarIndex();
@@ -71,24 +71,20 @@ private:
     void updateStarIndex(uint match_index,uint order_vertex_index,uint candidate_u);
     vector<int> EdgeisInMatchOrder(Edge *edge);
     vector<int> EdgeisInMatchOrder(uint v1,uint v2,uint v1label,uint v2label,uint velabel);
-    void searchMatches(uint matchorderindex,searchType flag);
+    void searchMatches(int depth,uint matchorderindex,searchType flag);
     bool LabelFilter(uint data_v,uint query_v);
-    void matchVertex(uint data_v,int tmin,float density);
-    void matchVertex(uint data_v,int index,uint depth,std::vector<tuple<int,int,float>>&singleVertexCandidate);
-    void matchVertex(std::vector<tuple<int,int,float>>&singleVertexCandidate);
-    void popVertex(uint data_v);
+    void matchVertex(bool isFirstEdge,uint depth,uint data_v,float w);
+    void matchVertex(int depth);
+    void popVertex(uint depth,uint data_v);
     void popVertex(uint data_v,int index,uint depth);
-    void popVertex();
-    void densityFilter(uint matchorder_index,uint depth, std::vector<tuple<int,int,float>>&singleVertexCandidate);
+    void popVertex(int depth);
+    void densityFilter(uint matchorder_index,uint depth, std::vector<SingleCandidate>&singleVertexCandidate);
     void combination_helper(std::vector<std::vector<int>>& result, std::vector<int>& current, const std::vector<std::vector<uint>>& nums, int k);
     std::vector<std::vector<int>> combination(const std::vector<std::vector<uint>>& nums);
     bool LDVertexCandidateCheck(uint vertex, uint queryVertexLabel, const std::vector<uint> & needToIntersection,  std::vector<uint> &intersectresult);
     void setSingleVertexByIntersectionResult( std::vector<tuple<int,int,float>>&singleVertex,std::vector<uint> &intersectresult,std::vector<int>&r);
-    void setLDVertexMatchResult(std::vector<int>&r,std::vector<uint>&LDVertexs);
-    void setIsolateVertexMatchResult(std::vector<int>&r,std::vector<int>&isolateVertex,uint tmin,float density);
-    void setIsolateVertexMatchResult(std::vector<pair<int,int>>&r,std::vector<int>&isolateVertex,uint tmin,float density);
+    void setIsolateVertexMatchResult(std::vector<int>&r,std::vector<int>&isolateVertex,float density);
     void setBatchVisited(std::vector<int>&r,bool flag);
-    void recoverLDVertexMatchResult(std::vector<int>&r,std::vector<uint>&LDVertexs);
     void recoverIsolateVertexMatchResult(std::vector<int>&IsolateVertexs);
     void sychronizeSingleVertexAndCandidate( std::vector<tuple<int,int,float>>&singleVertex,std::vector<uint> &intersectresult);
     void addMatchResult(uint matchorderindex,searchType type);
@@ -96,14 +92,14 @@ private:
     void combinationMatchResultHelp(std::vector<tuple<std::vector<int>,int,float>>&result,std::vector<int>&current,
                                     std::vector<std::vector<tuple<int,int,float>>>&combinezIsolateVertexs,int k,int tmin,float density
     );
-    std::pair<int,float>findWeightAndTminBeforeIsolated();
-    void CatesianProductWithIndex(int matchorderindex,searchType type,int curIndex,int depth,int len,int*hash,std::vector<std::vector<tuple<int,int,float>>>&combinezIsolateVertexs,std::vector<int>&isolateVertexs,int &tmin,float &weight);
-    int  findTboundMaxIndex(float *Tbound,int*hash,int*nocan,std::vector<std::vector<tuple<int,int,float>>>&combinezIsolateVertexs,int len);
+    float findWeightBeforeIsolated();
+    void CatesianProductWithIndex(int matchorderindex,searchType type,int curIndex,int depth,int len,int*hash,std::vector<std::vector<SingleCandidate>>&combinezIsolateVertexs,std::vector<int>&isolateVertexs,float &weight);
+    int  findTboundMaxIndex(float *Tbound,int*hash,int*nocan,std::vector<std::vector<SingleCandidate>>&combinezIsolateVertexs,int len);
     bool isnoNextVertex(int*noscan,int len);
     void addMatchResultWithHeap(uint matchorderindex,searchType type);
     void CatesianProductWithHeap(int matchorderindex, searchType type, int depth, int len, int *hash,
-                                 std::vector<std::vector<tuple<int, int, float>>> &combinezIsolateVertexs,
-                                 std::vector<int> &isolateVertexs, std::vector<int> &isolatedIndex, int &tmin, float &weight,float &Tma);
+                                 std::vector<std::vector<SingleCandidate>> &combinezIsolateVertexs,
+                                 std::vector<int> &isolateVertexs, std::vector<int> &isolatedIndex,float &weight);
     void createQueryCandidate(int matchorderindex,uint v1,uint v2);
     void updateDensityCandidate(int matchorderindex,uint u1,uint v1,  std::vector<uint>&u1_rn);
     void clearDensityCandidate(std::vector<uint>&u1_rn);
