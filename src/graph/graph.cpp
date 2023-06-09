@@ -512,15 +512,23 @@ void Graph::InitLabelIndex() {
        this->labelIndex[k]=labelDistribution;
     }
 }
-void Graph::InitMatchOrderType(const std::vector<std::vector<uint> > &order_vs_,const std::vector<std::vector<StarGraph*>>&qForwardNeighbors, const std::vector<std::vector<uint>>&order_vertex_index) {
+void Graph::InitMatchOrderType(const std::vector<std::vector<uint> > &order_vs_,const std::vector<std::vector<std::vector<uint>>>&rightNeighbor) {
     //标记所有的查询顶点为自由匹配点和/或者孤立顶点
     for(uint i=0;i<this->NumEdges();i++){
         std::vector<vertexType> currentMatchOrderTypes;
         std::vector<std::vector<int>>currentMatchOrderLDvertex;
         currentMatchOrderLDvertex.resize(this->NumVertices(),{});
         for(int j=0;j<order_vs_[i].size();j++){
-            vertexType type=isolatedVertex;
-            if(j==0||j==1){
+            int id=order_vs_[i][j];
+            vertexType type;
+            if(rightNeighbor[i][id].size()==0)
+            {
+                type=isolatedVertex;
+            }
+            else{
+                type=freeVertex;
+            }
+           /* if(j==0||j==1){
                 type=freeVertex;
             }
             else{
@@ -535,33 +543,13 @@ void Graph::InitMatchOrderType(const std::vector<std::vector<uint> > &order_vs_,
                     if(type==freeVertex)
                         break;
                 }
-            }
+            }*/
             currentMatchOrderTypes.emplace_back(type);
         }
         this->matchVertexTypes.push_back(currentMatchOrderTypes);
 //        this->LDRecord.push_back(currentMatchOrderLDvertex);
     }
-    //在前向邻居中删除LDRecord
-   /* for(int i=0;i<order_vs_.size();i++){
-        const auto & LDRecords=LDRecord[i];
-        for(int i=0;i<LDRecords.size();i++){
-            for(int j=0;j<forwardNeighbors[i].size();j++){
-                auto & fneighbors=forwardNeighbors[i][j];
-                for(int k=0;k<LDRecords[i].size();k++){
-                    auto it=fneighbors.begin();
-                    while(it!=fneighbors.end()){
-                        if(order_vertex_index[i][(*it).GetVetexId()]==LDRecords[i][k]){
-                            it=fneighbors.erase(it);
-                        }
-                        else
-                        {
-                            it++;
-                        }
-                    }
-                }
-            }
-        }
-    }*/
+
 
     //收集孤立顶点集合
     for(int i = 0; i < this->NumEdges(); i++){

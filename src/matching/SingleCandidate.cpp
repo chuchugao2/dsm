@@ -31,3 +31,15 @@ bool SingleCandidate::operator<(const SingleCandidate &s) const {
         return vertexId>s.vertexId;
     }
 }
+void SingleCandidate::setFlag(int i) {
+    flag=i;
+}
+const int SingleCandidate::getFlag() const {
+    return flag;
+}
+void SingleCandidate::addSumWeight(float weight) {
+    sumWeight+=weight;
+}
+void SingleCandidate::addFlag() {
+    flag++;
+}

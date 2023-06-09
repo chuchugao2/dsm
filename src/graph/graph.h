@@ -73,8 +73,8 @@ public:
     std::vector<Edge>vEdge;//存储初始化载入所有的数据边
     std::vector<std::vector<Neighbor>> vNeighbors;//每个数据节点的邻居信息
     std::vector<int*>labelIndex;//记录每个节点邻居节点的点标签和边标签的个数
-    std::vector<std::vector<std::vector<int>>> LDRecord;
-    std::vector<std::vector<std::vector<ForwardNeighbor>>> forwardNeighbors;//前向邻居
+   // std::vector<std::vector<std::vector<int>>> LDRecord;
+    //std::vector<std::vector<std::vector<ForwardNeighbor>>> forwardNeighbors;//前向邻居
     std::vector<std::vector<int>>isolatedRecord;//孤立节点的集合索引
 
 
@@ -112,7 +112,7 @@ public:
     void LoadUpdateStream(const std::string &path);
     void PrintMetaData() const;
     void InitLabelIndex();//邻居节点的点标签和边标签分布，过滤候选解
-    void InitMatchOrderType( const std::vector<std::vector<uint> > &order_vs_,const std::vector<std::vector<StarGraph*>>&qForwardNeighbors, const std::vector<std::vector<uint>>&order_vertex_index);//初始化邻居标签分布
+    void InitMatchOrderType( const std::vector<std::vector<uint> > &order_vs_,const std::vector<std::vector<std::vector<uint>>>&rightNeighbor);//初始化邻居标签分布
     void UpdateLabelIndex(uint v1,uint v2,uint label,uint flag);//flag=1为增加操作 flag=0为减少操作
     const vertexType GetVertexType(uint order_index,uint depth);
     std::vector<uint>GetIsolateVertexBeforeDepth(uint order_index,uint depth);

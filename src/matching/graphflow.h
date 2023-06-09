@@ -31,21 +31,24 @@ public:
     //记录top k记录集合
     std::vector<MatchRecord*> topKSet;
     //记录所有匹配的结果
-    std::vector<MatchRecord*> allMatchRecords;
-    std::vector<std::vector<StarGraph*>>qForwardNeighbors;//记录每种匹配下每个节点前向邻居以及最大权值
+    std::vector<std::vector<StarGraph*>>globalStarIndex;//记录每种匹配下每个节点左邻居以及最大权值
     std::vector<SingleCandidate>match;//每个节点的匹配结果  vertex density
     std::vector<std::vector<SingleCandidate>>matchCandidate;//id density
     std::vector<float>suffixMax;
     std::vector<float>isolatedMax;
-    std::vector<std::vector<std::vector<uint>>>rightNeighbor;
-    std::vector<LocalIndex>queryLocalIndexs;
-
+    std::vector<std::vector<std::vector<uint>>>rightNeighbor;//匹配索引号，id号
+    //std::vector<LocalIndex>queryLocalIndexs;
+    std::vector<std::vector<std::vector<int>>>globalVkMatchUk;//<vk,ak,uk>
+    std::vector<std::vector<uint>>labelToQueryVertex;//每个标签对应的查询点标签
+    std::vector<uint>queryVertexIndexInlabel;//每个查询点在label数组中的索引号
+    std::vector<float>LocalStarIndex;
+    std::vector<std::vector<int>>matchLeftNeighborSum;
 
 
 public:
     Graphflow(Graph& query_graph, Graph& data_grasph, uint max_num_results,
               bool print_prep, bool print_enum, bool homo);
-    ~Graphflow() override {};
+    ~Graphflow() override ;
 
     void Preprocessing() override;
     void InitialMatching(const std::string &path) override;
@@ -68,7 +71,8 @@ private:
     void addStarGraph(StarGraph *s);
     void CreateStarIndex();
     float GetBackWeight(uint order_index,uint depth);
-    void updateStarIndex(uint match_index,uint order_vertex_index,uint candidate_u);
+    void updateStarIndex(uint match_index,uint caddidate_v,const std::vector<uint>&canditeQueryVertexs);
+    void updateStarIndex(uint match_index,uint caddidate_v,uint candidate_u,int candidate_v_index);
     vector<int> EdgeisInMatchOrder(Edge *edge);
     vector<int> EdgeisInMatchOrder(uint v1,uint v2,uint v1label,uint v2label,uint velabel);
     void searchMatches(int depth,uint matchorderindex,searchType flag);
@@ -76,9 +80,9 @@ private:
     void matchVertex(bool isFirstEdge,uint depth,uint data_v,float w);
     void matchVertex(int depth);
     void popVertex(uint depth,uint data_v);
-    void popVertex(uint data_v,int index,uint depth);
-    void popVertex(int depth);
-    void densityFilter(uint matchorder_index,uint depth, std::vector<SingleCandidate>&singleVertexCandidate);
+    void popVertex(uint data_v,uint matchorderindex,uint depth, const std::vector<uint>&uk_neighbor);
+    void popVertex(uint depth);
+    void densityFilter(uint matchorder_index,uint depth, std::vector<SingleCandidate>&singleVertexCandidate,float& maxDensity);
     void combination_helper(std::vector<std::vector<int>>& result, std::vector<int>& current, const std::vector<std::vector<uint>>& nums, int k);
     std::vector<std::vector<int>> combination(const std::vector<std::vector<uint>>& nums);
     bool LDVertexCandidateCheck(uint vertex, uint queryVertexLabel, const std::vector<uint> & needToIntersection,  std::vector<uint> &intersectresult);
@@ -100,9 +104,12 @@ private:
     void CatesianProductWithHeap(int matchorderindex, searchType type, int depth, int len, int *hash,
                                  std::vector<std::vector<SingleCandidate>> &combinezIsolateVertexs,
                                  std::vector<int> &isolateVertexs, std::vector<int> &isolatedIndex,float &weight);
-    void createQueryCandidate(int matchorderindex,uint v1,uint v2);
-    void updateDensityCandidate(int matchorderindex,uint u1,uint v1,  std::vector<uint>&u1_rn);
-    void clearDensityCandidate(std::vector<uint>&u1_rn);
+    void createLabelToQueryVertex();
+
+   bool updaterightNeighborCandidate(int matchorderindex,uint uk,uint uk_neigh,bool isFirstEdge,uint vk,const std::vector<uint>&uk_neighbor);
+   void InitialLocalIndex(int matchorderindex);
+   void getIntersetSingleCandidate( std::vector<SingleCandidate>&candidates,int matchorderindex,int depth);
+
 };
 
 #endif //MATCHING_GRAPHFLOW

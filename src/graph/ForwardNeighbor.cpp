@@ -15,6 +15,3 @@ const float ForwardNeighbor::GetMaxWeight() {
 const uint ForwardNeighbor::GetElabel()const{
     return edgeLabel;
 }
-const uint ForwardNeighbor::GetVetexIndex() const{
-    return toVertexIndex;
-}
