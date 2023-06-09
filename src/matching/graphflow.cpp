@@ -2282,7 +2282,7 @@ void Graphflow::addMatchResultWithHeap(uint matchorderindex, searchType type) {
         if(topKSet.back()->getDensity()>density)
             return;
     }*/
-    float globalTmax=0;
+    float globalTmax=wt;
     for(int i=0;i<len;i++)
         globalTmax+=combinezIsolateVertexs[i][0].getSumWeight();
     while(!maxHeap.empty()&&!isnoNextVertex(noscan,len)){
@@ -2341,7 +2341,8 @@ void Graphflow::addMatchResultWithHeap(uint matchorderindex, searchType type) {
             this->match[isolateVertexs[group]].setVertexId(-1);
             float curDensity=topKSet.back()->getDensity();
             Tmax=globalTmax-combinezIsolateVertexs[group][0].getSumWeight()+combinezIsolateVertexs[group][pre].getSumWeight();
-            if(curDensity>Tmax){
+            float TmaxDensity=Tmax/(sqrt(n)*(n-1));
+            if(curDensity>TmaxDensity){
                 noscan[group]=1;
             }
         }
