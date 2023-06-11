@@ -108,6 +108,7 @@ int main(int argc, char *argv[])
     }
     std::cout << "--------- Incremental Matching --------" << std::endl;
     data_graph.LoadUpdateStream(stream_path);
+    int update_len=data_graph.updates_.size();
     mm->clearPositiveNum();
     size_t num_v_updates = 0ul, num_e_updates = 0ul;
 
@@ -172,7 +173,7 @@ int main(int argc, char *argv[])
     mm->GetNumNegativeResults(negative_num_results);
     std::cout << positive_num_results << " positive matches.\n";
     std::cout << negative_num_results << " negative matches.\n";
-
+    mm->PrintAverageTime(update_len);
     mm->PrintCounter();
 
     size_t num_edges = 0u, num_vertices = 0ul;

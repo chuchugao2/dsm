@@ -109,3 +109,6 @@ void matching::PrintCounter()
     std::cout << num_intermediate_results_with_empty_candidate_set_ << " intermediate results with empty candidate set.\n";
     std::cout << num_intermediate_results_without_results_ << " intermediate results without results.\n";
 }
+void matching::PrintAverageTime(int len) {
+
+}

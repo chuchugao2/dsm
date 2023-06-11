@@ -43,6 +43,12 @@ public:
     std::vector<uint>queryVertexIndexInlabel;//每个查询点在label数组中的索引号
     std::vector<float>LocalStarIndex;
     std::vector<std::vector<int>>matchLeftNeighborSum;
+    long long total_search_time=0;
+    long long total_print_time=0;
+    long long total_densityFilter_time=0;
+    long long total_update_globalIndex_time=0;
+    long long total_update_localIndex_time=0;
+    long long total_addMatchResult_time=0;
 
 
 public:
@@ -62,7 +68,7 @@ public:
     void deleteEdge(uint v1,uint v2) override;
     void deleteUpdateTopK() override;
     void GetMemoryCost(size_t &num_edges, size_t &num_vertices) override;
-
+    void PrintAverageTime(int len);
 private:
     void GenerateMatchingOrder();
     void FindMatches(uint flag,uint order_index, uint depth,
@@ -109,6 +115,7 @@ private:
    bool updaterightNeighborCandidate(int matchorderindex,uint uk,uint uk_neigh,bool isFirstEdge,uint vk,const std::vector<uint>&uk_neighbor);
    void InitialLocalIndex(int matchorderindex);
    void getIntersetSingleCandidate( std::vector<SingleCandidate>&candidates,int matchorderindex,int depth);
+
 
 };
 

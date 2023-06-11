@@ -58,12 +58,14 @@ public:
     virtual void updateTopK(uint num);//更新Top k序列
     virtual void deleteEdge(uint v1,uint v2);
     virtual void deleteUpdateTopK();
+    virtual void PrintAverageTime(int len);
     // get execution info
     void GetNumInitialResults(size_t &num_initial_results);//得到初始化的数量
     void GetNumPositiveResults(size_t &num_positive_results);//正匹配的数量
     void GetNumNegativeResults(size_t &num_negative_results);//负匹配的数量
     void clearPositiveNum(); //清空 正匹配个数
     void PrintCounter();//打印剩余的执行信息
+
 
 };
 
