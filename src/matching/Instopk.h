@@ -31,18 +31,15 @@ public:
     std::vector<MatchRecord*> topKSet;
     //记录所有匹配的结果
     std::vector<MatchRecord*> allMatchRecords;
-    std::vector<std::vector<StarGraph*>>qForwardNeighbors;//记录每种匹配下每个节点前向邻居以及最大权值
-    std::vector<std::tuple<int,int,float>>match;//每个节点的匹配结果  vertex,tmin,density
-    std::vector<std::vector<std::tuple<int,int,float>>>matchCandidate;//匹配序中，每个顶点的与其前邻居的密度和
     std::vector<std::vector<int>>matchVertexCandidate;//每个节点的候选节点
-    std::map<int,std::map<int,std::map<std::string,int>>>TopologyIndex;//拓扑索引
-    std::map<int,std::map<int,std::map<std::string,int>>>queryTopologyIndex;//查询图拓扑索引
-    std::map<int,std::map<int,std::map<std::string,float>>>MNW;//最大源路径权重<d,id<<a,1><b,1><c,1>>
+    std::vector<std::vector<std::map<std::string,int>>>TopologyIndex;//拓扑索引
+    std::vector<std::vector<std::map<std::string,int>>>queryTopologyIndex;//查询图拓扑索引
+    std::vector<std::vector<std::map<std::string,float>>>MNW;//最大源路径权重<d,id<<a,1><b,1><c,1>>
     std::map<std::string,std::vector<Edge>>sortEdgeList;//sortlist
-    std::map<int,std::vector<std::string>>dToOrderType;
+    std::vector<std::vector<std::string>>dToOrderType;
     std::map<int,std::vector<std::string>>querydToOrderType;
     uint dist;
-    std::map<std::string,std::map<int,std::vector<int>>>node2EdgeListPointers;
+    std::map<std::string,std::vector<std::vector<int>>>node2EdgeListPointers;//key 0#0边类型，map[0]为v1在类型为0#0的索引个数
     std::map<std::string,int>pointers;//sortEdgelist指针
     std::set<std::string>queryEdgeTypes;//查询图的所有边类型
     std::map<std::string,std::vector<Edge>>queryEdgeType2Edges;//查询边每种边的类型对应的查询边id
@@ -73,11 +70,19 @@ private:
     void SearchMatchesWithSortedList();//按照边搜索过程
     void InitialPointers();//初始化排序边列表指针
     std::pair<int,int>splitString(std::string s);
-    float GetUperBoundWithPath(std::set<int>consideredEdgeIndex,std::vector<std::string>pc);
-    std::set<Path>GetPaths(int i,std::vector<std::pair<int,int>>coverEdges);
+    float GetUperBoundWithPath(const std::vector<int>&consideredEdgeIndex,const std::vector<std::string>&pc);
+    std::set<Path>GetPaths(int i,const std::vector<std::pair<int,int>>&coverEdges);
     bool addMatchRecords(MatchRecord* r);
     void InitialqueryCandidate();//初始化查询节点的候选节点
     bool isContainMatchRecord(MatchRecord *m);
+    bool count(std::vector<int>&t,int e);
+    bool count(  std::vector<Edge>&t,Edge e);
+    void updateSortEdgelist(uint v1,uint v2);
+    void updateMNWIndexAndDataTopologyIndex();
+    void updateQueryCandidate();
+    void insertEdgeToSortEdgelist(std::string &str,Edge &edge);
+
+
 
 };
 

@@ -17,7 +17,7 @@
 #define Duration2(start) std::chrono::duration_cast<\
     std::chrono::microseconds>(Get_Time() - start).count()
 #define Print_Time(str, start) std::cout << std::fixed << std::setprecision(7)<< str << Duration(start) << \
-    " milliseconds" << std::endl
+    " miliseconds" << std::endl
 #define Print_Time2(str, start) std::cout << str <<Duration2(start)<< \
     " microseconds" << std::endl
 

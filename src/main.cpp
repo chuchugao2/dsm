@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     app.add_option("--initial-time-limit", initial_time_limit, "time limit for the initial matching (second)");
     app.add_option("--orders", orders, "pre-defined matching orders");
     app.add_option("--qInfo",query_info,"the path of query graph");
-    app.add_option("--d",dist,"the dist");
+    app.add_option("--dist",dist,"the dist");
 
     CLI11_PARSE(app, argc, argv);
 
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
     start = Get_Time();
     if(algorithm=="graphflow")
         mm = graphflow      = new Graphflow     (query_graph, data_graph, max_num_results, print_prep, print_enum, homo);
-    else
+    else if(algorithm=="instopk")
         mm = instopk     = new Instopk     (query_graph, data_graph, max_num_results, print_prep, print_enum, homo,dist);
 
     mm->Preprocessing();

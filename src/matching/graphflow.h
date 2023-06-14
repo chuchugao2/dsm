@@ -49,6 +49,7 @@ public:
     long long total_update_globalIndex_time=0;
     long long total_update_localIndex_time=0;
     long long total_addMatchResult_time=0;
+    long long subtime_in_local_index=0;
 
 
 public:

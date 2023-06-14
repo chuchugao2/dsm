@@ -36,8 +36,9 @@ public:
     const uint GeteLabel() const{return this->eLabel;}
     const float GeteWeight()const{return this->eWeight;}
     bool operator == (const Edge& edge)const {
-        if((edge.v1Label == this->v1Label && edge.v2Label == this->v2Label && edge.eLabel == this->eLabel) ||
-           (edge.v2Label == this->v1Label && edge.v1Label == this->v2Label && edge.eLabel == this->eLabel)){
+        if((edge.v1==this->v1&&edge.v2==this->v2&&edge.eLabel==this->eLabel)||
+            (edge.v2==this->v1&&edge.v1==this->v2&&edge.eLabel==this->eLabel))
+        {
             return true;
         }
         return false;
