@@ -41,8 +41,11 @@ public:
     std::vector<std::vector<std::vector<int>>>globalVkMatchUk;//<vk,ak,uk>
     std::vector<std::vector<uint>>labelToQueryVertex;//每个标签对应的查询点标签
     std::vector<uint>queryVertexIndexInlabel;//每个查询点在label数组中的索引号
-    std::vector<float>LocalStarIndex;
-    std::vector<std::vector<int>>matchLeftNeighborSum;
+    std::vector<float>LocalStarIndex;//局部索引
+    std::vector<std::vector<int>>matchLeftNeighborSum;//所有节点左邻居的个数
+    std::vector<std::vector<int>>matchVetexLeftNeighbor;//所有匹配序列中左邻居组合数
+    std::vector<vector<float>>matchVetexSumweight;//每种组合更新得到的最大权值
+    std::vector<std::vector<int>>leftNeighborIdSum;//每个节点左邻居id和
     long long total_search_time=0;
     long long total_print_time=0;
     long long total_densityFilter_time=0;
