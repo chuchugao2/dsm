@@ -77,10 +77,12 @@ private:
     bool isContainMatchRecord(MatchRecord *m);
     bool count(std::vector<int>&t,int e);
     bool count(  std::vector<Edge>&t,Edge e);
-    void updateSortEdgelist(uint v1,uint v2);
-    void updateMNWIndexAndDataTopologyIndex();
-    void updateQueryCandidate();
-    void insertEdgeToSortEdgelist(std::string &str,Edge &edge);
+    void updateSortEdgelist(uint v1,uint v2,bool isAdd);
+    void deleteEdgeInSortEdgelist(std::string &str, Edge edge);
+    void updateMNWIndexAndDataTopologyIndex(uint v1,uint v2,uint label,float weight,bool isAdd);
+    void updateQueryCandidate(uint v1,uint v2,uint label,bool isAdd);
+    void insertEdgeToSortEdgelist(std::string &str,Edge edge);
+    bool isNeighbor(uint curVertex,uint v1);
 
 
 

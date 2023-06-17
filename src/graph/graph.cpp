@@ -145,6 +145,16 @@ void Graph::RemoveEdge(uint v1, uint v2)
             vNeighbors[v2].erase(it);
         }
     }
+    uint elabel= std::get<2>(GetEdgeLabel(v1,v2));
+    if(v1>v2){
+        std::swap(v1,v2);
+    }
+    for(int i=0;i<vEdge.size();i++){
+        const Edge &edge=vEdge[i];
+        if(edge.GetV1()==v1&&edge.GetV2()==v2){
+            vEdge.erase(vEdge.begin()+i);
+        }
+    }
     edge_count_--;
 }
 
