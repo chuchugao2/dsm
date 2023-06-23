@@ -21,7 +21,7 @@ public:
     void AddVetex(uint u);
     void setDensity(float d);
     float getDensity();
-    std::vector<uint> &getVetex();
+    const std::vector<uint> &getVetex();
     std::string toString();
     std::string printMatchRecord();//print density tmin vetexs
     bool operator>(MatchRecord&m);

@@ -25,8 +25,8 @@ public:
     }
     void InitalmaxWeight();
     void computeMaxWeight();
-    const uint getStarMaxWeight();
-    void setStarMaxWeight(uint w);
+    const float getStarMaxWeight();
+    void setStarMaxWeight(float w);
     const uint GetForwardNeighborNum();
     std::vector<ForwardNeighbor*>& GetqueryVertex();
 };

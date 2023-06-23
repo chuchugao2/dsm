@@ -48,13 +48,13 @@ public:
 
 
 public:
-    Instopk(Graph& query_graph, Graph& data_grasph, uint max_num_results,
+    Instopk(Graph& query_graph, Graph& data_grasph, Subgraph &subgraph,uint max_num_results,
     bool print_prep, bool print_enum, bool homo,uint dist);
     ~Instopk() override {};
     void Preprocessing() override;
     void InitialMatching(const std::string &path) override;
-    void AddEdge(uint v1, uint v2, uint label,float weight,uint timestamp) override;
-    void RemoveEdge(uint v1, uint v2) override;
+    void AddEdge(uint v1, uint v2, uint label,float weight) override;
+    void RemoveEdge(uint v1, uint v2,uint label) override;
     void AddVertex(uint id, uint label) override;
     void RemoveVertex(uint id) override;
     void InitialTopK(const std::string &path) override;//得到初始化之后的Top k结果集合

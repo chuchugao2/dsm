@@ -39,9 +39,8 @@ struct InsertUnit {
     uint id2;   // edge target id
     uint label; // vertex or edge label
     float weight;//edge weight
-    uint timestamp;//timestamp of edge
-    InsertUnit(char type_arg, bool is_add_arg, uint id1_arg, uint id2_arg, uint label_arg,float weight_arg,uint timestamp_arg)
-    : type(type_arg), is_add(is_add_arg), id1(id1_arg), id2(id2_arg), label(label_arg),weight(weight_arg),timestamp(timestamp_arg) {}
+    InsertUnit(char type_arg, bool is_add_arg, uint id1_arg, uint id2_arg, uint label_arg,float weight_arg)
+    : type(type_arg), is_add(is_add_arg), id1(id1_arg), id2(id2_arg), label(label_arg),weight(weight_arg){}
 };
 
 // from boost (functional/hash):

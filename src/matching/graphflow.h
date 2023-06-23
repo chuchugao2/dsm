@@ -47,6 +47,7 @@ public:
     std::vector<vector<float>>matchVetexSumweight;//每种组合更新得到的最大权值
     std::vector<std::vector<int>>leftNeighborIdSum;//每个节点左邻居id和
     long long total_search_time=0;
+    long long total_update_gloabalsubgraph_time=0;
     long long total_print_time=0;
     long long total_densityFilter_time=0;
     long long total_update_globalIndex_time=0;
@@ -56,15 +57,15 @@ public:
 
 
 public:
-    Graphflow(Graph& query_graph, Graph& data_grasph, uint max_num_results,
+    Graphflow(Graph& query_graph, Graph& data_grasph,Subgraph& global_subgraph, uint max_num_results,
               bool print_prep, bool print_enum, bool homo);
     ~Graphflow() override ;
 
     void Preprocessing() override;
     void InitialMatching(const std::string &path) override;
 
-    void AddEdge(uint v1, uint v2, uint label,float weight,uint timestamp) override;
-    void RemoveEdge(uint v1, uint v2) override;
+    void AddEdge(uint v1, uint v2, uint label,float weight) override;
+    void RemoveEdge(uint v1, uint v2,uint label) override;
     void AddVertex(uint id, uint label) override;
     void RemoveVertex(uint id) override;
     void InitialTopK(const std::string &path) override;//得到初始化之后的Top k结果集合
@@ -77,22 +78,22 @@ private:
     void GenerateMatchingOrder();
     void FindMatches(uint flag,uint order_index, uint depth,
                      std::vector<uint> m, size_t &num_results,float density_s); //flag==0 initial flag==1 update
-    bool addMatchRecords(MatchRecord* r);
+    int addMatchRecords(MatchRecord* r);//1 表示成功插入 2表示节点重复 3表示节点已比第kth小
     void addStarGraph(StarGraph *s);
     void CreateStarIndex();
     float GetBackWeight(uint order_index,uint depth);
     void updateStarIndex(uint match_index,uint caddidate_v,const std::vector<uint>&canditeQueryVertexs);
-    void updateStarIndex(uint match_index,uint caddidate_v,uint candidate_u,int candidate_v_index);
+    void updateStarIndex(bool isAdd,uint match_index,uint caddidate_v,uint candidate_u,int candidate_v_index);
     vector<int> EdgeisInMatchOrder(Edge *edge);
     vector<int> EdgeisInMatchOrder(uint v1,uint v2,uint v1label,uint v2label,uint velabel);
-    void searchMatches(int depth,uint matchorderindex,searchType flag);
+    void searchMatches(int depth,uint matchorderindex,searchType flag,float maxWeight);
     bool LabelFilter(uint data_v,uint query_v);
     void matchVertex(bool isFirstEdge,uint depth,uint data_v,float w);
     void matchVertex(int depth);
     void popVertex(uint depth,uint data_v);
     void popVertex(uint data_v,uint matchorderindex,uint depth, const std::vector<uint>&uk_neighbor);
     void popVertex(uint depth);
-    void densityFilter(uint matchorder_index,uint depth, std::vector<SingleCandidate>&singleVertexCandidate,float& maxDensity);
+    void densityFilter(uint matchorder_index,uint depth, std::vector<SingleCandidate>&singleVertexCandidate);
     void combination_helper(std::vector<std::vector<int>>& result, std::vector<int>& current, const std::vector<std::vector<uint>>& nums, int k);
     std::vector<std::vector<int>> combination(const std::vector<std::vector<uint>>& nums);
     bool LDVertexCandidateCheck(uint vertex, uint queryVertexLabel, const std::vector<uint> & needToIntersection,  std::vector<uint> &intersectresult);
@@ -119,7 +120,12 @@ private:
    bool updaterightNeighborCandidate(int matchorderindex,uint uk,uint uk_neigh,bool isFirstEdge,uint vk,const std::vector<uint>&uk_neighbor);
    void InitialLocalIndex(int matchorderindex);
    void getIntersetSingleCandidate( std::vector<SingleCandidate>&candidates,int matchorderindex,int depth);
-
+   void createGlobalSubgraph();//构建全局子图
+   bool updateGlobalSubgraph(uint v1,uint v2,uint label,float weight, std::vector<int>&match);
+   bool updateGlobalGraphHelp(int m,uint u1,uint u2,uint u1label,uint u2label, uint v1,uint v2,uint v1label,uint v2label,uint elabel,const std::vector<std::vector<uint>>&mcandidate,bool &flag);
+   void deleteGlobalSubgrah(uint v1,uint v2,std::vector<uint>&match);
+   //bool deleteGlobalGraphHelp(uint u1,uint u2,uint u1label,uint u2label, uint v1,uint v2,uint v1label,uint v2label,uint elabel,const std::vector<std::vector<uint>>&mcandidate,bool &flag);
+    bool deleteMatchRecordWithEdge(uint v1, uint v1label,uint v2, uint v2label,uint label, float &maxWeight);
 
 };
 

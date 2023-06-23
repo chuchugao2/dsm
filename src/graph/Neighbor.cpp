@@ -19,6 +19,11 @@ uint Neighbor::getVertexId() const {
         return this->edgeWeight>m.edgeWeight;
     }
 }
+bool Neighbor::operator==(const Neighbor &m) const {
+        return toVertexId == m.toVertexId &&
+               matchQueryVertexId == m.matchQueryVertexId &&
+               fromVertexId == m.fromVertexId;
+}
 
 std::pair<uint,uint> Neighbor::GetelabelAndVertexLabel() const {
     return std::make_pair(edgeLabel,toVertexLabel);
@@ -31,4 +36,10 @@ uint Neighbor::getVertexLabel() const {
 }
 uint Neighbor::GetEdgelabel() const {
     return edgeLabel;
+}
+const uint Neighbor::getMatchQueryVertexId() const{
+    return matchQueryVertexId;
+}
+const uint Neighbor::getfromVertexId() const {
+    return fromVertexId;
 }

@@ -4,16 +4,18 @@
 #include "../utils/types.h"
 #include "../graph/graph.h"
 #include "matching.h"
+#include "../graph/Subgraph.h"
 
 
 
-matching::matching(Graph& query_graph, Graph& data_graph,
+matching::matching(Graph& query_graph, Graph& data_graph,Subgraph& global_subgraph,
                    size_t max_num_results,
                    bool print_prep,
                    bool print_enum,
                    bool homo)
         : query_(query_graph)
         , data_(data_graph)
+        ,globalsubgraph_(global_subgraph)
         , max_num_results_(max_num_results)
         , print_preprocessing_results_(print_prep)
         , print_enumeration_results_(print_enum)
@@ -48,12 +50,12 @@ void matching::deleteUpdateTopK() {
 
 }
 
-void matching::AddEdge(uint v1, uint v2, uint label,float weight,uint timestamp)
+void matching::AddEdge(uint v1, uint v2, uint label,float weight)
 {
-    data_.AddEdge(v1, v2, label,weight,timestamp,1);
+    //data_.AddEdge(v1, v2, label,weight,1);
 }
 
-void matching::RemoveEdge(uint v1, uint v2)
+void matching::RemoveEdge(uint v1, uint v2,uint label)
 {
     data_.RemoveEdge(v1, v2);
 }

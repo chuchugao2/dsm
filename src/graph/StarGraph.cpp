@@ -3,10 +3,10 @@
 //
 
 #include "StarGraph.h"
-void StarGraph::setStarMaxWeight(uint w) {
+void StarGraph::setStarMaxWeight(float w) {
     maxWeight=w;
 }
-const uint StarGraph::getStarMaxWeight() {
+const float StarGraph::getStarMaxWeight() {
     return maxWeight;
 }
 void StarGraph::InitalmaxWeight() {

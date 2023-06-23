@@ -90,7 +90,7 @@ public:
 
     void AddVertex(uint id, uint label);
     void RemoveVertex(uint id);
-    void AddEdge(uint v1, uint v2, uint label,float weights,uint timestamp,uint flag);//增加边的权重限制
+    void AddEdge(uint v1, uint v2, uint label,float weights,uint flag);//增加边的权重限制
     void RemoveEdge(uint v1, uint v2);
 
     uint GetVertexLabel(uint u) const;
@@ -118,6 +118,7 @@ public:
     const vertexType GetVertexType(uint order_index,uint depth);
     std::vector<uint>GetIsolateVertexBeforeDepth(uint order_index,uint depth);
     void setBatchVertexType(uint order_index,const std::vector<uint> & vertexs, vertexType type);
+    bool isNeighbor(uint v1,uint v2);
 };
 
 

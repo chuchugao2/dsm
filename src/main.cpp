@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
     data_graph.LoadFromFile(initial_path,1);
     data_graph.PrintMetaData();
     Print_Time("Load Graphs: ", start);
+    Subgraph globalsubgraph(data_graph.NumVertices(),query_graph.NumVertices());
 
     std::cout << "------------ Preprocessing ------------" << std::endl;
     matching *mm = nullptr;
@@ -77,9 +78,9 @@ int main(int argc, char *argv[])
     Instopk *instopk= nullptr;
     start = Get_Time();
     if(algorithm=="graphflow")
-        mm = graphflow      = new Graphflow     (query_graph, data_graph, max_num_results, print_prep, print_enum, homo);
+        mm = graphflow      = new Graphflow     (query_graph, data_graph,globalsubgraph, max_num_results, print_prep, print_enum, homo);
     else if(algorithm=="instopk")
-        mm = instopk     = new Instopk     (query_graph, data_graph, max_num_results, print_prep, print_enum, homo,dist);
+        mm = instopk     = new Instopk     (query_graph, data_graph,globalsubgraph, max_num_results, print_prep, print_enum, homo,dist);
 
     mm->Preprocessing();
     Print_Time("Preprocessing: ", start);
@@ -120,6 +121,7 @@ int main(int argc, char *argv[])
             stringstream _ss;
             _ss<<"update num:"<<data_graph.updates_.size()<<"\n";
             Log::track2(_ss);
+            Log::track1(_ss);
 #ifdef PRINT_DEBUG
             Log::track1(_ss);
 
@@ -140,7 +142,7 @@ int main(int argc, char *argv[])
             }
             else if (insert.type == 'e' && insert.is_add)
             {
-                mm->AddEdge(insert.id1, insert.id2, insert.label,insert.weight,insert.timestamp);
+                mm->AddEdge(insert.id1, insert.id2, insert.label,insert.weight);
 
 //                 data_graph.AddEdge(insert.id1, insert.id2, insert.label,insert.weight,insert.timestamp,1);
                 num_e_updates ++;
@@ -152,7 +154,7 @@ int main(int argc, char *argv[])
             {
 //                mm->RemoveEdge(insert.id1, insert.id2);
 
-                mm->deleteEdge(insert.id1,insert.id2);
+                mm->RemoveEdge(insert.id1,insert.id2,insert.label);
                 num_e_updates ++;
             }
             if (reach_time_limit) break;

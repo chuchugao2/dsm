@@ -61,7 +61,7 @@ void Graph::RemoveVertex(uint id)
     vNeighbors[id].clear();
 }
 
-void Graph::AddEdge(uint v1, uint v2, uint label,float weights,uint timestamp,uint flag)
+void Graph::AddEdge(uint v1, uint v2, uint label,float weights,uint flag)
 {
     //找到大于等于v2的迭代器的位置
     auto lower = std::lower_bound(neighbors_[v1].begin(), neighbors_[v1].end(), v2);
@@ -70,24 +70,22 @@ void Graph::AddEdge(uint v1, uint v2, uint label,float weights,uint timestamp,ui
     size_t dis = std::distance(neighbors_[v1].begin(), lower);
     neighbors_[v1].insert(lower, v2);
     elabels_[v1].insert(elabels_[v1].begin() + dis, label);
-    Neighbor neighbor(v2,this->GetVertexLabel(v2),label,weights,timestamp);
+    Neighbor neighbor(v2,this->GetVertexLabel(v2),label,weights,0,0);
     vNeighbors[v1].emplace_back(neighbor);
     if(flag)
     {
         weights_[v1].insert(weights_[v1].begin()+dis,weights);
-        timestamp_[v1].insert(timestamp_[v1].begin()+dis,timestamp);
     }
 
     lower = std::lower_bound(neighbors_[v2].begin(), neighbors_[v2].end(), v1);
     dis = std::distance(neighbors_[v2].begin(), lower);
     neighbors_[v2].insert(lower, v1);
     elabels_[v2].insert(elabels_[v2].begin() + dis, label);
-    Neighbor neighbor2(v1, this->GetVertexLabel(v1),label,weights,timestamp);
+    Neighbor neighbor2(v1, this->GetVertexLabel(v1),label,weights,0,0);
     vNeighbors[v2].emplace_back(neighbor2);
     if(flag)
     {
         weights_[v2].insert(weights_[v2].begin()+dis,weights);
-        timestamp_[v2].insert(timestamp_[v2].begin()+dis,timestamp);
     }
 
 
@@ -114,7 +112,6 @@ void Graph::AddEdge(uint v1, uint v2, uint label,float weights,uint timestamp,ui
 
 void Graph::RemoveEdge(uint v1, uint v2)
 {
-
     auto lower = std::lower_bound(neighbors_[v1].begin(), neighbors_[v1].end(), v2);
     if (lower == neighbors_[v1].end() || *lower != v2)
     {
@@ -124,7 +121,6 @@ void Graph::RemoveEdge(uint v1, uint v2)
     neighbors_[v1].erase(lower);
     elabels_[v1].erase(elabels_[v1].begin() + std::distance(neighbors_[v1].begin(), lower));
     weights_[v1].erase(weights_[v1].begin()+std::distance(neighbors_[v1].begin(),lower));
-    timestamp_[v1].erase(timestamp_[v1].begin()+std::distance(neighbors_[v1].begin(),lower));
     for(auto it=vNeighbors[v1].begin();it!=vNeighbors[v1].end();it++){
         if(it->getVertexId()==v2){
            vNeighbors[v1].erase(it);
@@ -139,10 +135,18 @@ void Graph::RemoveEdge(uint v1, uint v2)
     neighbors_[v2].erase(lower);
     elabels_[v2].erase(elabels_[v2].begin() + std::distance(neighbors_[v2].begin(), lower));
     weights_[v2].erase(weights_[v2].begin()+std::distance(neighbors_[v2].begin(),lower));
-    timestamp_[v2].erase(timestamp_[v2].begin()+std::distance(neighbors_[v2].begin(),lower));
     for(auto it=vNeighbors[v2].begin();it!=vNeighbors[v2].end();it++){
         if(it->getVertexId()==v1){
             vNeighbors[v2].erase(it);
+        }
+    }
+    if(v1>v2){
+        std::swap(v1,v2);
+    }
+    for(int i=0;i<vEdge.size();i++){
+        const Edge &edge=vEdge[i];
+        if(edge.GetV1()==v1&&edge.GetV2()==v2){
+            vEdge.erase(vEdge.begin()+i);
         }
     }
     edge_count_--;
@@ -366,10 +370,11 @@ void Graph::LoadFromFile(const std::string &path,const uint flag)
             label=0;
             if(flag==0){
                 ifs>>from_id>>to_id>>label;
-                AddEdge(from_id,to_id,label,weights,timestamp,flag);
+                uint f=flag;
+                AddEdge(from_id,to_id,label,weights,f);
             }else{
                 ifs >> from_id >> to_id >> label>>weights>>timestamp;
-                AddEdge(from_id, to_id, label,weights,timestamp,flag);
+                AddEdge(from_id, to_id, label,weights,flag);
             }
 
         }
@@ -477,7 +482,7 @@ void Graph::LoadUpdateStream(const std::string &path)
         {
             uint vertex_id, label;
             ifs >> vertex_id >> label;
-            updates_.emplace('v', type == "v", vertex_id, 0u, label,0,0);
+            updates_.emplace('v', type == "v", vertex_id, 0u, label,0.0);
         }
         else
         {
@@ -485,7 +490,7 @@ void Graph::LoadUpdateStream(const std::string &path)
             float weight;
             label=0;
             ifs >> from_id >> to_id >>label>>weight>>timestamp;
-            updates_.emplace('e', type == "e", from_id, to_id, label,weight,timestamp);
+            updates_.emplace('e', type == "e", from_id, to_id, label,weight);
         }
     }
     ifs.close();
@@ -598,4 +603,38 @@ void Graph::setBatchVertexType(uint order_index, const std::vector<uint> &vertex
     for(int i = 0; i < vertexs.size(); i++){
         this->matchVertexTypes[order_index][vertexs[i]] = type;
     }
+}
+bool Graph::isNeighbor(uint v1, uint v2) {
+    const std::vector<uint> *nbrs;
+    uint other;
+    //从邻居少的节点来找边标签
+    if (GetDegree(v1) < GetDegree(v2))
+    {
+        nbrs = &GetNeighbors(v1);
+        other = v2;
+    }
+    else
+    {
+        nbrs = &GetNeighbors(v2);
+        other = v1;
+    }
+
+    long start = 0, end = nbrs->size() - 1, mid;
+    while (start <= end)
+    {
+        mid = (start + end) / 2;
+        if (nbrs->at(mid) < other)
+        {
+            start = mid + 1;
+        }
+        else if (nbrs->at(mid) > other)
+        {
+            end = mid - 1;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    return false;
 }

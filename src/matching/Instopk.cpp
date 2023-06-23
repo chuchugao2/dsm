@@ -13,8 +13,8 @@ bool edgesCmp ( const Edge&e1,const Edge&e2) {
 }
 
 
-Instopk::Instopk(Graph &query_graph, Graph &data_graph, uint max_num_results, bool print_prep, bool print_enum,
-                 bool homo,uint d): matching(query_graph, data_graph, max_num_results,
+Instopk::Instopk(Graph &query_graph, Graph &data_graph,Subgraph &subgraph, uint max_num_results, bool print_prep, bool print_enum,
+                 bool homo,uint d): matching(query_graph, data_graph,subgraph, max_num_results,
                print_prep, print_enum, homo)
                 , order_vs_(query_.NumEdges())
                 , order_csrs_(query_.NumEdges())
@@ -45,8 +45,8 @@ void Instopk::AddVertex(uint id, uint label) {
     data_.AddVertex(id, label);
     visited_.resize(id + 1, false);
 }
-void Instopk::AddEdge(uint v1, uint v2, uint label, float weight, uint timestamp) {
-    data_.AddEdge(v1, v2, label, weight, timestamp, 1);
+void Instopk::AddEdge(uint v1, uint v2, uint label, float weight) {
+    data_.AddEdge(v1, v2, label, weight, 1);
     //1.update sortEdgeList
     updateSortEdgelist(v1,v2);
     //2.update MNWinde Topologyindex
@@ -72,26 +72,7 @@ void Instopk::InitialTopK(const std::string &path) {
         }
         fp.close();
     }
-#ifdef LOG_TRACK
-    stringstream _ss;
-    _ss<<"Initial Top k"<<std::endl;
-    for(auto d:topKSet){
-        if(d!=NULL){
-            _ss<<"address "<<d;
-            _ss<<" density:"<<d->getDensity()<<" tmin:"<<d->getTmin()
-               <<" vetexs:";
-            std::vector<uint> *vs=d->getVetex();
-            for(int j=0;j<(*vs).size();j++){
-                _ss<<(*vs)[j]<<" ";
-            }
-            _ss<<std::endl;
-            Log::track1(_ss);
-            _ss.clear();
-            _ss.str("");
-        }
 
-    }
-#endif
 
 #ifdef RESULT_TRACK
     std::stringstream _ss1;
@@ -157,7 +138,7 @@ void Instopk::InitialMatching(const std::string &path) {
         }
     }
 }
-void Instopk::RemoveEdge(uint v1, uint v2) {
+void Instopk::RemoveEdge(uint v1, uint v2,uint label) {
 
 }
 void Instopk::RemoveVertex(uint id) {

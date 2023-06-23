@@ -15,7 +15,7 @@ void MatchRecord::setDensity(float d) {
     density=d;
 }
 
-std::vector<uint>& MatchRecord::getVetex() {
+const std::vector<uint>& MatchRecord::getVetex() {
     return vetexs;
 }
 void MatchRecord::AddVetex(uint u) {

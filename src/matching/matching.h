@@ -5,6 +5,7 @@
 
 #include "../utils/types.h"
 #include "../graph/graph.h"
+#include "../graph/Subgraph.h"
 
 
 class matching
@@ -12,6 +13,7 @@ class matching
 protected:
     Graph& query_; //查询图
     Graph& data_;//数据图
+    Subgraph& globalsubgraph_;//全局候选索引
 
 
     // config
@@ -35,7 +37,7 @@ protected:
 
 
 public:
-    matching(Graph& query_graph, Graph& data_graph,
+    matching(Graph& query_graph, Graph& data_graph,Subgraph& global_subgraph,
              size_t max_num_results = ULONG_MAX,
              bool print_preprocessing_results = true,
              bool print_enumeration_results = false,
@@ -44,9 +46,8 @@ public:
 
     virtual void Preprocessing();//预处理
     virtual void InitialMatching(const std::string &path);//初始化匹配顺序
-
-    virtual void AddEdge(uint v1, uint v2, uint label,float weight,uint timestamp);//增加边
-    virtual void RemoveEdge(uint v1, uint v2);//去除边
+    virtual void AddEdge(uint v1, uint v2, uint label,float weight);//增加边
+    virtual void RemoveEdge(uint v1, uint v2,uint label);//去除边
     virtual void AddVertex(uint id, uint label);//增加节点
     virtual void RemoveVertex(uint id);//去除节点
 
