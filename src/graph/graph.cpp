@@ -124,6 +124,7 @@ void Graph::RemoveEdge(uint v1, uint v2)
     for(auto it=vNeighbors[v1].begin();it!=vNeighbors[v1].end();it++){
         if(it->getVertexId()==v2){
            vNeighbors[v1].erase(it);
+            break;
         }
     }
     lower = std::lower_bound(neighbors_[v2].begin(), neighbors_[v2].end(), v1);
@@ -138,6 +139,7 @@ void Graph::RemoveEdge(uint v1, uint v2)
     for(auto it=vNeighbors[v2].begin();it!=vNeighbors[v2].end();it++){
         if(it->getVertexId()==v1){
             vNeighbors[v2].erase(it);
+            break;
         }
     }
     if(v1>v2){
@@ -147,6 +149,7 @@ void Graph::RemoveEdge(uint v1, uint v2)
         const Edge &edge=vEdge[i];
         if(edge.GetV1()==v1&&edge.GetV2()==v2){
             vEdge.erase(vEdge.begin()+i);
+            break;
         }
     }
     edge_count_--;

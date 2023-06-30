@@ -43,12 +43,16 @@ public:
     std::vector<uint>queryVertexIndexInlabel;//每个查询点在label数组中的索引号
     std::vector<float>LocalStarIndex;//局部索引
     std::vector<std::vector<int>>matchLeftNeighborSum;//所有节点左邻居的个数
-    std::vector<std::vector<int>>matchVetexLeftNeighbor;//所有匹配序列中左邻居组合数
-    std::vector<vector<float>>matchVetexSumweight;//每种组合更新得到的最大权值
-    std::vector<std::vector<int>>leftNeighborIdSum;//每个节点左邻居id和
+    std::vector<std::vector<size_t>>matchVetexLeftNeighbor;//所有匹配序列中左邻居组合数
+    std::vector<vector<StarGraph*>>matchVetexSumweight;//每种组合更新得到的最大权值
+    std::vector<std::vector<size_t>>leftNeighborIdSum;//每个节点左邻居id和
+    bool isUpdateIntopkset;
     long long total_search_time=0;
     long long total_update_gloabalsubgraph_time=0;
     long long total_print_time=0;
+    long long total_delete_update_time=0;
+    long long total_delete_time=0;
+    long long total_delete_print_time=0;
     long long total_densityFilter_time=0;
     long long total_update_globalIndex_time=0;
     long long total_update_localIndex_time=0;
@@ -69,7 +73,7 @@ public:
     void AddVertex(uint id, uint label) override;
     void RemoveVertex(uint id) override;
     void InitialTopK(const std::string &path) override;//得到初始化之后的Top k结果集合
-    void updateTopK(uint num) override;
+    void updateTopK() override;
     void deleteEdge(uint v1,uint v2) override;
     void deleteUpdateTopK() override;
     void GetMemoryCost(size_t &num_edges, size_t &num_vertices) override;
@@ -83,10 +87,10 @@ private:
     void CreateStarIndex();
     float GetBackWeight(uint order_index,uint depth);
     void updateStarIndex(uint match_index,uint caddidate_v,const std::vector<uint>&canditeQueryVertexs);
-    void updateStarIndex(bool isAdd,uint match_index,uint caddidate_v,uint candidate_u,int candidate_v_index);
+    void updateStarIndex(uint match_index,uint caddidate_v,uint candidate_u,int candidate_v_index);
     vector<int> EdgeisInMatchOrder(Edge *edge);
     vector<int> EdgeisInMatchOrder(uint v1,uint v2,uint v1label,uint v2label,uint velabel);
-    void searchMatches(int depth,uint matchorderindex,searchType flag,float maxWeight);
+    void searchMatches(int depth,uint matchorderindex,searchType flag);
     bool LabelFilter(uint data_v,uint query_v);
     void matchVertex(bool isFirstEdge,uint depth,uint data_v,float w);
     void matchVertex(int depth);
@@ -123,9 +127,12 @@ private:
    void createGlobalSubgraph();//构建全局子图
    bool updateGlobalSubgraph(uint v1,uint v2,uint label,float weight, std::vector<int>&match);
    bool updateGlobalGraphHelp(int m,uint u1,uint u2,uint u1label,uint u2label, uint v1,uint v2,uint v1label,uint v2label,uint elabel,const std::vector<std::vector<uint>>&mcandidate,bool &flag);
-   void deleteGlobalSubgrah(uint v1,uint v2,std::vector<uint>&match);
-   //bool deleteGlobalGraphHelp(uint u1,uint u2,uint u1label,uint u2label, uint v1,uint v2,uint v1label,uint v2label,uint elabel,const std::vector<std::vector<uint>>&mcandidate,bool &flag);
-    bool deleteMatchRecordWithEdge(uint v1, uint v1label,uint v2, uint v2label,uint label, float &maxWeight);
+   void updateglobalVertexStarIndex(uint u1,uint v1,uint u1label,uint elabel,uint n, const std::vector<std::vector<uint>>&mcandidate);//新增v1候选节点，并更新全局索引
+   void deleteGlobalSubgraph(uint v1,uint v2,std::vector<int>&match);
+   void deleteUpdateglobalVertexStarIndex(uint u1,uint v1,uint v2,uint n);
+   bool deleteGlobalSubgraphHelp(int m,uint u1,uint u2,uint u1label,uint u2label, uint v1,uint v2,uint v1label,uint v2label, std::vector<std::vector<uint>>&mcandidate);
+   void deleteGlobalGraphCandidateEdges(uint m,uint u1,uint v1,std::vector<std::vector<uint>>&mcandidate);
+   bool deleteMatchRecordWithEdge(uint v1, uint v1label,uint v2, uint v2label,uint label);
 
 };
 

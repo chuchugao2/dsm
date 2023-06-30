@@ -57,7 +57,7 @@ void Instopk::AddEdge(uint v1, uint v2, uint label, float weight) {
     //3.2 Initial pointers
     InitialPointers();
     SearchMatchesWithSortedList();
-    updateTopK(0);
+    updateTopK();
 }
 void Instopk::GetMemoryCost(size_t &num_edges, size_t &num_vertices) {
     num_edges = 0ul;
@@ -95,7 +95,7 @@ void Instopk::deleteUpdateTopK() {
 void Instopk::deleteEdge(uint v1, uint v2) {
 
 }
-void Instopk::updateTopK(uint num) {
+void Instopk::updateTopK() {
     stringstream _ss;
 #ifdef RESULT_TRACK
     _ss<<"after insert "<<std::endl;

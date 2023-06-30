@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
     std::chrono::high_resolution_clock::time_point start, lstart;
 
     Log::init_track1("/home/gaochuchu/gcc/dsm/src/log/loginfo1.txt");
+    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/comupute_time.txt");
 
     std::string path="/home/gaochuchu/gcc/dsm/src/log/";
     std::string initial_result_path="/home/gaochuchu/gcc/baseline/src/result/";
@@ -58,7 +59,7 @@ int main(int argc, char *argv[])
         initial_result_path+=query_info;
     }
     Log::init_track2(path);
-
+    Log::track3(query_info);
 
     start = Get_Time();
     std::cout << "----------- Loading graphs ------------" << std::endl;
@@ -109,7 +110,7 @@ int main(int argc, char *argv[])
     }
     std::cout << "--------- Incremental Matching --------" << std::endl;
     data_graph.LoadUpdateStream(stream_path);
-    int update_len=data_graph.updates_.size();
+    int update_len=data_graph.updates_.size()/2;
     mm->clearPositiveNum();
     size_t num_v_updates = 0ul, num_e_updates = 0ul;
 

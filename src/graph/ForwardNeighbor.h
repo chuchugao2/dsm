@@ -13,6 +13,7 @@ protected:
     uint toVertexId=0;
     uint toVertexLabel;
     uint edgeLabel;
+    uint matchDataVertexId=0;
     float maxWeight=mw;
 public:
     ForwardNeighbor(){};
@@ -23,14 +24,20 @@ public:
     const bool operator>(const ForwardNeighbor &f){
       if(this->edgeLabel!=f.edgeLabel)
           return this->edgeLabel>f.edgeLabel;
-      else{
+      else if(this->toVertexLabel!=f.toVertexLabel){
           return this->toVertexLabel>f.toVertexLabel;
       }
+      else{
+          return this->toVertexId>f.toVertexId;
+      }
+
     };
     const float GetMaxWeight();
     const std::pair<uint,uint> GetelabelAndVertexLabel() ;
     const uint GetVetexId()const;
     const uint GetElabel()const;
+    void SetMatchDataVertexId(uint id);
+    const uint GetMatchDataVertexId()const;
 };
 
 #endif //BASELINE_FORWARDNEIGHBOR_H

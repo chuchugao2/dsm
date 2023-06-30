@@ -15,6 +15,12 @@ uint Neighbor::getVertexId() const {
     {
         return this->toVertexLabel>m.toVertexLabel;
     }
+    else if(this->fromVertexId!=m.fromVertexId){
+        return this->fromVertexId>m.fromVertexId;
+    }
+    else if(this->matchQueryVertexId!=m.matchQueryVertexId){
+        return this->matchQueryVertexId>m.matchQueryVertexId;
+    }
     else{
         return this->edgeWeight>m.edgeWeight;
     }

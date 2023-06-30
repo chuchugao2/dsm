@@ -29,6 +29,10 @@ public:
     toVertexLabel(toVertexLabel_),
     edgeLabel(edgeLabel_),
     edgeWeight(0){};
+    Neighbor(uint toVertexId_,uint matchQueryVertexId_,uint fromVertexId_):
+    toVertexId(toVertexId_),
+    matchQueryVertexId(matchQueryVertexId_),
+    fromVertexId(fromVertexId_){};
     uint getVertexId() const;
     std::pair<uint,uint> GetelabelAndVertexLabel() const;
      bool operator>(const Neighbor &m) const;

@@ -14,6 +14,7 @@ class StarGraph{
 protected:
     std::vector<ForwardNeighbor*>queryVertex;
     float maxWeight;
+    uint matchDataVertexId=UINT_MAX;
 public:
     StarGraph(){};
     StarGraph(std::vector<ForwardNeighbor*>q){
@@ -27,6 +28,8 @@ public:
     void computeMaxWeight();
     const float getStarMaxWeight();
     void setStarMaxWeight(float w);
+    void setMatchDataVertexId(uint id);
+    const uint getMatchDataVertexId();
     const uint GetForwardNeighborNum();
     std::vector<ForwardNeighbor*>& GetqueryVertex();
 };

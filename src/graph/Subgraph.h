@@ -28,7 +28,7 @@ public:
     Subgraph(uint vertexSize,uint queryVertexSize);
     void addQueryVertexCandidate(uint q,uint v);
     bool AddEdge(uint u1,uint u2,uint v1,uint v1label,uint v2,uint v2label,uint label,float weight);
-    void RemoveEdge(uint v1,uint v2,uint u1,uint u2);
+    bool RemoveEdge(uint v1,uint v2,uint u1,uint u2);
     void deleteQueryVertexCandidate(uint q,uint v);
     const std::vector<Neighbor>& GetVNeighbors(uint v) const ;
 };

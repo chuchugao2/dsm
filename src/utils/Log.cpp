@@ -5,6 +5,7 @@
 #include "Log.h"
 ofstream* Log::f_track1 = NULL;
 ofstream* Log::f_track2 = NULL;
+ofstream* Log::f_track3 = NULL;
 
 void Log::init_track1(std::string track_path) {
     if(Log::f_track1!=NULL){
@@ -28,6 +29,16 @@ void Log::init_track2(std::string track_path) {
     }
 }
 
+void Log::init_track3(std::string track_path) {
+    if(Log::f_track3!=NULL){
+        exit(-1);
+    }
+    Log::f_track3=new ofstream(track_path.c_str(),ios::out);
+    if(!(*f_track3)){
+        cout<<"err failed open"<<track_path<<endl;
+        exit(-1);
+    }
+}
 
 void Log::track1(std::stringstream &ss) {
     Log::track1(ss.str(),"");
@@ -53,12 +64,24 @@ void Log::track2(std::string _s, std::string _lat){
     Log::f_track2->flush();
 }
 
+void Log::track3(std::stringstream &ss) {
+    Log::track3(ss.str(),"");
+}
+void Log::track3(std::string _s, std::string _lat){
+    if(Log::f_track3==NULL){
+        cout<<"err NULL f_track"<<endl;
+        exit(-1);
+    }
+    *(Log::f_track3)<<_s<<_lat;
+    Log::f_track3->flush();
+}
 
 
 
 void Log::close() {
     Log::f_track1->close();
     Log::f_track2->close();
+    Log::f_track3->close();
 }
 void Log::finalize() {
 
@@ -71,6 +94,11 @@ void Log::finalize() {
         Log::f_track2->close();
         delete Log::f_track2;
         Log::f_track2=NULL;
+    }
+    if(Log::f_track3!=NULL){
+        Log::f_track3->close();
+        delete Log::f_track3;
+        Log::f_track3=NULL;
     }
 
 }

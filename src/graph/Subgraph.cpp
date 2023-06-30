@@ -41,29 +41,44 @@ bool Subgraph::AddEdge(uint u1,uint u2,uint v1, uint v1label,uint v2,uint v2labe
     return true;
 }
 
-void Subgraph::RemoveEdge(uint v1, uint v2,uint u1,uint u2)
+bool Subgraph::RemoveEdge(uint v1, uint v2,uint u1,uint u2)
 {
+    Neighbor neighbor(v2,u2,u1);
+    if(!setVNeighbors[v1].count(neighbor)){
+        return false;
+    }
     for(auto it=vNeighbors[v1].begin();it!=vNeighbors[v1].end();it++){
-        if(it->getVertexId()==v2&&it->getMatchQueryVertexId()==u2&&it->getfromVertexId()==u1){
+        if((*it)==neighbor){
             vNeighbors[v1].erase(it);
-        }
-    }
-
-    for(auto it=vNeighbors[v2].begin();it!=vNeighbors[v2].end();it++){
-        if(it->getVertexId()==v1&&it->getMatchQueryVertexId()==u1&&it->getfromVertexId()==u2){
-            vNeighbors[v2].erase(it);
-        }
-    }
-    edge_count_--;
-}
-void Subgraph::deleteQueryVertexCandidate(uint q, uint v) {
-    std::vector<uint>&candidate=matchCandidate[q];
-    for(int i=0;i<candidate.size();i++){
-        if(candidate[i]==v){
-            candidate.erase(candidate.begin()+i);
             break;
         }
     }
+    setVNeighbors[v1].erase(neighbor);
+
+    Neighbor neighbor2(v1,u1,u2);
+    if(!setVNeighbors[v2].count(neighbor2)){
+        return false;
+    }
+    for(auto it=vNeighbors[v2].begin();it!=vNeighbors[v2].end();it++){
+        if((*it)==neighbor2){
+            vNeighbors[v2].erase(it);
+            break;
+        }
+    }
+    setVNeighbors[v2].erase(neighbor2);
+    edge_count_--;
+    return true;
+}
+void Subgraph::deleteQueryVertexCandidate(uint q, uint v) {
+    std::vector<uint>&candidate=matchCandidate[q];
+    auto it=std::lower_bound(candidate.begin(),candidate.end(),v);
+
+    if (it != candidate.end() && *it ==v) {
+        // É¾³ıÄ¿±êÔªËØ
+        candidate.erase(it);
+    }
+
+
 }
 const std::vector<Neighbor>& Subgraph::GetVNeighbors(uint v) const {
     return vNeighbors[v];
