@@ -57,7 +57,7 @@ void matching::AddEdge(uint v1, uint v2, uint label,float weight)
 
 void matching::RemoveEdge(uint v1, uint v2,uint label)
 {
-    data_.RemoveEdge(v1, v2);
+    data_.RemoveEdge(0,v1, v2);
 }
 
 void matching::AddVertex(uint id, uint label)

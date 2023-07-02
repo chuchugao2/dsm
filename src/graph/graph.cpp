@@ -110,7 +110,7 @@ void Graph::AddEdge(uint v1, uint v2, uint label,float weights,uint flag)
     }*/
 }
 
-void Graph::RemoveEdge(uint v1, uint v2)
+void Graph::RemoveEdge(uint flag,uint v1, uint v2)
 {
     auto lower = std::lower_bound(neighbors_[v1].begin(), neighbors_[v1].end(), v2);
     if (lower == neighbors_[v1].end() || *lower != v2)
@@ -121,12 +121,13 @@ void Graph::RemoveEdge(uint v1, uint v2)
     neighbors_[v1].erase(lower);
     elabels_[v1].erase(elabels_[v1].begin() + std::distance(neighbors_[v1].begin(), lower));
     weights_[v1].erase(weights_[v1].begin()+std::distance(neighbors_[v1].begin(),lower));
-    for(auto it=vNeighbors[v1].begin();it!=vNeighbors[v1].end();it++){
+    vNeighbors[v1].erase(vNeighbors[v1].begin()+std::distance(neighbors_[v1].begin(),lower));
+   /* for(auto it=vNeighbors[v1].begin();it!=vNeighbors[v1].end();it++){
         if(it->getVertexId()==v2){
            vNeighbors[v1].erase(it);
             break;
         }
-    }
+    }*/
     lower = std::lower_bound(neighbors_[v2].begin(), neighbors_[v2].end(), v1);
     if (lower == neighbors_[v2].end() || *lower != v1)
     {
@@ -136,20 +137,17 @@ void Graph::RemoveEdge(uint v1, uint v2)
     neighbors_[v2].erase(lower);
     elabels_[v2].erase(elabels_[v2].begin() + std::distance(neighbors_[v2].begin(), lower));
     weights_[v2].erase(weights_[v2].begin()+std::distance(neighbors_[v2].begin(),lower));
-    for(auto it=vNeighbors[v2].begin();it!=vNeighbors[v2].end();it++){
-        if(it->getVertexId()==v1){
-            vNeighbors[v2].erase(it);
-            break;
+    vNeighbors[v2].erase(vNeighbors[v2].begin()+std::distance(neighbors_[v2].begin(),lower));
+    if(flag){
+        if(v1>v2){
+            std::swap(v1,v2);
         }
-    }
-    if(v1>v2){
-        std::swap(v1,v2);
-    }
-    for(int i=0;i<vEdge.size();i++){
-        const Edge &edge=vEdge[i];
-        if(edge.GetV1()==v1&&edge.GetV2()==v2){
-            vEdge.erase(vEdge.begin()+i);
-            break;
+        for(int i=0;i<vEdge.size();i++){
+            const Edge &edge=vEdge[i];
+            if(edge.GetV1()==v1&&edge.GetV2()==v2){
+                vEdge.erase(vEdge.begin()+i);
+                break;
+            }
         }
     }
     edge_count_--;

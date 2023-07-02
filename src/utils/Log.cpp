@@ -33,7 +33,7 @@ void Log::init_track3(std::string track_path) {
     if(Log::f_track3!=NULL){
         exit(-1);
     }
-    Log::f_track3=new ofstream(track_path.c_str(),ios::out);
+    Log::f_track3=new ofstream(track_path.c_str(),ios::app);
     if(!(*f_track3)){
         cout<<"err failed open"<<track_path<<endl;
         exit(-1);

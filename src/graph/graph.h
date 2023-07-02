@@ -91,7 +91,7 @@ public:
     void AddVertex(uint id, uint label);
     void RemoveVertex(uint id);
     void AddEdge(uint v1, uint v2, uint label,float weights,uint flag);//增加边的权重限制
-    void RemoveEdge(uint v1, uint v2);
+    void RemoveEdge(uint flag,uint v1, uint v2);//flag=0表示是graphflow,flag=1 instopk
 
     uint GetVertexLabel(uint u) const;
     float GetEdgeWeight(uint v1,uint v2)const;

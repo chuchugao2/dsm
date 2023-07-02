@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     std::chrono::high_resolution_clock::time_point start, lstart;
 
     Log::init_track1("/home/gaochuchu/gcc/dsm/src/log/loginfo1.txt");
-    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/comupute_time.txt");
+    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/comupute_time2.txt");
 
     std::string path="/home/gaochuchu/gcc/dsm/src/log/";
     std::string initial_result_path="/home/gaochuchu/gcc/baseline/src/result/";

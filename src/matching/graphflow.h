@@ -49,15 +49,18 @@ public:
     bool isUpdateIntopkset;
     long long total_search_time=0;
     long long total_update_gloabalsubgraph_time=0;
+    long long total_updateglobalVertexStarIndex_time=0;
+    long long total_updateglobalCandidateEdge_time=0;
     long long total_print_time=0;
     long long total_delete_update_time=0;
     long long total_delete_time=0;
     long long total_delete_print_time=0;
     long long total_densityFilter_time=0;
-    long long total_update_globalIndex_time=0;
+    long long total_deleteUpdateglobalVertexStarIndex_time=0;
+    long long total_deleteGlobalGraphCandidateEdges_time=0;
     long long total_update_localIndex_time=0;
-    long long total_addMatchResult_time=0;
-    long long subtime_in_local_index=0;
+    long long total_deleteGlobalSubgraphHelp_time=0;
+    long long total_removeEdge=0;
 
 
 public:
