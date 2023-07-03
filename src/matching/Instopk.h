@@ -58,7 +58,7 @@ public:
     void AddVertex(uint id, uint label) override;
     void RemoveVertex(uint id) override;
     void InitialTopK(const std::string &path) override;//得到初始化之后的Top k结果集合
-    void updateTopK(uint num) override;
+    void updateTopK() override;
     void deleteEdge(uint v1,uint v2) override;
     void deleteUpdateTopK() override;
     void GetMemoryCost(size_t &num_edges, size_t &num_vertices) override;

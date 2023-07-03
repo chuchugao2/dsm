@@ -594,6 +594,9 @@ void Graphflow::updateTopK() {
         copy(allMatchRecords.begin(),allMatchRecords.begin()+k,topKSet.begin());
     }*/
     stringstream _ss;
+    if(!isUpdateIntopkset){
+        return;
+    }
 #ifdef LOG_TRACK
     for(auto d:topKSet){
         _ss<<"address "<<d;
@@ -1166,6 +1169,9 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
     //update the index
     start=Get_Time();
     vector<int>match=EdgeisInMatchOrder(v1,v2,v1label,v2label,label);
+    if(match.size()==0){
+        return;
+    }
     for(int i=0;i<match.size();i++){
         uint u1=order_vs_[match[i]][0];
         uint u2=order_vs_[match[i]][1];
