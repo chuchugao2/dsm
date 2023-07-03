@@ -55,7 +55,7 @@ public:
 
     virtual void clearAllMatches();
     virtual void InitialTopK(const std::string &path);
-    virtual void updateTopK(uint num);//更新Top k序列
+    virtual void updateTopK();//更新Top k序列
     virtual void deleteEdge(uint v1,uint v2);
     virtual void deleteUpdateTopK();
     virtual void PrintAverageTime(int len);

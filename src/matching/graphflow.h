@@ -46,6 +46,7 @@ public:
     std::vector<std::vector<int>>matchVetexLeftNeighbor;//所有匹配序列中左邻居组合数
     std::vector<vector<float>>matchVetexSumweight;//每种组合更新得到的最大权值
     std::vector<std::vector<int>>leftNeighborIdSum;//每个节点左邻居id和
+    bool isUpdateIntopkset= false;
     long long total_search_time=0;
     long long total_print_time=0;
     long long total_densityFilter_time=0;
@@ -68,7 +69,7 @@ public:
     void AddVertex(uint id, uint label) override;
     void RemoveVertex(uint id) override;
     void InitialTopK(const std::string &path) override;//得到初始化之后的Top k结果集合
-    void updateTopK(uint num) override;
+    void updateTopK() override;
     void deleteEdge(uint v1,uint v2) override;
     void deleteUpdateTopK() override;
     void GetMemoryCost(size_t &num_edges, size_t &num_vertices) override;
@@ -92,7 +93,7 @@ private:
     void popVertex(uint depth,uint data_v);
     void popVertex(uint data_v,uint matchorderindex,uint depth, const std::vector<uint>&uk_neighbor);
     void popVertex(uint depth);
-    void densityFilter(uint matchorder_index,uint depth, std::vector<SingleCandidate>&singleVertexCandidate,float& maxDensity);
+    void densityFilter(uint matchorder_index,uint depth, std::vector<SingleCandidate>&singleVertexCandidate);
     void combination_helper(std::vector<std::vector<int>>& result, std::vector<int>& current, const std::vector<std::vector<uint>>& nums, int k);
     std::vector<std::vector<int>> combination(const std::vector<std::vector<uint>>& nums);
     bool LDVertexCandidateCheck(uint vertex, uint queryVertexLabel, const std::vector<uint> & needToIntersection,  std::vector<uint> &intersectresult);

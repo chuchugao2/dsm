@@ -41,7 +41,7 @@ void matching::InitialMatching(const std::string &path)
 void matching::InitialTopK(const std::string &path) {
 
 }
-void matching::updateTopK(uint num) {
+void matching::updateTopK() {
 
 }
 void matching::deleteUpdateTopK() {
