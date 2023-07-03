@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 {
     CLI::App app{"App description"};
 
-    std::string query_path = "", initial_path = "", stream_path = "",result_path="",query_info="",algorithm="instopk";
+    std::string query_path = "", initial_path = "", stream_path = "",result_path="",query_info="",algorithm="graphflow";
     uint max_num_results = UINT_MAX, time_limit = UINT_MAX, initial_time_limit = UINT_MAX;
     uint dist=2;
     bool print_prep = true, print_enum = false, homo = false, report_initial = true;
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
             {
 //                mm->RemoveEdge(insert.id1, insert.id2);
 
-                mm->deleteEdge(insert.id1,insert.id2);
+                //mm->deleteEdge(insert.id1,insert.id2);
                 num_e_updates ++;
             }
             if (reach_time_limit) break;

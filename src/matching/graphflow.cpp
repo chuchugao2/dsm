@@ -1681,6 +1681,7 @@ void Graphflow::densityFilter(uint matchorder_index,uint depth,std::vector<Singl
     }
     float kw=topKSet.back()->getDensity();
     float sumWeight=0;
+    sumWeight+= this->match[depth-1].getSumWeight();
     //2.ÀûÓÃsingleVertex¼ôÖ¦
 /*    bool flag= false;
     for(int i=depth-1;i>=0;i--) {
