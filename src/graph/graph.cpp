@@ -96,15 +96,20 @@ void Graph::AddEdge(uint v1, uint v2, uint label,float weights,uint timestamp,ui
     {
         std::swap(v1,v2);
     }
+
     Edge edge(v1,v2,this->GetVertexLabel(v1),this->GetVertexLabel(v2),label,weights);
-    this->vEdge.emplace_back(edge);
+    vEdge.push_back(edge);
+    /*auto lower2 = std::lower_bound(vEdge.begin(), vEdge.end(), edge);
+    if (lower2 != vEdge.end() && *lower2 == edge) return;
+    size_t dis2 = std::distance(vEdge.begin(), lower2);
+    this->vEdge.insert(vEdge.begin()+dis2,edge);*/
     edge_count_++;
     elabel_count_ = std::max(elabel_count_, label + 1);
 }
 
 void Graph::RemoveEdge(uint v1, uint v2)
 {
-
+    uint label= std::get<2>(GetEdgeLabel(v1,v2));
     auto lower = std::lower_bound(neighbors_[v1].begin(), neighbors_[v1].end(), v2);
     if (lower == neighbors_[v1].end() || *lower != v2)
     {
@@ -144,13 +149,24 @@ void Graph::RemoveEdge(uint v1, uint v2)
     {
         std::swap(v1,v2);
     }
-
-    for(auto it=vEdge.begin();it!=vEdge.end();it++){
+    Edge e(v1,v2,label);
+    /*auto lower2 = std::lower_bound(vEdge.begin(), vEdge.end(), e);
+    if (lower2 == vEdge.end() || *lower2 != e)
+    {
+        std::cout << "deletion error" << std::endl;
+        exit(-1);
+    }
+    vEdge.erase(lower2);*/
+    auto it=std::find(vEdge.begin(), vEdge.end(),e);
+    if(it!=vEdge.end()){
+        vEdge.erase(it);
+    }
+   /* for(auto it=vEdge.begin();it!=vEdge.end();it++){
         if((*it).GetV1()==v1&&(*it).GetV2()==v2){
             it=vEdge.erase(it);
             break;
         }
-    }
+    }*/
     edge_count_--;
 }
 

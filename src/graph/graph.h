@@ -30,6 +30,8 @@ private:
 public:
     Edge(uint v1_, uint v2_, uint v1Label_, uint v2Label_, uint eLabel_,float eweight_):v1(v1_),v2(v2_),v1Label(v1Label_),v2Label(v2Label_),eLabel(eLabel_),eWeight(eweight_){
     }
+    Edge(uint v1_, uint v2_,  uint eLabel_):v1(v1_),v2(v2_),eLabel(eLabel_){
+    }
     const uint GetV1() const{return this->v1;}
     const uint GetV2() const{return this->v2;}
     const uint GetV1Label() const{return this->v1Label;}
@@ -50,6 +52,9 @@ public:
         }
         else
             return v2<edge.v2;
+    }
+    bool operator!=(const Edge &edge)const{
+        return (v1!=edge.v1)||(v2!=edge.v2);
     }
 };
 
