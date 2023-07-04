@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.6.3)
 set(CMAKE_CXX_STANDARD 17)
 set(SRCS main.cpp)
-FIND_PACKAGE( OpenMP REQUIRED)
+#FIND_PACKAGE( OpenMP REQUIRED)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 #增加当前文件夹下的子文件夹，model1,model2，model3文件夹为子文件夹，进入该文件夹执行其目录下的CMakeLists.txt文件
 add_subdirectory(graph)

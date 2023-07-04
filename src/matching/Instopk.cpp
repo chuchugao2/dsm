@@ -157,7 +157,7 @@ void Instopk::InitialMatching(const std::string &path) {
         }
     }
 }
-void Instopk::RemoveEdge(uint v1, uint v2) {
+void Instopk::RemoveEdge(uint v1, uint v2,uint label) {
 
 }
 void Instopk::RemoveVertex(uint id) {

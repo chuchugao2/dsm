@@ -15,6 +15,12 @@ void StarGraph::InitalmaxWeight() {
 const uint StarGraph::GetForwardNeighborNum() {
     return queryVertex.size();
 }
+const uint StarGraph::getMatchDataVertexId() {
+    return MatchDataVertexId;
+}
+void StarGraph::setMatchDataVertexId(uint id) {
+    MatchDataVertexId=id;
+}
 StarGraph::~StarGraph() {
     for(int i=0;i<queryVertex.size();i++){
         delete queryVertex[i];

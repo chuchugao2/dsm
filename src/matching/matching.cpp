@@ -53,7 +53,7 @@ void matching::AddEdge(uint v1, uint v2, uint label,float weight,uint timestamp)
     data_.AddEdge(v1, v2, label,weight,timestamp,1);
 }
 
-void matching::RemoveEdge(uint v1, uint v2)
+void matching::RemoveEdge(uint v1, uint v2,uint label)
 {
     data_.RemoveEdge(v1, v2);
 }

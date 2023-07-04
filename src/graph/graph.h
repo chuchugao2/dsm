@@ -15,6 +15,7 @@
 #include "MatchRecord.h"
 #include "Neighbor.h"
 #include "StarGraph.h"
+#include "../utils/Log.h"
 
 
 class Edge{
@@ -77,6 +78,7 @@ public:
    // std::vector<std::vector<std::vector<int>>> LDRecord;
     //std::vector<std::vector<std::vector<ForwardNeighbor>>> forwardNeighbors;//前向邻居
     std::vector<std::vector<int>>isolatedRecord;//孤立节点的集合索引
+    long long test=0;
 
 
 public:

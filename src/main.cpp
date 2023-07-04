@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 
     std::chrono::high_resolution_clock::time_point start, lstart;
 
-    Log::init_track1("/home/gaochuchu/gcc/dsm/src/log/loginfo1.txt");
+    Log::init_track1("/home/gaochuchu/gcc/dsm/src/log/loginfo2.txt");
 
     std::string path="/home/gaochuchu/gcc/dsm/src/log/";
     std::string initial_result_path="/home/gaochuchu/gcc/baseline/src/result/";
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
     }
     std::cout << "--------- Incremental Matching --------" << std::endl;
     data_graph.LoadUpdateStream(stream_path);
-    int update_len=data_graph.updates_.size();
+    int update_len=data_graph.updates_.size()/2;
     mm->clearPositiveNum();
     size_t num_v_updates = 0ul, num_e_updates = 0ul;
 
@@ -120,6 +120,7 @@ int main(int argc, char *argv[])
             stringstream _ss;
             _ss<<"update num:"<<data_graph.updates_.size()<<"\n";
             Log::track2(_ss);
+            Log::track1(_ss);
 #ifdef PRINT_DEBUG
             Log::track1(_ss);
 
@@ -150,7 +151,7 @@ int main(int argc, char *argv[])
             }
             else if (insert.type == 'e' && !insert.is_add)
             {
-//                mm->RemoveEdge(insert.id1, insert.id2);
+                mm->RemoveEdge(insert.id1, insert.id2,insert.label);
 
                 //mm->deleteEdge(insert.id1,insert.id2);
                 num_e_updates ++;

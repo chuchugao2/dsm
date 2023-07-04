@@ -39,7 +39,7 @@ public:
     std::vector<std::vector<std::vector<uint>>>rightNeighbor;//匹配索引号，id号
     //std::vector<LocalIndex>queryLocalIndexs;
     std::vector<std::vector<std::vector<int>>>globalVkMatchUk;//<vk,ak,uk>
-    std::vector<std::vector<uint>>labelToQueryVertex;//每个标签对应的查询点标签
+    std::vector<std::vector<uint>>labelToQueryVertex;//每个标签对应的查询点
     std::vector<uint>queryVertexIndexInlabel;//每个查询点在label数组中的索引号
     std::vector<float>LocalStarIndex;//局部索引
     std::vector<std::vector<int>>matchLeftNeighborSum;//所有节点左邻居的个数
@@ -52,8 +52,9 @@ public:
     long long total_densityFilter_time=0;
     long long total_update_globalIndex_time=0;
     long long total_update_localIndex_time=0;
-    long long total_addMatchResult_time=0;
-    long long subtime_in_local_index=0;
+    long long total_delete_time=0;
+    long long total_delete_update_time=0;
+    long long total_delete_removeEdge_time=0;
 
 
 public:
@@ -65,7 +66,7 @@ public:
     void InitialMatching(const std::string &path) override;
 
     void AddEdge(uint v1, uint v2, uint label,float weight,uint timestamp) override;
-    void RemoveEdge(uint v1, uint v2) override;
+    void RemoveEdge(uint v1, uint v2,uint label) override;
     void AddVertex(uint id, uint label) override;
     void RemoveVertex(uint id) override;
     void InitialTopK(const std::string &path) override;//得到初始化之后的Top k结果集合
@@ -78,7 +79,7 @@ private:
     void GenerateMatchingOrder();
     void FindMatches(uint flag,uint order_index, uint depth,
                      std::vector<uint> m, size_t &num_results,float density_s); //flag==0 initial flag==1 update
-    bool addMatchRecords(MatchRecord* r);
+    int addMatchRecords(MatchRecord* r);
     void addStarGraph(StarGraph *s);
     void CreateStarIndex();
     float GetBackWeight(uint order_index,uint depth);
@@ -120,6 +121,9 @@ private:
    bool updaterightNeighborCandidate(int matchorderindex,uint uk,uint uk_neigh,bool isFirstEdge,uint vk,const std::vector<uint>&uk_neighbor);
    void InitialLocalIndex(int matchorderindex);
    void getIntersetSingleCandidate( std::vector<SingleCandidate>&candidates,int matchorderindex,int depth);
+   void deleteUpdateglobalVertexStarIndex(uint u1,uint v1,uint n);
+   void deleteUpdateStarIndex(uint v1,uint v2,std::vector<int>&match);
+   bool deleteMatchRecordWithEdge(uint v1, uint v1label,uint v2, uint v2label,uint label,std::vector<int>&match);
 
 
 };
