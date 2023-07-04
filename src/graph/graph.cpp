@@ -145,11 +145,10 @@ void Graph::RemoveEdge(uint v1, uint v2)
         }
     }
 
-    if(v1>v2)
+  /*  if(v1>v2)
     {
         std::swap(v1,v2);
-    }
-    Edge e(v1,v2,label);
+    }*/
     /*auto lower2 = std::lower_bound(vEdge.begin(), vEdge.end(), e);
     if (lower2 == vEdge.end() || *lower2 != e)
     {
@@ -157,10 +156,11 @@ void Graph::RemoveEdge(uint v1, uint v2)
         exit(-1);
     }
     vEdge.erase(lower2);*/
+    /*Edge e(v1,v2,label);
     auto it=std::find(vEdge.begin(), vEdge.end(),e);
     if(it!=vEdge.end()){
         vEdge.erase(it);
-    }
+    }*/
    /* for(auto it=vEdge.begin();it!=vEdge.end();it++){
         if((*it).GetV1()==v1&&(*it).GetV2()==v2){
             it=vEdge.erase(it);

@@ -1483,7 +1483,105 @@ void Graphflow::RemoveEdge(uint v1, uint v2,uint label) {
     if(!flag)
         return;
     start=Get_Time();
-    for(int i=0;i<data_.vEdge.size();i++){
+    for(int i=0;i<data_.NumVertices();i++){
+        const std::vector<uint>& neighbors=data_.GetNeighbors(i);
+        auto lower=std::lower_bound(neighbors.begin(),neighbors.end(),i);
+        while(lower!=neighbors.end()){
+            uint v1= i;
+            uint v2=(*lower);
+            uint v1label=data_.GetVertexLabel(v1);
+            uint v2label=data_.GetVertexLabel(v2);
+            uint label=std::get<2>(data_.GetEdgeLabel(v1,v2));
+            vector<int>match=EdgeisInMatchOrder(v1,v2,v1label,v2label,label);
+            for(auto m:match) {
+                uint u1 = order_vs_[m][0];
+                uint u2 = order_vs_[m][1];
+                uint u1label = this->query_.GetVertexLabel(u1);
+                uint u2label = this->query_.GetVertexLabel(u2);
+                uint v1label = this->data_.GetVertexLabel(v1);
+                uint v2label = this->data_.GetVertexLabel(v2);
+                float weight = this->data_.GetEdgeWeight(v1, v2);
+                const auto &matchOrder = order_vs_[m];
+                InitialLocalIndex(m);
+                if (v1label != v2label) {
+                    if (v1label != u1label) {
+                        swap(v1, v2);
+                    }
+                    //todo
+                    if (this->LabelFilter(v1, u1) && this->LabelFilter(v2, u2)) {
+                        this->matchVertex(true, 0, v1, float(0));
+                        this->matchVertex(true, 1, v2, weight);
+                        bool isNull;
+                        const std::vector<uint> &uk_neighbor1 = rightNeighbor[m][u1];
+                        isNull = updaterightNeighborCandidate(m, u1, u2, true, v1, uk_neighbor1);
+                        if (isNull) {
+                            this->popVertex(1, v2);
+                            this->popVertex(0, v1);
+                            continue;
+
+                        }
+                        const std::vector<uint> &uk_neighbor2 = rightNeighbor[m][u2];
+                        isNull = updaterightNeighborCandidate(m, u2, u1, true, v2, uk_neighbor2);
+                        if (isNull) {
+                            for (int u_id: uk_neighbor1) {
+                                int query_order_index = order_vertex_index[m][u_id];
+                                matchCandidate[query_order_index].clear();
+                            }
+                            this->popVertex(1, v2);
+                            this->popVertex(0, v1);
+                            continue;
+                        }
+                        searchMatches(2, m, negative);
+
+                        this->popVertex(v2, m, 1, uk_neighbor1);
+                        this->popVertex(v1, m, 0, uk_neighbor2);
+                    }
+                } else {
+                    for (int i = 0; i < 2; i++) {
+                        if (this->LabelFilter(v1, u1) && this->LabelFilter(v2, u2)) {
+                            //todo
+                            //this->matchCandidate.clear();
+                            this->matchVertex(true, 0, v1, float(0));
+                            this->matchVertex(true, 1, v2, weight);
+                            //compute suffix array
+                            /*  for (int i = 1; i < query_.NumVertices(); i++) {
+                                  for (int j = i; j < query_.NumVertices(); j++) {
+                                      suffixMax[i] += globalStarIndex[m][j]->getStarMaxWeight();
+                                  }
+                              }*/
+                            bool isNull;
+                            const std::vector<uint> &uk_neighbor1 = rightNeighbor[m][u1];
+                            isNull = updaterightNeighborCandidate(m, u1, u2, true, v1, uk_neighbor1);
+                            if (isNull) {
+                                this->popVertex(1, v2);
+                                this->popVertex(0, v1);
+                                std::swap(v1, v2);
+                                continue;
+                            }
+                            const std::vector<uint> &uk_neighbor2 = rightNeighbor[m][u2];
+                            isNull = updaterightNeighborCandidate(m, u2, u1, true, v2, uk_neighbor2);
+                            if (isNull) {
+                                for (int u_id: uk_neighbor1) {
+                                    int query_order_index = order_vertex_index[m][u_id];
+                                    matchCandidate[query_order_index].clear();
+                                }
+                                this->popVertex(1, v2);
+                                this->popVertex(0, v1);
+                                std::swap(v1, v2);
+                                continue;
+                            }
+                            searchMatches(2, m, negative);
+                            this->popVertex(v2, m, 1, uk_neighbor1);
+                            this->popVertex(v1, m, 0, uk_neighbor2);
+                        }
+                        std::swap(v1, v2);
+                    }
+                }
+            }
+            lower++;
+        }
+    }
+/*    for(int i=0;i<data_.vEdge.size();i++){
         uint v1=data_.vEdge[i].GetV1();
         uint v2=data_.vEdge[i].GetV2();
 #ifdef LOG_TRACK2
@@ -1552,11 +1650,11 @@ void Graphflow::RemoveEdge(uint v1, uint v2,uint label) {
                         this->matchVertex(true, 0, v1, float(0));
                         this->matchVertex(true, 1, v2, weight);
                         //compute suffix array
-                        /*  for (int i = 1; i < query_.NumVertices(); i++) {
+                        *//*  for (int i = 1; i < query_.NumVertices(); i++) {
                               for (int j = i; j < query_.NumVertices(); j++) {
                                   suffixMax[i] += globalStarIndex[m][j]->getStarMaxWeight();
                               }
-                          }*/
+                          }*//*
                         bool isNull;
                         const std::vector<uint>&uk_neighbor1=rightNeighbor[m][u1];
                         isNull=updaterightNeighborCandidate(m, u1, u2, true,v1, uk_neighbor1);
@@ -1588,7 +1686,7 @@ void Graphflow::RemoveEdge(uint v1, uint v2,uint label) {
                 }
             }
         }
-    }
+    }*/
     total_delete_time+= Duration2(start);
     deleteUpdateTopK();
 }
@@ -2674,7 +2772,8 @@ void Graphflow::createLabelToQueryVertex() {
     }
 }
 
-bool Graphflow::updaterightNeighborCandidate(int matchorderindex,uint uk,uint uk_neigh,bool isFirstEdge, uint vk,const std::vector<uint>&uk_neighbor) {
+bool Graphflow::updaterightNeighborCandidate(int matchorderindex,uint uk,uint uk_neigh,bool isFirstEdge, uint vk,
+                                             const std::vector<uint>&uk_neighbor) {
     const  std::vector<Neighbor>&vN= this->data_.vNeighbors[vk];
     const int n=uk_neighbor.size();
     //1.对于所有的右邻居，找其候选解
