@@ -48,6 +48,9 @@ public:
     std::vector<vector<float>>matchVetexSumweight;//每种组合更新得到的最大权值
     std::vector<std::vector<int>>leftNeighborIdSum;//每个节点左邻居id和
     bool isUpdateIntopkset= false;
+    int numAddTopk=0;
+    int allMatchFind=0;
+    int deleteResearch=0;
     Timer total_search_time,total_print_time,total_densityFilter_time,total_update_globalIndex_time,total_updaterightNeighborCandidate_time,
     total_delete_time,total_delete_update_time;
 
