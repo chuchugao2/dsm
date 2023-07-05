@@ -15,7 +15,7 @@
 #include "cfloat"
 #include "LocalIndex.h"
 #include "SingleCandidate.h"
-
+#include "../utils/Timer.h"
 
 class Graphflow : public matching
 {
@@ -47,21 +47,11 @@ public:
     std::vector<vector<StarGraph*>>matchVetexSumweight;//每种组合更新得到的最大权值
     std::vector<std::vector<size_t>>leftNeighborIdSum;//每个节点左邻居id和
     bool isUpdateIntopkset;
-    long long total_search_time=0;
-    long long total_update_gloabalsubgraph_time=0;
-    long long total_updateglobalVertexStarIndex_time=0;
-    long long total_updateglobalCandidateEdge_time=0;
-    long long total_print_time=0;
-    long long total_delete_update_time=0;
-    long long total_delete_time=0;
-    long long total_delete_print_time=0;
-    long long total_densityFilter_time=0;
-    long long total_deleteUpdateglobalVertexStarIndex_time=0;
-    long long total_deleteGlobalGraphCandidateEdges_time=0;
-    long long total_update_localIndex_time=0;
-    long long total_deleteGlobalSubgraphHelp_time=0;
-    long long total_removeEdge=0;
-
+    Timer total_search_time,total_update_gloabalsubgraph_time,total_updateglobalVertexStarIndex_time,total_updateglobalCandidateEdge_time,total_print_time,
+    total_delete_update_time,total_delete_time,total_delete_print_time,total_densityFilter_time,total_deleteUpdateglobalVertexStarIndex_time,
+    total_deleteGlobalGraphCandidateEdges_time,total_updaterightNeighborCandidate_time,total_deleteGlobalSubgraphHelp_time,total_removeEdge;
+    int numAddTopk=0;
+    int allMatchFind=0;
 
 public:
     Graphflow(Graph& query_graph, Graph& data_grasph,Subgraph& global_subgraph, uint max_num_results,
