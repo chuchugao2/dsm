@@ -13,7 +13,7 @@ protected:
     uint edgeLabel;
     float edgeWeight;
     uint matchQueryVertexId;
-    uint fromVertexId;
+    uint fromQueryVertexId;
 public:
     Neighbor();
     Neighbor(uint toVertexId_,uint toVertexLabel_,uint edgeLabel_,float edgeWeight_,uint matchQueryVertexId_,uint fromVertexId_):
@@ -22,7 +22,7 @@ public:
     edgeLabel(edgeLabel_),
     edgeWeight(edgeWeight_),
     matchQueryVertexId(matchQueryVertexId_),
-    fromVertexId(fromVertexId_)
+    fromQueryVertexId(fromVertexId_)
     {};
     Neighbor(uint toVertexId_,uint toVertexLabel_,float edgeLabel_):
     toVertexId(toVertexId_),
@@ -32,10 +32,11 @@ public:
     Neighbor(uint toVertexId_,uint matchQueryVertexId_,uint fromVertexId_):
     toVertexId(toVertexId_),
     matchQueryVertexId(matchQueryVertexId_),
-    fromVertexId(fromVertexId_){};
+    fromQueryVertexId(fromVertexId_){};
     uint getVertexId() const;
     std::pair<uint,uint> GetelabelAndVertexLabel() const;
      bool operator>(const Neighbor &m) const;
+    bool operator!=(const Neighbor&m)const;
      bool operator==(const Neighbor&m)const;
     float GetEdgeWeight()const;
     uint getVertexLabel()const;

@@ -6,7 +6,7 @@
 uint Neighbor::getVertexId() const {
     return toVertexId;
 }
- bool Neighbor::operator>(const Neighbor &m) const{
+bool Neighbor::operator>(const Neighbor &m) const{
     if (this->edgeLabel!=m.edgeLabel)
     {
         return this->edgeLabel>m.edgeLabel;
@@ -15,20 +15,26 @@ uint Neighbor::getVertexId() const {
     {
         return this->toVertexLabel>m.toVertexLabel;
     }
-    else if(this->fromVertexId!=m.fromVertexId){
-        return this->fromVertexId>m.fromVertexId;
+    else if(this->fromQueryVertexId!=m.fromQueryVertexId){
+        return this->fromQueryVertexId>m.fromQueryVertexId;
     }
     else if(this->matchQueryVertexId!=m.matchQueryVertexId){
         return this->matchQueryVertexId>m.matchQueryVertexId;
     }
-    else{
+    else if((int)edgeWeight!=(int)m.edgeWeight){
         return this->edgeWeight>m.edgeWeight;
+    }
+    else{
+        return this->toVertexId>m.toVertexId;
     }
 }
 bool Neighbor::operator==(const Neighbor &m) const {
-        return toVertexId == m.toVertexId &&
-               matchQueryVertexId == m.matchQueryVertexId &&
-               fromVertexId == m.fromVertexId;
+    return toVertexId == m.toVertexId &&
+           matchQueryVertexId == m.matchQueryVertexId &&
+           fromQueryVertexId == m.fromQueryVertexId;
+}
+bool Neighbor::operator!=(const Neighbor &m) const {
+    return !(*this==m);
 }
 
 std::pair<uint,uint> Neighbor::GetelabelAndVertexLabel() const {
@@ -47,5 +53,5 @@ const uint Neighbor::getMatchQueryVertexId() const{
     return matchQueryVertexId;
 }
 const uint Neighbor::getfromVertexId() const {
-    return fromVertexId;
+    return fromQueryVertexId;
 }

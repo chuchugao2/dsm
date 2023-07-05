@@ -131,9 +131,10 @@ private:
    bool updateGlobalSubgraph(uint v1,uint v2,uint label,float weight, std::vector<int>&match);
    bool updateGlobalGraphHelp(int m,uint u1,uint u2,uint u1label,uint u2label, uint v1,uint v2,uint v1label,uint v2label,uint elabel,const std::vector<std::vector<uint>>&mcandidate,bool &flag);
    void updateglobalVertexStarIndex(uint u1,uint v1,uint u1label,uint elabel,uint n, const std::vector<std::vector<uint>>&mcandidate);//新增v1候选节点，并更新全局索引
-   void deleteGlobalSubgraph(uint v1,uint v2,std::vector<int>&match);
+   void deleteGlobalSubgraph(uint v1, uint v2,uint elabel,float weight, std::vector<int> &match);
    void deleteUpdateglobalVertexStarIndex(uint u1,uint v1,uint v2,uint n);
-   bool deleteGlobalSubgraphHelp(int m,uint u1,uint u2,uint u1label,uint u2label, uint v1,uint v2,uint v1label,uint v2label, std::vector<std::vector<uint>>&mcandidate);
+   bool deleteGlobalSubgraphHelp(int m,uint u1,uint u2,uint u1label,uint u2label, uint v1,uint v2,uint v1label,uint v2label,
+                                 uint elabel,float weight, std::vector<std::vector<uint>>&mcandidate);
    void deleteGlobalGraphCandidateEdges(uint m,uint u1,uint v1,std::vector<std::vector<uint>>&mcandidate);
    bool deleteMatchRecordWithEdge(uint v1, uint v1label,uint v2, uint v2label,uint label);
 

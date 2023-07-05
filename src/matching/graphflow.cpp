@@ -239,7 +239,7 @@ void Graphflow::updateStarIndex(uint match_index, uint caddidate_v, uint candida
     }
     const std::vector<ForwardNeighbor*>&queryVetex=s->GetqueryVertex();
     std::vector<Neighbor>&vN= this->globalsubgraph_.vNeighbors[caddidate_v];
-    std::sort(vN.begin(),vN.end(),greater<Neighbor>());
+   // std::sort(vN.begin(),vN.end(),greater<Neighbor>());
     int leftvN=0;
     int rightqV=0;
     int vNsize=vN.size();
@@ -1437,13 +1437,14 @@ void Graphflow::RemoveEdge(uint v1, uint v2,uint label) {
     //1.更新data、更新nlf标签
     uint v1label=data_.GetVertexLabel(v1);
     uint v2label=data_.GetVertexLabel(v2);
+    float weight=data_.GetEdgeWeight(v1,v2);
     data_.RemoveEdge(0,v1, v2);
     data_.UpdateLabelIndex(v1,v2,label,0);
     //2.更新subgraph中的点和边
     vector<int>match=EdgeisInMatchOrder(v1,v2,v1label,v2label,label);
     //3.删除边并且更新索引
     start=Get_Time();
-    deleteGlobalSubgraph(v1,v2,match);
+    deleteGlobalSubgraph(v1,v2,label,weight,match);
     total_delete_update_time+= Duration2(start);
 #ifdef LOG_TRACK
  /*   stringstream _ss;
@@ -3069,7 +3070,7 @@ bool Graphflow::deleteMatchRecordWithEdge(uint v1, uint v1label,uint v2, uint v2
     return flag;
 }
 
-void Graphflow::deleteGlobalSubgraph(uint v1, uint v2, std::vector<int> &match) {
+void Graphflow::deleteGlobalSubgraph(uint v1, uint v2,uint elabel,float weight, std::vector<int> &match) {
     //查看是否满足nlf条件，如果满足，判断是否已经在候选集中，如果是，直接加边，如果不是更新候选集
     //如果不满足nlf条件，跳过
     std::chrono::high_resolution_clock::time_point start;
@@ -3088,14 +3089,14 @@ void Graphflow::deleteGlobalSubgraph(uint v1, uint v2, std::vector<int> &match) 
         if(v1label!=v2label) {
 //            std::chrono::high_resolution_clock::time_point start;
             start=Get_Time();
-            isMatch=deleteGlobalSubgraphHelp(*it,u1,u2,u1label,u2label,v1,v2,v1label,v2label,mcandidate);
+            isMatch=deleteGlobalSubgraphHelp(*it,u1,u2,u1label,u2label,v1,v2,v1label,v2label,elabel,weight,mcandidate);
             total_deleteGlobalSubgraphHelp_time+= Duration2(start);
         }
         else{
             for(int i=0;i<2;i++){
 //                std::chrono::high_resolution_clock::time_point start;
                 start=Get_Time();
-                isMatch=deleteGlobalSubgraphHelp(*it,u1,u2,u1label,u2label,v1,v2,v1label,v2label,mcandidate);
+                isMatch=deleteGlobalSubgraphHelp(*it,u1,u2,u1label,u2label,v1,v2,v1label,v2label,elabel,weight,mcandidate);
                 std::swap(v1,v2);
                 total_deleteGlobalSubgraphHelp_time+= Duration2(start);
             }
@@ -3162,7 +3163,8 @@ void Graphflow::deleteGlobalSubgraph(uint v1, uint v2, std::vector<int> &match) 
 
  }
 
- bool Graphflow::deleteGlobalSubgraphHelp(int m,uint u1,uint u2,uint u1label,uint u2label, uint v1,uint v2,uint v1label,uint v2label, std::vector<std::vector<uint>>&mcandidate) {
+ bool Graphflow::deleteGlobalSubgraphHelp(int m,uint u1,uint u2,uint u1label,uint u2label, uint v1,uint v2,uint v1label,uint v2label,
+                                          uint elabel,float weight, std::vector<std::vector<uint>>&mcandidate) {
      std::chrono::high_resolution_clock::time_point start;
      bool isMatch= false;
      uint n=query_.NumEdges();
@@ -3184,8 +3186,10 @@ void Graphflow::deleteGlobalSubgraph(uint v1, uint v2, std::vector<int> &match) 
          isMatch= true;
          bool flag1= LabelFilter(v1,u1);
          bool flag2= LabelFilter(v2,u2);
+         uint v1label=data_.GetVertexLabel(v1);
+         uint v2label=data_.GetVertexLabel(v2);
          start=Get_Time();
-         globalsubgraph_.RemoveEdge(v1,v2,u1,u2);
+         globalsubgraph_.RemoveEdge(v1,v1label,v2,v2label,u1,u2,elabel,weight);
          total_removeEdge+= Duration2(start);
          if(flag1&&flag2){
              //仍在候选节点中，删除边，更新v1,v2 局部索引
@@ -3229,7 +3233,11 @@ void Graphflow::deleteGlobalSubgraph(uint v1, uint v2, std::vector<int> &match) 
             if(std::binary_search(mcandidate[n1].begin(), mcandidate[n1].end(),v1_nbr)){
                 std::chrono::high_resolution_clock::time_point start;
                 start=Get_Time();
-                flagDel=globalsubgraph_.RemoveEdge(v1,v1_nbr,u1,n1);
+                uint v1label=data_.GetVertexLabel(v1);
+                uint v1_nbr_label=data_.GetVertexLabel(v1_nbr);
+                uint elabel=std::get<2>(data_.GetEdgeLabel(v1,v1_nbr));
+                uint weight=data_.GetEdgeWeight(v1,v1_nbr);
+                flagDel=globalsubgraph_.RemoveEdge(v1,v1label,v1_nbr,v1_nbr_label,u1,n1,elabel,weight);
                 total_removeEdge+= Duration2(start);
                 if(flagDel) {
                     //判断是否对其最大权值有影响
