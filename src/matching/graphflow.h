@@ -15,6 +15,7 @@
 #include "cfloat"
 #include "LocalIndex.h"
 #include "SingleCandidate.h"
+#include "../utils/Timer.h"
 
 
 class Graphflow : public matching
@@ -47,14 +48,8 @@ public:
     std::vector<vector<float>>matchVetexSumweight;//每种组合更新得到的最大权值
     std::vector<std::vector<int>>leftNeighborIdSum;//每个节点左邻居id和
     bool isUpdateIntopkset= false;
-    long long total_search_time=0;
-    long long total_print_time=0;
-    long long total_densityFilter_time=0;
-    long long total_update_globalIndex_time=0;
-    long long total_update_localIndex_time=0;
-    long long total_delete_time=0;
-    long long total_delete_update_time=0;
-    long long total_delete_removeEdge_time=0;
+    Timer total_search_time,total_print_time,total_densityFilter_time,total_update_globalIndex_time,total_updaterightNeighborCandidate_time,
+    total_delete_time,total_delete_update_time;
 
 
 public:

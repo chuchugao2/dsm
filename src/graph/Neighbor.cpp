@@ -15,8 +15,11 @@ uint Neighbor::getVertexId() const {
     {
         return this->toVertexLabel>m.toVertexLabel;
     }
-    else{
+    else if((int)this->edgeWeight!=(int)m.edgeWeight){
         return this->edgeWeight>m.edgeWeight;
+    }
+    else{
+        return this->toVertexId>m.toVertexId;
     }
 }
 
@@ -31,4 +34,12 @@ uint Neighbor::getVertexLabel() const {
 }
 uint Neighbor::GetEdgelabel() const {
     return edgeLabel;
+}
+bool Neighbor::operator==(const Neighbor &m) const {
+    return toVertexId == m.toVertexId &&
+          toVertexLabel == m.toVertexLabel &&
+           edgeLabel==m.edgeLabel;
+}
+bool Neighbor::operator!=(const Neighbor &m) const {
+    return !(*this==m);
 }
