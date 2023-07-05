@@ -1405,7 +1405,7 @@ void Graphflow::deleteUpdateTopK() {
 void Graphflow::RemoveEdge(uint v1, uint v2,uint label) {
     //É¾³ý±ß
     total_delete_update_time.StartTimer();
-    deleteResearch=0;
+    allMatchFind=0;
     uint v1label=data_.GetVertexLabel(v1);
     uint v2label=data_.GetVertexLabel(v2);
     data_.RemoveEdge(v1, v2);
@@ -1520,7 +1520,7 @@ void Graphflow::RemoveEdge(uint v1, uint v2,uint label) {
         }
     }
     total_delete_time.StopTimer();
-    std::cout<<"delete research matches:"<<deleteResearch<<endl;
+    std::cout<<"delete research matches:"<<allMatchFind<<endl;
     deleteUpdateTopK();
 }
 
