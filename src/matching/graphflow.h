@@ -52,6 +52,7 @@ public:
     total_deleteGlobalGraphCandidateEdges_time,total_updaterightNeighborCandidate_time,total_deleteGlobalSubgraphHelp_time,total_removeEdge;
     int numAddTopk=0;
     int allMatchFind=0;
+    int numupdatestar=0;
 
 public:
     Graphflow(Graph& query_graph, Graph& data_grasph,Subgraph& global_subgraph, uint max_num_results,

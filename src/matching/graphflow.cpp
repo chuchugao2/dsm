@@ -1087,10 +1087,6 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight) {
     uint v2label=data_.GetVertexLabel(v2);
      vector<int>match=EdgeisInMatchOrder(v1,v2,v1label,v2label,label);
     if(match.size()==0){
-       /* start=Get_Time();
-        updateTopK();
-        total_print_time+= Duration2(start);*/
-        total_update_gloabalsubgraph_time.StopTimer();
         return;
     }
     //update globalsubgraph and starIndex
@@ -2665,6 +2661,7 @@ void Graphflow::PrintAverageTime(int len) {
     std::cout<<"average delete update time:"<<std::fixed << std::setprecision(2)<<(total_delete_time.GetTimer()*1.0/len+total_delete_update_time.GetTimer()*1.0/len)<<" microseconds"<<endl;
     std::cout<<"average delete print time: "<<std::fixed << std::setprecision(2)<<total_delete_print_time.GetTimer()*1.0/len<<" microseconds"<<endl;
     std::cout<<"average globalsubgrah remove edge time: "<<std::fixed << std::setprecision(2)<<total_removeEdge.GetTimer()*1.0/len<<" microseconds"<<endl;
+    std::cout<<"num add edge update:"<<numupdatestar<<endl;
     //std::cout<<"average density filter time: "<<std::fixed << std::setprecision(2)<<total_densityFilter_time*1.0/len<<" microseconds"<<endl;
     //std::cout<<"average update local index time: "<<std::fixed << std::setprecision(2)<<total_update_localIndex_time*1.0/len<<" microseconds"<<endl;
     //std::cout<<"average add matchResult time: "<<std::fixed << std::setprecision(2)<<total_addMatchResult_time*1.0/len<<" microseconds"<<endl;
@@ -2781,8 +2778,9 @@ bool Graphflow::updateGlobalGraphHelp(int m, uint u1, uint u2, uint u1label, uin
             for(int j=0;j<query_.NumEdges();j++) {
                 updateStarIndex(j,v2,u2,candidate_index2);
             }
+            numupdatestar+=2;
+            total_updateglobalCandidateEdge_time.StopTimer();
         }
-        total_updateglobalCandidateEdge_time.StopTimer();
     }
     else if(isContain1&&isNew1){
         total_updateglobalVertexStarIndex_time.StartTimer();
@@ -2872,6 +2870,7 @@ void Graphflow::updateglobalVertexStarIndex(uint u1,uint v1,uint u1label,uint el
                 flagAdd=globalsubgraph_.AddEdge(u1,n1,v1,u1label,v1_nbr,n1label,elabel,weight);
                 if(flagAdd) {
                     int candidate_index = queryVertexIndexInlabel[n1];
+                    numupdatestar++;
                     for (int j = 0; j < query_.NumEdges(); j++) {
                         updateStarIndex( j, v1_nbr, n1, candidate_index);
                     }
@@ -2882,6 +2881,7 @@ void Graphflow::updateglobalVertexStarIndex(uint u1,uint v1,uint u1label,uint el
     }
     if(flagAdd) {
         int candidate_index = queryVertexIndexInlabel[u1];
+        numupdatestar++;
         for (int j = 0; j < query_.NumEdges(); j++) {
             updateStarIndex( j, v1, u1, candidate_index);
         }
