@@ -10,6 +10,6 @@ add_library(match SHARED ${MATCHING})
 #设置将当前文件夹作为依赖match库的头文件的搜索目录
 target_include_directories(match PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 SET(CMAKE_BUILD_TYPE "Debug")
-#PRINT_DEBUG LOG_TRACK RESULT_TRACK LOG_TRACK2
-add_compile_definitions(RESULT_TRACK )
+#PRINT_DEBUG LOG_TRACK RESULT_TRACK LOG_TRACK2 LOCAL GLOBAL
+add_compile_definitions(RESULT_TRACK GLOBAL)
 

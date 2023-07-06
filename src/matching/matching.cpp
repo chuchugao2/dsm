@@ -52,6 +52,9 @@ void matching::AddEdge(uint v1, uint v2, uint label,float weight,uint timestamp)
 {
     data_.AddEdge(v1, v2, label,weight,timestamp,1);
 }
+void matching::AddEdgeWithGlobalIndex(uint v1, uint v2, uint label, float weight, uint timestamp) {
+
+}
 
 void matching::RemoveEdge(uint v1, uint v2,uint label)
 {

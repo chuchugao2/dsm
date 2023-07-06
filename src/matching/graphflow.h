@@ -64,6 +64,7 @@ public:
     void InitialMatching(const std::string &path) override;
 
     void AddEdge(uint v1, uint v2, uint label,float weight,uint timestamp) override;
+    void AddEdgeWithGlobalIndex(uint v1, uint v2, uint label,float weight,uint timestamp) override;
     void RemoveEdge(uint v1, uint v2,uint label) override;
     void AddVertex(uint id, uint label) override;
     void RemoveVertex(uint id) override;
@@ -76,13 +77,14 @@ public:
 private:
     void GenerateMatchingOrder();
     void FindMatches(uint flag,uint order_index, uint depth,
-                     std::vector<uint> m, size_t &num_results,float density_s); //flag==0 initial flag==1 update
+                     std::vector<uint> m, size_t &num_results,float density_s,searchType type); //flag==0 initial flag==1 update
     int addMatchRecords(MatchRecord* r);
     void addStarGraph(StarGraph *s);
     void CreateStarIndex();
     float GetBackWeight(uint order_index,uint depth);
     void updateStarIndex(uint match_index,uint caddidate_v,const std::vector<uint>&canditeQueryVertexs);
     void updateStarIndex(uint match_index,uint caddidate_v,uint candidate_u,int candidate_v_index);
+    void updateStarIndex(uint match_index,uint caddidate_v,uint candidate_u);
     vector<int> EdgeisInMatchOrder(Edge *edge);
     vector<int> EdgeisInMatchOrder(uint v1,uint v2,uint v1label,uint v2label,uint velabel);
     void searchMatches(int depth,uint matchorderindex,searchType flag);

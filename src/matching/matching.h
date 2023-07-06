@@ -46,6 +46,7 @@ public:
     virtual void InitialMatching(const std::string &path);//初始化匹配顺序
 
     virtual void AddEdge(uint v1, uint v2, uint label,float weight,uint timestamp);//增加边
+    virtual void AddEdgeWithGlobalIndex(uint v1, uint v2, uint label,float weight,uint timestamp);
     virtual void RemoveEdge(uint v1, uint v2,uint label);//去除边
     virtual void AddVertex(uint id, uint label);//增加节点
     virtual void RemoveVertex(uint id);//去除节点

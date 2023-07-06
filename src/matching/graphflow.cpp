@@ -100,10 +100,8 @@ void Graphflow::Preprocessing()//预处理过程
 }
 void Graphflow::updateStarIndex(uint match_index,uint caddidate_v,const std::vector<uint>&canditeQueryVertexs) {
     std::vector<int>&result=globalVkMatchUk[caddidate_v][match_index];
-    result.resize(canditeQueryVertexs.size());
+     result.resize(canditeQueryVertexs.size());
     std::vector<Neighbor>&vN= this->data_.vNeighbors[caddidate_v];
-    //std::sort(vN.begin(),vN.end(),greater<Neighbor>());
-    //std::sort(queryVetex.begin(),queryVetex.end(), ForwardNeighborcmp);
     float sumWeight=0;
     for(int i=0;i<canditeQueryVertexs.size();i++){
         uint candidate_u=canditeQueryVertexs[i];
@@ -113,22 +111,8 @@ void Graphflow::updateStarIndex(uint match_index,uint caddidate_v,const std::vec
             continue;
         StarGraph* s=globalStarIndex[match_index][vertex_index];
         std::vector<ForwardNeighbor*>&queryVetex=s->GetqueryVertex();
-       /* if(candidate_u==4&&caddidate_v==309819){
-            for(int i=0;i<queryVetex.size();i++){
-                auto item=queryVetex[i]->GetelabelAndVertexLabel();
-                std::cout<<"elabel:"<<item.first<<" vlabel:"<<item.second<<endl;
-            }
-            std::cout<<caddidate_v<<"neighbors"<<endl;
-            for(auto v:vN){
-                auto item=v.GetelabelAndVertexLabel();
-                std::cout<<"elabel:"<<item.first<<" vlabel:"<<item.second<<" toVertexId:"<<v.getVertexId()<<endl;
-            }
-            exit(-1);
-        }*/
-
         int leftvN=0;
         int rightqV=0;
-        //StarGraph *tmpgraph=new StarGraph();
         int flag=1;
         int qvSize=queryVetex.size();
         int vNsize=vN.size();
@@ -154,8 +138,6 @@ void Graphflow::updateStarIndex(uint match_index,uint caddidate_v,const std::vec
                 pair<uint,uint>tmppair=vN[leftvN].GetelabelAndVertexLabel();
                 float edgeweight=vN[leftvN].GetEdgeWeight();
                 sumWeight+=edgeweight;
-                //ForwardNeighbor* f=new ForwardNeighbor(tovId,tmppair.second,tmppair.first,edgeweight);
-                //tmpgraph->AddForwardNeighbor(f);
                 rightqV++;
                 leftvN++;
             }
@@ -172,21 +154,7 @@ void Graphflow::updateStarIndex(uint match_index,uint caddidate_v,const std::vec
                 s->setMatchDataVertexId(caddidate_v);
             }
         }
-        //tmpgraph->computeMaxWeight();
-        //find tmpgraph
-      /*  if(tmpgraph->GetForwardNeighborNum()==queryVetex.size()){
-            if(s->GetStarMaxWeight()==queryVetex.size()*mw||s->GetStarMaxWeight()<tmpgraph->GetStarMaxWeight())
-            {
-                StarGraph * t=s;
-                globalStarIndex[match_index][vertex_index]=tmpgraph;
-                delete t;
-            }
-            else {
-                delete tmpgraph;
-            }
-        }*/
     }
-
 }
 void Graphflow::updateStarIndex(uint match_index, uint caddidate_v, uint candidate_u,int candidate_v_index) {
     std::vector<int>&result=globalVkMatchUk[caddidate_v][match_index];
@@ -194,8 +162,6 @@ void Graphflow::updateStarIndex(uint match_index, uint caddidate_v, uint candida
     StarGraph* s=globalStarIndex[match_index][vertex_index];
     const std::vector<ForwardNeighbor*>&queryVetex=s->GetqueryVertex();
     std::vector<Neighbor>&vN= this->data_.vNeighbors[caddidate_v];
-    //std::sort(queryVetex.begin(),queryVetex.end(), ForwardNeighborcmp);
-   // std::sort(vN.begin(),vN.end(),greater<Neighbor>());
     int leftvN=0;
     int rightqV=0;
     int vNsize=vN.size();
@@ -222,7 +188,6 @@ void Graphflow::updateStarIndex(uint match_index, uint caddidate_v, uint candida
             break;
         if(vN[leftvN].GetelabelAndVertexLabel()==queryVetex[rightqV]->GetelabelAndVertexLabel()){
             uint tovId=queryVetex[rightqV]->GetVetexId();
-            pair<uint,uint>tmppair=vN[leftvN].GetelabelAndVertexLabel();
             float edgeweight=vN[leftvN].GetEdgeWeight();
             rightqV++;
             leftvN++;
@@ -244,6 +209,48 @@ void Graphflow::updateStarIndex(uint match_index, uint caddidate_v, uint candida
         }
     }
 }
+void Graphflow::updateStarIndex(uint match_index,uint caddidate_v,uint candidate_u) {
+    int vertex_index=order_vertex_index[match_index][candidate_u];
+    if(vertex_index==0){
+        return;
+    }
+    StarGraph* s=globalStarIndex[match_index][vertex_index];
+    std::vector<ForwardNeighbor*>&queryVetex=s->GetqueryVertex();
+    std::vector<Neighbor>vN= this->data_.vNeighbors[caddidate_v];
+    int leftvN=0;
+    int rightqV=0;
+    float sumweight=0;
+    while(leftvN<vN.size()&&rightqV<queryVetex.size()){
+        if(vN[leftvN].GetelabelAndVertexLabel()<queryVetex[rightqV]->GetelabelAndVertexLabel())
+        {
+            break;
+        }
+        int flag=1;
+        while(vN[leftvN].GetelabelAndVertexLabel()>queryVetex[rightqV]->GetelabelAndVertexLabel())
+        {
+            leftvN++;
+            if(leftvN>=vN.size())
+            {
+                flag=0;
+                break;
+            }
+        }
+        if(!flag)
+            break;
+        if(vN[leftvN].GetelabelAndVertexLabel()==queryVetex[rightqV]->GetelabelAndVertexLabel()){
+            float edgeweight=vN[leftvN].GetEdgeWeight();
+            rightqV++;
+            leftvN++;
+            sumweight+=edgeweight;
+        }
+    }
+    if(rightqV==queryVetex.size()) {
+        if (s->getStarMaxWeight() == queryVetex.size() * mw || s->getStarMaxWeight() < sumweight) {
+            s->setStarMaxWeight(sumweight);
+            s->setMatchDataVertexId(caddidate_v);
+        }
+    }
+}
 float Graphflow::GetBackWeight(uint order_index,uint depth) {
     float sum=0;
     uint n=query_.NumVertices();
@@ -260,45 +267,25 @@ void Graphflow::CreateStarIndex() {
         int label=data_.GetVertexLabel(i);
         if(label==-1)
             continue;
-        const std::vector<uint>&candidate_u=labelToQueryVertex[label];
-        if(candidate_u.size()==0)
+        const std::vector<uint>&candidate_us=labelToQueryVertex[label];
+        if(candidate_us.size()==0)
             continue;
+#ifdef LOCAL
         globalVkMatchUk[i].resize(m);
+          for(int j=0;j<m;j++){
+            updateStarIndex(j,i,candidate_us);
+        }
+#endif
+#ifdef GLOBAL
         for(int j=0;j<m;j++){
-            updateStarIndex(j,i,candidate_u);
+            for(auto candidate_u:candidate_us){
+                updateStarIndex(j,i,candidate_u);
+            }
+
         }
+#endif
+
     }
-  /*  uint n= this->data_.vEdge.size();
-    for(int i=0;i<n;i++){
-        Edge*e=&data_.vEdge[i];
-        uint v1=e->GetV1();
-        uint v2=e->GetV2();
-        uint v1label=e->GetV1Label();
-        uint v2label=e->GetV2Label();
-        float eWeight=e->GeteWeight();
-        vector<int>m=EdgeisInMatchOrder(e);
-
-        if(m.size()==0)
-            continue;
-        //for each edge<v1,v2>matches u1-->u2 or u2-->u1
-            for(int i=0;i<m.size();i++){
-               uint u1=order_vs_[m[i]][0];
-               uint u2=order_vs_[m[i]][1];
-               //对所有匹配序中
-               for(int j=0;j<query_.NumEdges();j++){
-                   uint candidate_u=order_vertex_index[j][u1]>order_vertex_index[j][u2]?u1:u2;
-                   if(query_.GetVertexLabel(candidate_u)==v1label)
-                   {
-
-                       updateStarIndex(j,v1,candidate_u);
-                   }
-                   if(query_.GetVertexLabel(candidate_u)==v2label)
-                   {
-                       updateStarIndex(j,v2,candidate_u);
-                   }
-               }
-        }
-    }*/
 }
 vector<int> Graphflow::EdgeisInMatchOrder(uint v1, uint v2, uint v1label, uint v2label,uint velabel) {
     vector<int>result;
@@ -817,19 +804,10 @@ void Graphflow::searchMatches(int depth,uint matchorderindex, searchType flag)  
 
 
 //flag==0为initial flag=1为update
-void Graphflow::FindMatches(uint flag,uint order_index, uint depth, std::vector<uint> m, size_t &num_results, float density_s) {
+void Graphflow::FindMatches(uint flag,uint order_index, uint depth, std::vector<uint> m, size_t &num_results, float density_s,searchType type) {
     if (reach_time_limit) return;
-#ifdef PRINT_DEBUG
-    if(density_s<0){
-            std::cout<<"density <0 u:"<<order_vs_[order_index][depth]<<" depth: "<<depth<<"density: "<<density_s<<" match: ";
-            for(int i=0;i<m.size();i++){
-                std::cout<<m[i]<<" ";
-            }
-            std::cout<<std::endl;
-        }
-#endif
     if(flag==1) {
-        float back_max_result = GetBackWeight(order_index, depth);
+        float back_max_result = suffixMax[depth];
         uint n = query_.NumVertices();
         if (topKSet.size() == k) {
             float weight = topKSet.back()->getDensity();
@@ -938,11 +916,17 @@ void Graphflow::FindMatches(uint flag,uint order_index, uint depth, std::vector<
 
                 float lastds = density_s / (sqrt(m.size()) * (m.size() - 1));
                 //sort(m.begin(),m.end());
-              num_results++;
-                MatchRecord *r = new MatchRecord(lastds, m);
-                addMatchRecords(r);
-
-
+                num_results++;
+                MatchRecord *record = new MatchRecord(lastds, m);
+                allMatchFind++;
+                int matchResult= addMatchRecords(record);
+                if(matchResult==1){
+                    if(type==positive)
+                    {
+                        num_positive_results_++;
+                        numAddTopk++;
+                    }
+                }
             if (print_enumeration_results_) {
                 for (auto j: m) {
 
@@ -952,7 +936,7 @@ void Graphflow::FindMatches(uint flag,uint order_index, uint depth, std::vector<
 
         } else {
             size_t num_results_before_recursion = num_results;
-            FindMatches(flag,order_index, depth + 1, m, num_results, density_s);
+            FindMatches(flag,order_index, depth + 1, m, num_results, density_s,type);
             if (num_results == num_results_before_recursion) {
                 num_intermediate_results_without_results_++;
             }
@@ -962,18 +946,6 @@ void Graphflow::FindMatches(uint flag,uint order_index, uint depth, std::vector<
 
             visited_[v] = false;
             m[u] = UNMATCHED;
-
-
-#ifdef PRINT_DEBUG
-            if (density_s < tmp) {
-                std::cout << "u:" << order_vs_[order_index][depth] << " depth: " << depth << "density: " << density_s
-                          << " tmp:" << tmp << " match: ";
-                for (int i = 0; i < m.size(); i++) {
-                    std::cout << m[i] << " ";
-                }
-                std::cout << std::endl;
-            }
-#endif
             density_s -= tmp;
 
 //            tmin = copytmin;//回溯将tmin转为初始状态
@@ -1066,7 +1038,7 @@ void Graphflow::InitialMatching(const std::string &path) {
                     m[order_vs_[0][0]] = i;
                     visited_[i] = true;
 
-                    FindMatches(flag,order_index, depth, m, num_initial_results_,density_s);
+                    FindMatches(flag,order_index, depth, m, num_initial_results_,density_s,positive);
                     visited_[i] = false;
                     m[order_vs_[0][0]] = UNMATCHED;
                 }
@@ -1094,6 +1066,103 @@ void Graphflow::InitialMatching(const std::string &path) {
             }
         }
     }
+}
+void Graphflow::AddEdgeWithGlobalIndex(uint v1, uint v2, uint label, float weight, uint timestamp) {
+    total_update_globalIndex_time.StartTimer();
+    numAddTopk=0;
+    allMatchFind=0;
+    data_.AddEdge(v1, v2, label, weight, timestamp, 1);
+    data_.UpdateLabelIndex(v1,v2,label,1);
+    std::vector<uint> m(query_.NumVertices(), UNMATCHED);
+    uint s = std::min(v1, v2);
+    uint t = std::max(v1, v2);
+    uint v1label=data_.GetVertexLabel(v1);
+    uint v2label=data_.GetVertexLabel(v2);
+    vector<int>match=EdgeisInMatchOrder(v1,v2,v1label,v2label,label);
+    //for each edge<v1,v2>matches u1-->u2 or u2-->u1
+    for(int i=0;i<match.size();i++){
+        uint u1=order_vs_[match[i]][0];
+        uint u2=order_vs_[match[i]][1];
+        //对其他的边
+        for(int j=0;j<query_.NumEdges();j++){
+            uint candidate_u=order_vertex_index[j][u1]>order_vertex_index[j][u2]?u1:u2;
+            if(query_.GetVertexLabel(candidate_u)==v1label)
+            {
+                numupdatestar++;
+                updateStarIndex(j,v1,candidate_u);
+            }
+            if(query_.GetVertexLabel(candidate_u)==v2label)
+            {
+                numupdatestar++;
+                updateStarIndex(j,v2,candidate_u);
+            }
+        }
+    }
+    total_update_globalIndex_time.StopTimer();
+
+   total_search_time.StartTimer();
+    isUpdateIntopkset= false;
+    if (max_num_results_ == 0) return;
+    size_t num_results = 0ul;
+    for (uint i = 0; i < query_.NumEdges(); i++) {
+        uint u1 = order_vs_[i][0], u2 = order_vs_[i][1];
+        auto temp_q_labels = query_.GetEdgeLabel(u1, u2);
+        float density_s = weight;
+        //compute suffix array
+        for(int j=query_.NumVertices()-1;j>0;j--){
+            if(j==query_.NumVertices()-1){
+                suffixMax[j]=globalStarIndex[i][j]->getStarMaxWeight();
+            }
+            else{
+                suffixMax[j]=suffixMax[j+1]+globalStarIndex[i][j]->getStarMaxWeight();
+            }
+        }
+        // check if any query edge match (v1 --> v2)
+        if (
+                std::get<0>(temp_q_labels) == data_.GetVertexLabel(v1) &&
+                std::get<1>(temp_q_labels) == data_.GetVertexLabel(v2) &&
+                std::get<2>(temp_q_labels) == label
+                ) {
+            m[u1] = v1;
+            m[u2] = v2;
+            visited_[v1] = true;
+            visited_[v2] = true;
+            FindMatches(1,i, 2, m, num_results, density_s,positive);
+            visited_[v1] = false;
+            visited_[v2] = false;
+            m[u1] = UNMATCHED;
+            m[u2] = UNMATCHED;
+            if (num_results >= max_num_results_) goto END_ENUMERATION;
+            if (reach_time_limit) goto END_ENUMERATION;
+        }
+        // check if any query edge match (v2 --> v1)
+        if (
+                std::get<0>(temp_q_labels) == data_.GetVertexLabel(v2) &&
+                std::get<1>(temp_q_labels) == data_.GetVertexLabel(v1) &&
+                std::get<2>(temp_q_labels) == label
+                ) {
+            m[u1] = v2;
+            m[u2] = v1;
+            visited_[v2] = true;
+            visited_[v1] = true;
+            FindMatches(1,i, 2, m, num_results, density_s,positive);
+            visited_[v2] = false;
+            visited_[v1] = false;
+            m[u1] = UNMATCHED;
+            m[u2] = UNMATCHED;
+
+            if (num_results >= max_num_results_) goto END_ENUMERATION;
+            if (reach_time_limit) goto END_ENUMERATION;
+        }
+    }
+    END_ENUMERATION:
+//    num_positive_results_ += num_results;
+    total_search_time.StopTimer();
+   total_print_time.StartTimer();
+    std::cout<<"num add top k:"<<numAddTopk<<endl;
+    std::cout<<"all match find:"<<num_results<<endl;
+    updateTopK();
+   total_print_time.StopTimer();
 }
 
 //动态的加边操作
@@ -1132,31 +1201,6 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
     total_update_globalIndex_time.StopTimer();
     //Print_Time2("UpdateIndex ", start);
     size_t num_results = 0ul;
-/*    start=Get_Time();
-    std::vector<int>mCandidate;
-    for(int i=0;i<match.size();i++){
-        uint u1=order_vs_[match[i]][0];
-        uint u2=order_vs_[match[i]][1];
-        if(v1label==v2label){
-            if((this->LabelFilter(v1,u1)&&this->LabelFilter(v2,u2))||(this->LabelFilter(v1,u2)&& this->LabelFilter(v2,u1)))
-            {
-                mCandidate.emplace_back(match[i]);
-            }
-        }
-        else{
-            if(v1label == query_.GetVertexLabel(u1)){
-                if(this->LabelFilter(v1, u1) &&this->LabelFilter(v2, u2)) {
-                    mCandidate.emplace_back(match[i]);
-                }
-            }
-            else{
-                if(this->LabelFilter(v2, u1) &&this->LabelFilter(v1, u2)) {
-                    mCandidate.emplace_back(match[i]);
-                }
-            }
-        }
-    }
-    Print_Time2("Labelfilter ",start);*/
 
     total_search_time.StartTimer();
     isUpdateIntopkset= false;
@@ -1170,7 +1214,6 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
         float weight=this->data_.GetEdgeWeight(v1,v2);
         const auto & matchOrder=order_vs_[m];
         InitialLocalIndex(m);
-
         if(v1label!=v2label){
             if(v1label!=u1label)
             {
@@ -1180,12 +1223,6 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
             if(this->LabelFilter(v1, u1) &&this->LabelFilter(v2, u2)) {
                 this->matchVertex(true, 0, v1, float(0));
                 this->matchVertex(true, 1, v2, weight);
-                //compute suffix array
-               /* for (int i = 1; i < query_.NumVertices(); i++) {
-                    for (int j = i; j < query_.NumVertices(); j++) {
-                        suffixMax[i] += globalStarIndex[m][j]->GetStarMaxWeight();
-                    }
-                }*/
                 bool isNull;
                 const std::vector<uint>&uk_neighbor1=rightNeighbor[m][u1];
                 isNull=updaterightNeighborCandidate(m, u1, u2,true,v1, uk_neighbor1);
@@ -1209,12 +1246,7 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
                     continue;
                 }
                 searchMatches(2, m, positive);
-//                std::fill(suffixMax.begin(), suffixMax.end(), 0.0);
-               // std::fill(isolatedMax.begin(), isolatedMax.end(), -1);
-                //std::fill(isFirst.begin(),isFirst.end(), false);
-                // queryLocalIndexs.resize(0);
                 //search()递归
-
                 this->popVertex( v2,m,1,uk_neighbor1);
                 this->popVertex(v1,m,0,uk_neighbor2);
             }
@@ -1223,15 +1255,8 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
             for(int i = 0; i < 2; i++) {
                 if (this->LabelFilter(v1, u1) && this->LabelFilter(v2, u2)) {
                     //todo
-                    //this->matchCandidate.clear();
                     this->matchVertex(true, 0, v1, float(0));
                     this->matchVertex(true, 1, v2, weight);
-                    //compute suffix array
-                  /*  for (int i = 1; i < query_.NumVertices(); i++) {
-                        for (int j = i; j < query_.NumVertices(); j++) {
-                            suffixMax[i] += globalStarIndex[m][j]->getStarMaxWeight();
-                        }
-                    }*/
                     bool isNull;
                     const std::vector<uint>&uk_neighbor1=rightNeighbor[m][u1];
                     isNull=updaterightNeighborCandidate(m, u1, u2, true,v1, uk_neighbor1);
@@ -1256,11 +1281,8 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
                         continue;
                     }
                     searchMatches(2, m, positive);
-//                    std::fill(suffixMax.begin(), suffixMax.end(), 0.0);
-                   // std::fill(isolatedMax.begin(), isolatedMax.end(), -1);
                     this->popVertex( v2,m,1,uk_neighbor1);
                     this->popVertex(v1,m,0,uk_neighbor2);
-                    //  }
                 }
                 std::swap(v1, v2);
             }
@@ -1322,7 +1344,7 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
     END_ENUMERATION:
     total_print_time.StartTimer();
     std::cout<<"num add top k:"<<numAddTopk<<endl;
-    std::cout<<"all match find:"<<num_results<<endl;
+    std::cout<<"all match find:"<<allMatchFind<<endl;
     updateTopK();
     total_print_time.StopTimer();
     //Print_Time2("PrintTopk ", start);
@@ -1420,9 +1442,12 @@ void Graphflow::RemoveEdge(uint v1, uint v2,uint label) {
     bool flag=deleteMatchRecordWithEdge(v1,v1label,v2,v2label,label,match);
     if(!flag)
     {
-        total_delete_time.StopTimer();
         return;
     }
+#ifdef GLOBAL
+    std::vector<uint> mm(query_.NumVertices(), UNMATCHED);
+    size_t num_results = 0ul;
+#endif
     for(int i=0;i<data_.NumVertices();i++){
         const std::vector<uint>& neighbors=data_.GetNeighbors(i);
         auto lower=std::lower_bound(neighbors.begin(),neighbors.end(),i);
@@ -1442,6 +1467,7 @@ void Graphflow::RemoveEdge(uint v1, uint v2,uint label) {
                 uint v2label = this->data_.GetVertexLabel(v2);
                 float weight = this->data_.GetEdgeWeight(v1, v2);
                 const auto &matchOrder = order_vs_[m];
+#ifdef LOCAL
                 InitialLocalIndex(m);
                 if (v1label != v2label) {
                     if (v1label != u1label) {
@@ -1483,12 +1509,6 @@ void Graphflow::RemoveEdge(uint v1, uint v2,uint label) {
                             //this->matchCandidate.clear();
                             this->matchVertex(true, 0, v1, float(0));
                             this->matchVertex(true, 1, v2, weight);
-                            //compute suffix array
-                            /*  for (int i = 1; i < query_.NumVertices(); i++) {
-                                  for (int j = i; j < query_.NumVertices(); j++) {
-                                      suffixMax[i] += globalStarIndex[m][j]->getStarMaxWeight();
-                                  }
-                              }*/
                             bool isNull;
                             const std::vector<uint> &uk_neighbor1 = rightNeighbor[m][u1];
                             isNull = updaterightNeighborCandidate(m, u1, u2, true, v1, uk_neighbor1);
@@ -1517,6 +1537,50 @@ void Graphflow::RemoveEdge(uint v1, uint v2,uint label) {
                         std::swap(v1, v2);
                     }
                 }
+#endif
+#ifdef GLOBAL
+                for(int j=query_.NumVertices()-1;j>0;j--){
+                    if(j==query_.NumVertices()-1){
+                        suffixMax[j]=globalStarIndex[m][j]->getStarMaxWeight();
+                    }
+                    else{
+                        suffixMax[j]=suffixMax[j+1]+globalStarIndex[m][j]->getStarMaxWeight();
+                    }
+                }
+                if (v1label != v2label) {
+                    if (v1label != u1label) {
+                        swap(v1, v2);
+                    }
+                    //todo
+                    if (this->LabelFilter(v1, u1) && this->LabelFilter(v2, u2)) {
+                        //compute suffix array
+                        mm[u1] = v1;
+                        mm[u2] = v2;
+                        visited_[v1] = true;
+                        visited_[v2] = true;
+                        FindMatches(1,m, 2, mm, num_results, weight,negative);
+                        visited_[v1] = false;
+                        visited_[v2] = false;
+                        mm[u1] = UNMATCHED;
+                        mm[u2] = UNMATCHED;
+                    }
+                } else {
+                    for (int i = 0; i < 2; i++) {
+                        if (this->LabelFilter(v1, u1) && this->LabelFilter(v2, u2)) {
+                            mm[u1] = v1;
+                            mm[u2] = v2;
+                            visited_[v1] = true;
+                            visited_[v2] = true;
+                            FindMatches(1,m, 2, mm, num_results, weight,negative);
+                            visited_[v1] = false;
+                            visited_[v2] = false;
+                            mm[u1] = UNMATCHED;
+                            mm[u2] = UNMATCHED;
+                        }
+                        std::swap(v1, v2);
+                    }
+                }
+#endif
             }
             lower++;
         }
@@ -2727,10 +2791,12 @@ void Graphflow::PrintAverageTime(int len) {
     std::cout<<"average delete search time:"<<std::fixed << std::setprecision(2)<<total_delete_time.GetTimer()*1.0/len<<" microseconds"<<endl;
     std::cout<<"average delete update global subgraph time:"<<std::fixed << std::setprecision(2)<<(total_delete_update_time.GetTimer()*1.0)/len<<" microseconds"<<endl;
     std::cout<<"average delete update time:"<<std::fixed << std::setprecision(2)<<(total_delete_time.GetTimer()*1.0/len+total_delete_update_time.GetTimer()*1.0/len)<<" microseconds"<<endl;
-    std::cout<<"num add edge update:"<<numupdatestar/7<<endl;
+    std::cout<<"num add edge update:"<<numupdatestar/query_.NumEdges()<<endl;
 }
 void Graphflow::deleteUpdateglobalVertexStarIndex(uint u1,uint v1,uint n){
+#ifdef LOCAL
     int candidate_index= queryVertexIndexInlabel[u1];
+#endif
     uint u1label=query_.GetVertexLabel(u1);
     for(int j=0;j<n;j++){
         int vertex_index=order_vertex_index[j][u1];
@@ -2740,19 +2806,30 @@ void Graphflow::deleteUpdateglobalVertexStarIndex(uint u1,uint v1,uint n){
         if(s->getMatchDataVertexId()==v1){
             StarGraph *s=globalStarIndex[j][vertex_index];
             s->setStarMaxWeight(s->GetForwardNeighborNum()*mw);
+#ifdef LOCAL
             updateStarIndex(j,v1,u1,candidate_index);
+#endif
+#ifdef GLOBAL
+            updateStarIndex(j,v1,u1);
+#endif
             for(int i=0;i<data_.NumVertices();i++){
                 if(i==v1)
                     continue;
                 if(data_.GetVertexLabel(i)==u1label){
+#ifdef LOCAL
                     if(LabelFilter(i,u1)){
                         if(globalVkMatchUk[i][j][candidate_index]>s->getStarMaxWeight()||s->getStarMaxWeight()==s->GetForwardNeighborNum()*mw){
                             s->setStarMaxWeight(globalVkMatchUk[i][j][candidate_index]);
                             s->setMatchDataVertexId(i);
                         }
                     }
+#endif
+#ifdef GLOBAL
+            if(LabelFilter(i,u1)){
+                updateStarIndex(j,i,u1);
+                    }
+#endif
                 }
-
             }
         }
     }
