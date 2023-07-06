@@ -7,11 +7,10 @@
 #include "../graph/graph.h"
 
 
-class matching
-{
+class matching {
 protected:
-    Graph& query_; //查询图
-    Graph& data_;//数据图
+    Graph &query_; //查询图
+    Graph &data_;//数据图
 
 
     // config
@@ -33,21 +32,22 @@ protected:
     size_t num_intermediate_results_without_results_;
 
 
-
 public:
-    matching(Graph& query_graph, Graph& data_graph,
+    matching(Graph &query_graph, Graph &data_graph,
              size_t max_num_results = ULONG_MAX,
              bool print_preprocessing_results = true,
              bool print_enumeration_results = false,
              bool homomorphism = false);
+
     virtual ~matching() = default;
 
     virtual void Preprocessing();//预处理
     virtual void InitialMatching(const std::string &path);//初始化匹配顺序
 
-    virtual void AddEdge(uint v1, uint v2, uint label,float weight,uint timestamp);//增加边
-    virtual void AddEdgeWithGlobalIndex(uint v1, uint v2, uint label,float weight,uint timestamp);
-    virtual void RemoveEdge(uint v1, uint v2,uint label);//去除边
+    virtual void AddEdge(uint v1, uint v2, uint label, float weight, uint timestamp);//增加边
+    virtual void AddEdgeWithGlobalIndex(uint v1, uint v2, uint label, float weight, uint timestamp);
+
+    virtual void RemoveEdge(uint v1, uint v2, uint label);//去除边
     virtual void AddVertex(uint id, uint label);//增加节点
     virtual void RemoveVertex(uint id);//去除节点
 
@@ -55,11 +55,16 @@ public:
 
 
     virtual void clearAllMatches();
+
     virtual void InitialTopK(const std::string &path);
+
     virtual void updateTopK();//更新Top k序列
-    virtual void deleteEdge(uint v1,uint v2);
+    virtual void deleteEdge(uint v1, uint v2);
+
     virtual void deleteUpdateTopK();
+
     virtual void PrintAverageTime(int len);
+
     // get execution info
     void GetNumInitialResults(size_t &num_initial_results);//得到初始化的数量
     void GetNumPositiveResults(size_t &num_positive_results);//正匹配的数量

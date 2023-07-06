@@ -8,24 +8,38 @@
 
 class SingleCandidate {
 protected:
-    int vertexId=0;
-    float sumWeight=0;
-    int flag=1;
+    int vertexId = 0;
+    float sumWeight = 0;
+    int flag = 1;
 public:
-    SingleCandidate(){};
-    SingleCandidate(int vertexID_,float sumWeight_):vertexId(vertexID_),sumWeight(sumWeight_){};
-    SingleCandidate(int vertexID_):vertexId(vertexID_){};
+    SingleCandidate() {};
+
+    SingleCandidate(int vertexID_, float sumWeight_) : vertexId(vertexID_), sumWeight(sumWeight_) {};
+
+    SingleCandidate(int vertexID_) : vertexId(vertexID_) {};
+
     void setVertexId(int vertexID_);
+
     void setSumWeight(float sumWeight_);
-    const int &getVertexId()const;
-    const float &getSumWeight()const;
-    ~SingleCandidate(){};
+
+    const int &getVertexId() const;
+
+    const float &getSumWeight() const;
+
+    ~SingleCandidate() {};
+
     void clearSingleCandidate();
+
     void setIsolateSingleCandate();
-    bool operator<(const SingleCandidate&s)const;
+
+    bool operator<(const SingleCandidate &s) const;
+
     void setFlag(int i);
+
     void addFlag();
-    const int getFlag()const;
+
+    const int getFlag() const;
+
     void addSumWeight(float weight);
 };
 

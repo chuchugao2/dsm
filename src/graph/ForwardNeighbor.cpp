@@ -3,15 +3,19 @@
 //
 
 #include "ForwardNeighbor.h"
-const std::pair<uint,uint> ForwardNeighbor::GetelabelAndVertexLabel()  {
-    return std::make_pair(edgeLabel,toVertexLabel);
+
+const std::pair<uint, uint> ForwardNeighbor::GetelabelAndVertexLabel() {
+    return std::make_pair(edgeLabel, toVertexLabel);
 }
+
 const float ForwardNeighbor::GetMaxWeight() {
     return maxWeight;
 }
- const uint ForwardNeighbor::GetVetexId() const{
+
+const uint ForwardNeighbor::GetVetexId() const {
     return toVertexId;
 }
-const uint ForwardNeighbor::GetElabel()const{
+
+const uint ForwardNeighbor::GetElabel() const {
     return edgeLabel;
 }

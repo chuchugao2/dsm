@@ -21,13 +21,12 @@
 #define Print_Time2(str, start) std::cout << str <<Duration2(start)<< \
     " microseconds" << std::endl
 
-enum searchType{
-    positive,negative
+enum searchType {
+    positive, negative
 };
 
-enum vertexType
-{
-    freeVertex,isolatedVertex
+enum vertexType {
+    freeVertex, isolatedVertex
     //LDVertex
 };
 
@@ -40,27 +39,32 @@ struct InsertUnit {
     uint label; // vertex or edge label
     float weight;//edge weight
     uint timestamp;//timestamp of edge
-    InsertUnit(char type_arg, bool is_add_arg, uint id1_arg, uint id2_arg, uint label_arg,float weight_arg,uint timestamp_arg)
-    : type(type_arg), is_add(is_add_arg), id1(id1_arg), id2(id2_arg), label(label_arg),weight(weight_arg),timestamp(timestamp_arg) {}
+    InsertUnit(char type_arg, bool is_add_arg, uint id1_arg, uint id2_arg, uint label_arg, float weight_arg,
+               uint timestamp_arg)
+            : type(type_arg), is_add(is_add_arg), id1(id1_arg), id2(id2_arg), label(label_arg), weight(weight_arg),
+              timestamp(timestamp_arg) {}
 };
 
 // from boost (functional/hash):
 // see http://www.boost.org/doc/libs/1_35_0/doc/html/hash/combine.html template
-template <typename T>
+template<typename T>
 inline void hash_combine(std::size_t &seed, const T &val) {
     seed ^= std::hash<T>()(val) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
+
 // auxiliary generic functions to create a hash value using a seed
-template <typename T> inline void hash_val(std::size_t &seed, const T &val) {
+template<typename T>
+inline void hash_val(std::size_t &seed, const T &val) {
     hash_combine(seed, val);
 }
-template <typename T, typename... Types>
+
+template<typename T, typename... Types>
 inline void hash_val(std::size_t &seed, const T &val, const Types &... args) {
     hash_combine(seed, val);
     hash_val(seed, args...);
 }
 
-template <typename... Types>
+template<typename... Types>
 inline std::size_t hash_val(const Types &... args) {
     std::size_t seed = 0;
     hash_val(seed, args...);
@@ -68,7 +72,7 @@ inline std::size_t hash_val(const Types &... args) {
 }
 
 struct pair_hash {
-    template <class T1, class T2>
+    template<class T1, class T2>
     std::size_t operator()(const std::pair<T1, T2> &p) const {
         return hash_val(p.first, p.second);
     }

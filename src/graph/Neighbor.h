@@ -4,9 +4,11 @@
 
 #ifndef BASELINE_NEIGHBOR_H
 #define BASELINE_NEIGHBOR_H
+
 #include "../utils/globals.h"
 #include <utility>
-class Neighbor{
+
+class Neighbor {
 protected:
     uint toVertexId;
     uint toVertexLabel;
@@ -15,34 +17,45 @@ protected:
     uint timetamp;
 public:
     Neighbor();
-    Neighbor(uint toVertexId_,uint toVertexLabel_,uint edgeLabel_,float edgeWeight_,uint timestap_){
-        this->toVertexId=toVertexId_;
-        this->toVertexLabel=toVertexLabel_;
-        this->edgeLabel=edgeLabel_;
-        this->edgeWeight=edgeWeight_;
-        this->timetamp=timestap_;
+
+    Neighbor(uint toVertexId_, uint toVertexLabel_, uint edgeLabel_, float edgeWeight_, uint timestap_) {
+        this->toVertexId = toVertexId_;
+        this->toVertexLabel = toVertexLabel_;
+        this->edgeLabel = edgeLabel_;
+        this->edgeWeight = edgeWeight_;
+        this->timetamp = timestap_;
     };
-    Neighbor(uint toVertexId_,uint toVertexLabel_,float edgeLabel_){
-        this->toVertexId=toVertexId_;
-        this->toVertexLabel=toVertexLabel_;
-        this->edgeLabel=edgeLabel_;
-        this->edgeWeight=0;
-        this->timetamp=0;
+
+    Neighbor(uint toVertexId_, uint toVertexLabel_, float edgeLabel_) {
+        this->toVertexId = toVertexId_;
+        this->toVertexLabel = toVertexLabel_;
+        this->edgeLabel = edgeLabel_;
+        this->edgeWeight = 0;
+        this->timetamp = 0;
     };
-    Neighbor(uint toVertexId_,uint toVertexLabel_,uint edgeLabel_,float edgeWeight_){
-        this->toVertexId=toVertexId_;
-        this->toVertexLabel=toVertexLabel_;
-        this->edgeLabel=edgeLabel_;
-        this->edgeWeight=edgeWeight_;
+
+    Neighbor(uint toVertexId_, uint toVertexLabel_, uint edgeLabel_, float edgeWeight_) {
+        this->toVertexId = toVertexId_;
+        this->toVertexLabel = toVertexLabel_;
+        this->edgeLabel = edgeLabel_;
+        this->edgeWeight = edgeWeight_;
     };
+
     uint getVertexId() const;
-    std::pair<uint,uint> GetelabelAndVertexLabel() const;
-     bool operator>(const Neighbor &m) const;
-     bool operator==(const Neighbor &m)const;
-    bool operator!=(const Neighbor &m)const;
-    float GetEdgeWeight()const;
-    uint getVertexLabel()const;
-    uint GetEdgelabel()const;
+
+    std::pair<uint, uint> GetelabelAndVertexLabel() const;
+
+    bool operator>(const Neighbor &m) const;
+
+    bool operator==(const Neighbor &m) const;
+
+    bool operator!=(const Neighbor &m) const;
+
+    float GetEdgeWeight() const;
+
+    uint getVertexLabel() const;
+
+    uint GetEdgelabel() const;
 
 };
 
