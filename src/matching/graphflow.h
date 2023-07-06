@@ -50,6 +50,7 @@ public:
     bool isUpdateIntopkset= false;
     int numAddTopk=0;
     int allMatchFind=0;
+    int numupdatestar=0;
     Timer total_search_time,total_print_time,total_densityFilter_time,total_update_globalIndex_time,total_updaterightNeighborCandidate_time,
     total_delete_time,total_delete_update_time;
 

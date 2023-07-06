@@ -1117,11 +1117,13 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
             uint candidate_u=order_vertex_index[j][u1]>order_vertex_index[j][u2]?u1:u2;
             if(query_.GetVertexLabel(candidate_u)==v1label)
             {
+                numupdatestar++;
                 int candidate_index= queryVertexIndexInlabel[candidate_u];
                 updateStarIndex(j,v1,candidate_u,candidate_index);
             }
             if(query_.GetVertexLabel(candidate_u)==v2label)
             {
+                numupdatestar++;
                 int candidate_index=queryVertexIndexInlabel[candidate_u];
                 updateStarIndex(j,v2,candidate_u,candidate_index);
             }
@@ -2725,6 +2727,7 @@ void Graphflow::PrintAverageTime(int len) {
     std::cout<<"average delete search time:"<<std::fixed << std::setprecision(2)<<total_delete_time.GetTimer()*1.0/len<<" microseconds"<<endl;
     std::cout<<"average delete update global subgraph time:"<<std::fixed << std::setprecision(2)<<(total_delete_update_time.GetTimer()*1.0)/len<<" microseconds"<<endl;
     std::cout<<"average delete update time:"<<std::fixed << std::setprecision(2)<<(total_delete_time.GetTimer()*1.0/len+total_delete_update_time.GetTimer()*1.0/len)<<" microseconds"<<endl;
+    std::cout<<"num add edge update:"<<numupdatestar/7<<endl;
 }
 void Graphflow::deleteUpdateglobalVertexStarIndex(uint u1,uint v1,uint n){
     int candidate_index= queryVertexIndexInlabel[u1];
