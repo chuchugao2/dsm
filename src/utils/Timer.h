@@ -20,6 +20,7 @@ public:
     void StopTimer();
 
     long long GetTimer();
+    void clearTimer();
 
 
 };

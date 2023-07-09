@@ -10,9 +10,17 @@
 #include "../utils/utils.h"
 #include "../utils/globals.h"
 
+bool CompareNeighbors(const Neighbor& a, const Neighbor& b) {
+    if (a.GetEdgelabel() != b.GetEdgelabel()) {
+        return a.GetEdgelabel() >b.GetEdgelabel();
+    } else if (a.getVertexLabel() != b.getVertexLabel()) {
+        return a.getVertexLabel() > b.getVertexLabel();
+    } else{
+        return a.getVertexId()>b.getVertexId();
+    }
+}
 Graph::Graph()
         : edge_count_(0), vlabel_count_(0), elabel_count_(0), neighbors_{}, elabels_{}, updates_{}, vlabels_{} {}
-
 void Graph::AddVertex(uint id, uint label) {
     //节点数据必须是有序的
     if (id >= vlabels_.size()) {
@@ -23,6 +31,7 @@ void Graph::AddVertex(uint id, uint label) {
         weights_.resize(id + 1);
         timestamp_.resize(id + 1);
         vNeighbors.resize(id + 1);
+        vNeighbors2.resize(id+1);
     } else if (vlabels_[id] == NOT_EXIST) {
         vlabels_[id] = label;
     }
@@ -61,18 +70,23 @@ void Graph::AddEdge(uint v1, uint v2, uint label, float weights, uint timestamp,
     Neighbor neighbor(v2, this->GetVertexLabel(v2), label, weights, timestamp);
     auto lower1 = std::lower_bound(vNeighbors[v1].begin(), vNeighbors[v1].end(), neighbor, std::greater<Neighbor>());
     vNeighbors[v1].insert(lower1, neighbor);
+    auto copy_lower1 = std::lower_bound(vNeighbors2[v1].begin(), vNeighbors2[v1].end(), neighbor, CompareNeighbors);
+    vNeighbors2[v1].insert(copy_lower1, neighbor);
     if (flag) {
         weights_[v1].insert(weights_[v1].begin() + dis, weights);
         timestamp_[v1].insert(timestamp_[v1].begin() + dis, timestamp);
     }
 
     lower = std::lower_bound(neighbors_[v2].begin(), neighbors_[v2].end(), v1);
+    if (lower != neighbors_[v2].end() && *lower == v1) return;
     dis = std::distance(neighbors_[v2].begin(), lower);
     neighbors_[v2].insert(lower, v1);
     elabels_[v2].insert(elabels_[v2].begin() + dis, label);
     Neighbor neighbor2(v1, this->GetVertexLabel(v1), label, weights, timestamp);
     auto lower2 = std::lower_bound(vNeighbors[v2].begin(), vNeighbors[v2].end(), neighbor2, std::greater<Neighbor>());
     vNeighbors[v2].insert(lower2, neighbor2);
+    auto copy_lower2 = std::lower_bound(vNeighbors2[v2].begin(), vNeighbors2[v2].end(), neighbor2, CompareNeighbors);
+    vNeighbors2[v2].insert(copy_lower2, neighbor2);
     if (flag) {
         weights_[v2].insert(weights_[v2].begin() + dis, weights);
         timestamp_[v2].insert(timestamp_[v2].begin() + dis, timestamp);
@@ -114,6 +128,13 @@ void Graph::RemoveEdge(uint v1, uint v2) {
         std::cout << "deletion error" << endl;
     }
     vNeighbors[v1].erase(lower1);
+
+    auto copy_lower1 = std::lower_bound(vNeighbors2[v1].begin(), vNeighbors2[v1].end(), neighbor, CompareNeighbors);
+    if (copy_lower1 == vNeighbors2[v1].end() || *copy_lower1 != neighbor) {
+        std::cout << "deletion error" << endl;
+    }
+    vNeighbors2[v1].erase(copy_lower1);
+
     /*for(auto it=vNeighbors[v1].begin();it!=vNeighbors[v1].end();it++){
         if(it->getVertexId()==v2){
            vNeighbors[v1].erase(it);
@@ -136,6 +157,12 @@ void Graph::RemoveEdge(uint v1, uint v2) {
         std::cout << "deletion error" << endl;
     }
     vNeighbors[v2].erase(lower2);
+
+    auto copy_lower2 = std::lower_bound(vNeighbors2[v2].begin(), vNeighbors2[v2].end(), neighbor2, CompareNeighbors);
+    if (copy_lower2 == vNeighbors2[v2].end() || *copy_lower2 != neighbor2) {
+        std::cout << "deletion error" << endl;
+    }
+    vNeighbors2[v2].erase(copy_lower2);
     edge_count_--;
 }
 
@@ -544,4 +571,11 @@ void Graph::setBatchVertexType(uint order_index, const std::vector<uint> &vertex
     for (int i = 0; i < vertexs.size(); i++) {
         this->matchVertexTypes[order_index][vertexs[i]] = type;
     }
+}
+bool Graph::isNeighbor(uint u1, uint u2) {
+auto lower=std::lower_bound(neighbors_[u1].begin(),neighbors_[u1].end(),u2);
+if(*lower==u2){
+    return true;
+}
+    return false;
 }

@@ -29,6 +29,21 @@ bool areSame(float a, float b) {
     return std::fabs(a - b) < std::numeric_limits<float>::epsilon();
 }
 
+bool CompareNeighbors2(const Neighbor& a, const Neighbor& b) {
+    if (a.GetEdgelabel() != b.GetEdgelabel()) {
+        return a.GetEdgelabel() >b.GetEdgelabel();
+    } else {
+        return a.getVertexLabel() > b.getVertexLabel();
+    }
+}
+bool CompareNeighbors3(const Neighbor& a, const Neighbor& b) {
+    if (a.GetEdgelabel() != b.GetEdgelabel()) {
+        return a.GetEdgelabel() <b.GetEdgelabel();
+    } else {
+        return a.getVertexLabel() < b.getVertexLabel();
+    }
+}
+
 
 bool tupleVertexIdCmp2(const std::tuple<int, int, float> &a, const std::tuple<int, int, float> &b) {
     if (std::get<0>(a) != std::get<0>(b)) {
@@ -52,7 +67,8 @@ Graphflow::Graphflow(Graph &query_graph, Graph &data_graph,
           match(query_graph.NumVertices()), labelToQueryVertex(data_graph.NumVLabels()),
           globalVkMatchUk(data_graph.NumVertices()), globalStarIndex(query_.NumEdges()),
           queryVertexIndexInlabel(query_.NumVertices()), LocalStarIndex(query_.NumVertices()),
-          matchLeftNeighborSum(query_.NumEdges()) {
+          matchLeftNeighborSum(query_.NumEdges())
+          {
 //    globalStarIndex.resize(query_.NumEdges());
     for (uint i = 0; i < query_.NumEdges(); ++i) {
         order_vs_[i].resize(query_.NumVertices());//节点个数
@@ -62,6 +78,10 @@ Graphflow::Graphflow(Graph &query_graph, Graph &data_graph,
         order_vertex_index[i].resize(query_.NumVertices());
         rightNeighbor[i].resize(query_.NumVertices());
         matchLeftNeighborSum[i].resize(query_.NumVertices());
+    }
+    for(int i=0;i<query_.NumVertices();i++){
+        matchCandidate[i].resize(query_.NumVertices());
+        LocalStarIndex[i].resize(query_.NumVertices());
     }
 }
 
@@ -234,8 +254,9 @@ float Graphflow::GetBackWeight(uint order_index, uint depth) {
     float sum = 0;
     uint n = query_.NumVertices();
     std::vector<uint> &matchOrder = this->order_vs_[order_index];
+    auto &depthLocalStarIndex=LocalStarIndex[depth];
     for (int i = depth; i < n; i++) {
-        sum += LocalStarIndex[i];
+        sum += depthLocalStarIndex[i];
     }
     return sum;
 }
@@ -583,16 +604,28 @@ void Graphflow::updateTopK() {
 }
 
 void Graphflow::searchMatches(int depth, uint matchorderindex, searchType flag) {
-    std::chrono::high_resolution_clock::time_point start;
     // start=Get_Time();
     //1.找到前向邻居，找到候选解
+#ifdef LOGTRACK1
+stringstream _ss;
+for(int i=depth+1;i<query_.NumVertices();i++){
+    for(int j=0;j<query_.NumVertices();j++){
+        if(matchCandidate[i][j].size()!=0){
+            _ss<<" s matchCandidate["<<i<<"]["<<j<<"] not null"<<endl;
+        }
+    }
+}
+Log::track1(_ss);
+#endif
     std::vector<uint> &matchOrder = this->order_vs_[matchorderindex];
     uint queryVertex = matchOrder[depth];
     uint queryVertexLabel = this->query_.GetVertexLabel(queryVertex);
     // const auto & fneighbors=this->query_.forwardNeighbors[matchorderindex][depth];
     vertexType currentSearchVertextype = this->query_.GetVertexType(matchorderindex, depth);
-    std::vector<SingleCandidate> &singleVertexCandidate = this->matchCandidate[depth];
-    std::vector<SingleCandidate> copySingleVertexCandidate = this->matchCandidate[depth];
+//    this->matchCandidate[depth]=this->matchCandidate[depth-1];
+//    this->LocalStarIndex[depth]=this->LocalStarIndex[depth-1];
+    std::vector<SingleCandidate> &singleVertexCandidate= this->matchCandidate[depth][depth];
+    //std::vector<SingleCandidate> copySingleVertexCandidate = this->matchCandidate[depth];
     /* singleVertexCandidate.clear();
      float maxweight=0;
 
@@ -667,9 +700,15 @@ void Graphflow::searchMatches(int depth, uint matchorderindex, searchType flag) 
          }
      }*/
     //取singleCandidate的交集部分
-    getIntersetSingleCandidate(singleVertexCandidate, matchorderindex, depth);
+   // getIntersetSingleCandidate(singleVertexCandidate, matchorderindex, depth);
     if (singleVertexCandidate.size() == 0) {
-        this->matchCandidate[depth] = copySingleVertexCandidate;
+        total_test.StartTimer();
+        for(int i=depth;i<query_.NumVertices();i++){
+            if(matchCandidate[depth][i].size()!=0){
+                this->matchCandidate[depth][i].resize(0);
+            }
+        }
+        total_test.StopTimer();
         return;
     }
     //Print_Time2("findCandidate ",start);
@@ -680,7 +719,14 @@ void Graphflow::searchMatches(int depth, uint matchorderindex, searchType flag) 
     total_densityFilter_time.StartTimer();
     densityFilter(matchorderindex, depth, singleVertexCandidate);
     if (singleVertexCandidate.size() == 0) {
-        this->matchCandidate[depth] = copySingleVertexCandidate;
+        total_test.StartTimer();
+        for(int i=depth;i<query_.NumVertices();i++){
+            if(matchCandidate[depth][i].size()!=0){
+                this->matchCandidate[depth][i].resize(0);
+            }
+        }
+        //this->matchCandidate[depth] = copySingleVertexCandidate;
+        total_test.StopTimer();
         return;
     }
     total_densityFilter_time.StopTimer();
@@ -712,13 +758,18 @@ void Graphflow::searchMatches(int depth, uint matchorderindex, searchType flag) 
                     numAddTopk++;
                 }
             } else if (matchResult == 3) {
-                this->matchCandidate[depth] = copySingleVertexCandidate;
+                total_test.StartTimer();
+                this->matchCandidate[depth][depth].resize(0);
+                total_test.StopTimer();
                 this->match[depth].clearSingleCandidate();
                 return;
             }
         }
         //clear candidate;
-        this->matchCandidate[depth] = copySingleVertexCandidate;
+//        this->matchCandidate[depth] = copySingleVertexCandidate;
+        total_test.StartTimer();
+        this->matchCandidate[depth][depth].resize(0);
+        total_test.StopTimer();
         this->match[depth].clearSingleCandidate();
         return;
     } else {
@@ -726,42 +777,70 @@ void Graphflow::searchMatches(int depth, uint matchorderindex, searchType flag) 
             uint dataV = singleVertexCandidate[i].getVertexId();
             if (visited_[dataV])
                 continue;
+#ifdef LOGTRACK1
+            stringstream _ss;
+            if(dataV==353889){
+                _ss<<"353889 find"<<endl;
+            }
+            _ss<<"depth:"<<depth<<" data_v:"<<dataV<<endl;
+            Log::track1(_ss);
+#endif
             float weight = singleVertexCandidate[i].getSumWeight();
             matchVertex(0, depth, dataV, weight);
-
             const std::vector<uint> &uk_neighbor = rightNeighbor[matchorderindex][queryVertex];
-            std::vector<std::vector<SingleCandidate>> copyCandidate(uk_neighbor.size());
-            std::vector<int> copyLocalStarIndex(query_.NumVertices());
+            //std::vector<std::vector<SingleCandidate>> copyCandidate(uk_neighbor.size());
+            //td::vector<int> copyLocalStarIndex(query_.NumVertices());
+      /*      toal_copy_context.StartTimer();
             for (int i = 0; i < uk_neighbor.size(); i++) {
                 int uk_neighbor_index = order_vertex_index[matchorderindex][uk_neighbor[i]];
                 copyCandidate[i] = matchCandidate[uk_neighbor_index];
                 copyLocalStarIndex[uk_neighbor_index] = LocalStarIndex[uk_neighbor_index];
             }
+            toal_copy_context.StopTimer();*/
             // std::cout<<"depth :"<<depth<<" data:"<<dataV<<endl;
             total_updaterightNeighborCandidate_time.StartTimer();
-            bool isNull = updaterightNeighborCandidate(matchorderindex, queryVertex, 0, false, dataV, uk_neighbor);
+            auto &depthMatchCandaite=matchCandidate[depth];
+            auto &nextMatchCandaite=matchCandidate[depth+1];
+            auto &nextLocalStarIndex=LocalStarIndex[depth+1];
+            bool isNull = updaterightNeighborCandidate(depth,depthMatchCandaite,nextMatchCandaite,nextLocalStarIndex,matchorderindex, queryVertex, 0, false, dataV, uk_neighbor);
             total_updaterightNeighborCandidate_time.StopTimer();
             if (isNull) {
+                /*toal_copy_context.StartTimer();
                 for (int i = 0; i < uk_neighbor.size(); i++) {
                     int uk_neighbor_index = order_vertex_index[matchorderindex][uk_neighbor[i]];
                     matchCandidate[uk_neighbor_index] = copyCandidate[i];
                     LocalStarIndex[uk_neighbor_index] = copyLocalStarIndex[uk_neighbor_index];
                 }
+                toal_copy_context.StopTimer();*/
                 this->visited_[dataV] = false;
                 continue;
             }
             //copy SingleCandidate
             //updateweight;
             searchMatches(depth + 1, matchorderindex, flag);
+           /* toal_copy_context.StartTimer();
             for (int i = 0; i < uk_neighbor.size(); i++) {
                 int uk_neighbor_index = order_vertex_index[matchorderindex][uk_neighbor[i]];
                 matchCandidate[uk_neighbor_index] = copyCandidate[i];
                 LocalStarIndex[uk_neighbor_index] = copyLocalStarIndex[uk_neighbor_index];
             }
+            toal_copy_context.StopTimer();
+            this->visited_[dataV] = false;*/
+            /*for (int i = 0; i < uk_neighbor.size(); i++) {
+                int uk_neighbor_index = order_vertex_index[matchorderindex][uk_neighbor[i]];
+                matchCandidate[depth][uk_neighbor_index].clear();
+            }*/
             this->visited_[dataV] = false;
         }
-        this->matchCandidate[depth] = copySingleVertexCandidate;
-        this->match[depth].clearSingleCandidate();
+//        this->matchCandidate[depth] = copySingleVertexCandidate;
+        total_test.StartTimer();
+        for(int i=depth;i<query_.NumVertices();i++){
+            if(matchCandidate[depth][i].size()!=0){
+                this->matchCandidate[depth][i].resize(0);
+            }
+        }
+        total_test.StopTimer();
+        this->matchCandidate[depth].resize(query_.NumVertices());
     }
 }
 
@@ -1124,6 +1203,17 @@ void Graphflow::AddEdgeWithGlobalIndex(uint v1, uint v2, uint label, float weigh
 
 //动态的加边操作
 void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timestamp) {
+#ifdef LOGTRACK1
+    stringstream _ss;
+    for(int i=0;i<query_.NumVertices();i++){
+        for(int j=0;j<query_.NumVertices();j++){
+            if(matchCandidate[i][j].size()!=0){
+                _ss<<"matchCandidate["<<i<<"]["<<j<<"] not null"<<endl;
+            }
+        }
+    }
+    Log::track1(_ss);
+#endif
     total_update_globalIndex_time.StartTimer();
     numAddTopk = 0;
     allMatchFind = 0;
@@ -1179,20 +1269,28 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
                 this->matchVertex(true, 1, v2, weight);
                 bool isNull;
                 const std::vector<uint> &uk_neighbor1 = rightNeighbor[m][u1];
-                isNull = updaterightNeighborCandidate(m, u1, u2, true, v1, uk_neighbor1);
+
+                auto &depthMatchCandidate1=matchCandidate[0];
+                auto &nextMatchCandidate1=matchCandidate[1];
+                auto &nextLocalCandiate1=LocalStarIndex[1];
+                isNull = updaterightNeighborCandidate(0,depthMatchCandidate1,nextMatchCandidate1,nextLocalCandiate1,m, u1, u2, true, v1, uk_neighbor1);
                 if (isNull) {
                     this->popVertex(1, v2);
                     this->popVertex(0, v1);
                     continue;
-
                 }
                 const std::vector<uint> &uk_neighbor2 = rightNeighbor[m][u2];
-                isNull = updaterightNeighborCandidate(m, u2, u1, true, v2, uk_neighbor2);
+                auto &depthMatchCandidate2=matchCandidate[1];
+                auto &nextMatchCandidate2=matchCandidate[2];
+                auto &nextLocalCandiate2=LocalStarIndex[2];
+                isNull = updaterightNeighborCandidate(1,depthMatchCandidate2,nextMatchCandidate2,nextLocalCandiate2,m, u2, u1, true, v2, uk_neighbor2);
                 if (isNull) {
-                    for (int u_id: uk_neighbor1) {
+                   /* for (int u_id: uk_neighbor1) {
                         int query_order_index = order_vertex_index[m][u_id];
-                        matchCandidate[query_order_index].clear();
-                    }
+                        matchCandidate[1][query_order_index].clear();
+                    }*/
+                 /*  nextMatchCandidate2.clear();
+                   nextMatchCandidate2.resize(query_.NumVertices());*/
                     this->popVertex(1, v2);
                     this->popVertex(0, v1);
                     continue;
@@ -1205,31 +1303,38 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight, uint timesta
         } else {
             for (int i = 0; i < 2; i++) {
                 if (this->LabelFilter(v1, u1) && this->LabelFilter(v2, u2)) {
-                    //todo
                     this->matchVertex(true, 0, v1, float(0));
                     this->matchVertex(true, 1, v2, weight);
                     bool isNull;
                     const std::vector<uint> &uk_neighbor1 = rightNeighbor[m][u1];
-                    isNull = updaterightNeighborCandidate(m, u1, u2, true, v1, uk_neighbor1);
+
+                    auto &depthMatchCandidate1=matchCandidate[0];
+                    auto &nextMatchCandidate1=matchCandidate[1];
+                    auto &nextLocalCandiate1=LocalStarIndex[1];
+                    isNull = updaterightNeighborCandidate(0,depthMatchCandidate1,nextMatchCandidate1,nextLocalCandiate1,m, u1, u2, true, v1, uk_neighbor1);
                     if (isNull) {
                         this->popVertex(1, v2);
                         this->popVertex(0, v1);
-                        std::swap(v1, v2);
                         continue;
                     }
                     const std::vector<uint> &uk_neighbor2 = rightNeighbor[m][u2];
-                    isNull = updaterightNeighborCandidate(m, u2, u1, true, v2, uk_neighbor2);
+                    auto &depthMatchCandidate2=matchCandidate[1];
+                    auto &nextMatchCandidate2=matchCandidate[2];
+                    auto &nextLocalCandiate2=LocalStarIndex[2];
+                    isNull = updaterightNeighborCandidate(1,depthMatchCandidate2,nextMatchCandidate2,nextLocalCandiate2,m, u2, u1, true, v2, uk_neighbor2);
                     if (isNull) {
-                        for (int u_id: uk_neighbor1) {
-                            int query_order_index = order_vertex_index[m][u_id];
-                            matchCandidate[query_order_index].clear();
-                        }
+                        /* for (int u_id: uk_neighbor1) {
+                             int query_order_index = order_vertex_index[m][u_id];
+                             matchCandidate[1][query_order_index].clear();
+                         }*/
+                        /*  nextMatchCandidate2.clear();
+                          nextMatchCandidate2.resize(query_.NumVertices());*/
                         this->popVertex(1, v2);
                         this->popVertex(0, v1);
-                        std::swap(v1, v2);
                         continue;
                     }
                     searchMatches(2, m, positive);
+                    //search()递归
                     this->popVertex(v2, m, 1, uk_neighbor1);
                     this->popVertex(v1, m, 0, uk_neighbor2);
                 }
@@ -1397,6 +1502,11 @@ void Graphflow::RemoveEdge(uint v1, uint v2, uint label) {
     std::vector<uint> mm(query_.NumVertices(), UNMATCHED);
     size_t num_results = 0ul;
 #endif
+#ifdef LOGTRACK1
+    total_test2.clearTimer();
+    total_test.clearTimer();
+    total_test.StartTimer();
+#endif
     for (int i = 0; i < data_.NumVertices(); i++) {
         const std::vector<uint> &neighbors = data_.GetNeighbors(i);
         auto lower = std::lower_bound(neighbors.begin(), neighbors.end(), i);
@@ -1423,63 +1533,78 @@ void Graphflow::RemoveEdge(uint v1, uint v2, uint label) {
                         swap(v1, v2);
                     }
                     //todo
+
                     if (this->LabelFilter(v1, u1) && this->LabelFilter(v2, u2)) {
                         this->matchVertex(true, 0, v1, float(0));
                         this->matchVertex(true, 1, v2, weight);
                         bool isNull;
                         const std::vector<uint> &uk_neighbor1 = rightNeighbor[m][u1];
-                        isNull = updaterightNeighborCandidate(m, u1, u2, true, v1, uk_neighbor1);
+
+                        auto &depthMatchCandidate1=matchCandidate[0];
+                        auto &nextMatchCandidate1=matchCandidate[1];
+                        auto &nextLocalCandiate1=LocalStarIndex[1];
+                        isNull = updaterightNeighborCandidate(0,depthMatchCandidate1,nextMatchCandidate1,nextLocalCandiate1,m, u1, u2, true, v1, uk_neighbor1);
                         if (isNull) {
                             this->popVertex(1, v2);
                             this->popVertex(0, v1);
                             continue;
-
                         }
                         const std::vector<uint> &uk_neighbor2 = rightNeighbor[m][u2];
-                        isNull = updaterightNeighborCandidate(m, u2, u1, true, v2, uk_neighbor2);
+                        auto &depthMatchCandidate2=matchCandidate[1];
+                        auto &nextMatchCandidate2=matchCandidate[2];
+                        auto &nextLocalCandiate2=LocalStarIndex[2];
+                        isNull = updaterightNeighborCandidate(1,depthMatchCandidate2,nextMatchCandidate2,nextLocalCandiate2,m, u2, u1, true, v2, uk_neighbor2);
                         if (isNull) {
-                            for (int u_id: uk_neighbor1) {
-                                int query_order_index = order_vertex_index[m][u_id];
-                                matchCandidate[query_order_index].clear();
-                            }
+                            /* for (int u_id: uk_neighbor1) {
+                                 int query_order_index = order_vertex_index[m][u_id];
+                                 matchCandidate[1][query_order_index].clear();
+                             }*/
+                            /*  nextMatchCandidate2.clear();
+                              nextMatchCandidate2.resize(query_.NumVertices());*/
                             this->popVertex(1, v2);
                             this->popVertex(0, v1);
                             continue;
                         }
                         searchMatches(2, m, negative);
-
+                        //search()递归
                         this->popVertex(v2, m, 1, uk_neighbor1);
                         this->popVertex(v1, m, 0, uk_neighbor2);
                     }
                 } else {
                     for (int i = 0; i < 2; i++) {
                         if (this->LabelFilter(v1, u1) && this->LabelFilter(v2, u2)) {
-                            //todo
-                            //this->matchCandidate.clear();
                             this->matchVertex(true, 0, v1, float(0));
                             this->matchVertex(true, 1, v2, weight);
                             bool isNull;
                             const std::vector<uint> &uk_neighbor1 = rightNeighbor[m][u1];
-                            isNull = updaterightNeighborCandidate(m, u1, u2, true, v1, uk_neighbor1);
+
+                            auto &depthMatchCandidate1=matchCandidate[0];
+                            auto &nextMatchCandidate1=matchCandidate[1];
+                            auto &nextLocalCandiate1=LocalStarIndex[1];
+                            isNull = updaterightNeighborCandidate(0,depthMatchCandidate1,nextMatchCandidate1,nextLocalCandiate1,m, u1, u2, true, v1, uk_neighbor1);
                             if (isNull) {
                                 this->popVertex(1, v2);
                                 this->popVertex(0, v1);
-                                std::swap(v1, v2);
                                 continue;
                             }
                             const std::vector<uint> &uk_neighbor2 = rightNeighbor[m][u2];
-                            isNull = updaterightNeighborCandidate(m, u2, u1, true, v2, uk_neighbor2);
+                            auto &depthMatchCandidate2=matchCandidate[1];
+                            auto &nextMatchCandidate2=matchCandidate[2];
+                            auto &nextLocalCandiate2=LocalStarIndex[2];
+                            isNull = updaterightNeighborCandidate(1,depthMatchCandidate2,nextMatchCandidate2,nextLocalCandiate2,m, u2, u1, true, v2, uk_neighbor2);
                             if (isNull) {
-                                for (int u_id: uk_neighbor1) {
-                                    int query_order_index = order_vertex_index[m][u_id];
-                                    matchCandidate[query_order_index].clear();
-                                }
+                                /* for (int u_id: uk_neighbor1) {
+                                     int query_order_index = order_vertex_index[m][u_id];
+                                     matchCandidate[1][query_order_index].clear();
+                                 }*/
+                                /*  nextMatchCandidate2.clear();
+                                  nextMatchCandidate2.resize(query_.NumVertices());*/
                                 this->popVertex(1, v2);
                                 this->popVertex(0, v1);
-                                std::swap(v1, v2);
                                 continue;
                             }
                             searchMatches(2, m, negative);
+                            //search()递归
                             this->popVertex(v2, m, 1, uk_neighbor1);
                             this->popVertex(v1, m, 0, uk_neighbor2);
                         }
@@ -1533,6 +1658,15 @@ void Graphflow::RemoveEdge(uint v1, uint v2, uint label) {
             lower++;
         }
     }
+#ifdef LOGTRACK1
+    total_test.StopTimer();
+    stringstream _ss;
+    _ss<<"total_deletesearch_time:"<<total_test.GetTimer()*1.0/1000<<" millseconds"<<endl;
+    _ss<<"total_copy_time:"<<toal_copy_context.GetTimer()*1.0/1000<<" millseconds"<<endl;
+    _ss<<"total_updaterightneighbor:"<<total_test2.GetTimer()*1.0/1000<<" millseconds"<<endl;
+    Log::track1(_ss);
+    std::cout<<total_test.GetTimer()<<" microseconds"<<endl;
+#endif
     total_delete_time.StopTimer();
     sumDeleteallMatchFind += allMatchFind;
     std::cout << "delete research matches:" << allMatchFind << endl;
@@ -1591,7 +1725,7 @@ void Graphflow::matchVertex(bool isFirstEdge, uint depth, uint data_v, float w) 
     if (isFirstEdge) {
         this->match[depth].setVertexId(data_v);
         this->match[depth].setSumWeight(w);
-        this->matchCandidate[depth].emplace_back(SingleCandidate(data_v, w));
+        //this->matchCandidate[depth+1][depth].emplace_back(SingleCandidate(data_v, w));
         //this->matchVertexCandidate.push_back({});
 
         this->visited_[data_v] = true;
@@ -1623,20 +1757,23 @@ void Graphflow::matchVertex(int depth) {
 void Graphflow::popVertex(uint depth, uint data_v) {
     this->match[depth].clearSingleCandidate();
     //this->matchVertexCandidate.pop_back();
+    total_test.StartTimer();
     this->matchCandidate[depth].clear();
-
+    this->matchCandidate[depth].resize(query_.NumVertices());
     this->visited_[data_v] = false;
+    total_test.StopTimer();
 }
 
 void Graphflow::popVertex(uint data_v, uint matchorderindex, uint depth, const std::vector<uint> &uk_neighbor) {
     this->match[depth].clearSingleCandidate();
-    const int n = uk_neighbor.size();
+    /*const int n = uk_neighbor.size();
     for (int u_id: uk_neighbor) {
         int query_order_index = order_vertex_index[matchorderindex][u_id];
-        matchCandidate[query_order_index].clear();
-    }
+        matchCandidate[depth][query_order_index].clear();
+    }*/
     //this->matchVertexCandidate.pop_back();
     this->matchCandidate[depth].clear();
+    this->matchCandidate[depth].resize(query_.NumVertices());
 
     this->visited_[data_v] = false;
 }
@@ -1850,7 +1987,7 @@ void Graphflow::sychronizeSingleVertexAndCandidate(std::vector<tuple<int, int, f
 }
 
 void Graphflow::addMatchResult(uint matchorderindex, searchType type) {
-    std::chrono::high_resolution_clock::time_point starttime;
+   /* std::chrono::high_resolution_clock::time_point starttime;
     int n = query_.NumVertices();
     auto &isolateVertexs = query_.isolatedRecord[matchorderindex];
     std::vector<std::vector<SingleCandidate>> combinezIsolateVertexs;
@@ -1862,31 +1999,6 @@ void Graphflow::addMatchResult(uint matchorderindex, searchType type) {
     }
 
     int len = combinezIsolateVertexs.size();
-#ifdef PRINT_DEBUG
-    std::vector<int>testm(this->query_.NumVertices(),-1);
-    for(int i=0;i<n;i++){
-        if(match[i].getVertexId()!=-1){
-            testm[order_vs_[matchorderindex][i]]=match[i].getVertexId();
-        }
-    }
-    std::cout<<"matchorderindex "<<matchorderindex<<endl;
-    for(int i=0;i<n;i++){
-        if(testm[i]!=-1){
-           std::cout<<" m["<<i<<"]= "<<testm[i]<<" ";
-        }
-    }
-    std::cout<<"Candidate"<<endl;
-    for(int i:isolateVertexs){
-        int id=order_vs_[matchorderindex][i];
-        std::cout<<id<<" candidate: ";
-        for(int j=0;j<matchCandidate[i].size();j++){
-            int candi=matchCandidate[i][j].getVertexId();
-            std::cout<<candi<<" ";
-        }
-        std::cout<<endl;
-    }
-   std::cout<<endl;
-#endif
     auto wt = findWeightBeforeIsolated();
     int *pmax = new int[len]{};//最大pmax在组中的列号
     std::unordered_map<int, int> visitedId;
@@ -2006,9 +2118,9 @@ void Graphflow::addMatchResult(uint matchorderindex, searchType type) {
             float TboundDensity = TboundNext / (sqrt(n) * (n - 1));
             if (cur_density > TboundDensity) {
                 noscan[next_vertex_group] = 1;
-                /* for(int i=0;i<len;i++)
+                *//* for(int i=0;i<len;i++)
                      std::cout<<noscan[i]<<" ";
-                   std::cout<<endl;*/
+                   std::cout<<endl;*//*
             }
         }
 
@@ -2016,235 +2128,7 @@ void Graphflow::addMatchResult(uint matchorderindex, searchType type) {
     delete[]pmax;
     delete[]hash;
     delete[]Tbound;
-    delete[]noscan;
-
-
-
-    //starttime=Get_Time();
-
-    //初始化
-    /* auto wt=findWeightAndTminBeforeIsolated();
-     std::vector<pair<int,int>>matchresult;
-     for(int j=0;j<combinezIsolateVertexs.size();j++){
-         matchresult.push_back(make_pair(std::get<0>(combinezIsolateVertexs[j][0]),0));//id号，以及在该列中的索引位置
-     }
-     //说明没有重复
-     std::queue<std::vector<pair<int,int>>>que;
-      que.push(matchresult);
-         while(!que.empty()) {
-             float weight = 0;
-             int tmin = INT_MAX;
-             auto ms = que.front();
-             que.pop();
-             bool isRepeat= false;
-             //判断是否有已经访问过节点
-             for(int i=0;i<ms.size();i++){
-                 int id=ms[i].first;
-                 int index=ms[i].second;
-                 if(visited_[id]==true){
-                     if(index+1==combinezIsolateVertexs[i].size())
-                         return;
-                     int newId=std::get<0>(combinezIsolateVertexs[i][index+1]);
-                     ms[i].first=newId;
-                     ms[i].second=index+1;
-                     isRepeat= true;
-                 }
-             }
-             if(isRepeat){
-                 que.push(ms);
-                 continue;
-             }
-             std::set<int> isrepeat;
-             for (auto item: ms) {
-                 isrepeat.insert(item.first);
-             }
-             if (ms.size() == isrepeat.size()) {
-                 for (int j = 0; j < ms.size(); j++) {
-                     int index = ms[j].second;
-                     weight += std::get<2>(combinezIsolateVertexs[j][index]);
-                     tmin = std::min(tmin, std::get<1>(combinezIsolateVertexs[j][index]));
-                 }
-                 tmin = std::min(tmin, wt.first);
-                 float t = (sqrt(n) * (n - 1));
-                 float density = (weight + wt.second) / t;
-                 setIsolateVertexMatchResult(ms, isolateVertexs, tmin, density);
-                 //加入结果集
-                 std::vector<uint> m(n);
-                 for (int i = 0; i < match.size(); i++) {
-                     m[order_vs_[matchorderindex][i]] = std::get<0>(match[i]);
-                 }
-                 MatchRecord *r = new MatchRecord(density, tmin, m);
-                 if(!addMatchRecords(r))
-                 {
-                     recoverIsolateVertexMatchResult(isolateVertexs);
-                     return;
-                 }
-                 else{
-                     num_positive_results_++;
-                 }
-                 recoverIsolateVertexMatchResult(isolateVertexs);
-                 //找到下一行中的差值最小的替换点
-                 std::map<float, vector<std::pair<int, int>>> minWeight;//列号，索引位置
-                 float diffmin = INT_MAX;
-                 for (int i = 0; i < ms.size(); i++) {
-                     auto index = ms[i].second;
-                     if (index == combinezIsolateVertexs[i].size() - 1) {
-                         continue;
-                     }
-                     float d = std::get<2>(combinezIsolateVertexs[i][index]) -
-                               std::get<2>(combinezIsolateVertexs[i][index+1]);
-                     diffmin = std::min(diffmin, d);
-                     minWeight[d].emplace_back(i, index + 1);
-                 }
-                 for (auto item: minWeight[diffmin]) {
-                     std::vector<pair<int, int>> mscopy = ms;
-                     int id = std::get<0>(combinezIsolateVertexs[item.first][item.second]);
-                     ms[item.first] = make_pair(id, item.second);
-                     que.push(ms);
-                     ms = mscopy;
-                 }
-             }
-             else {
-                 //有重复的，首先找到各个重复的key，并将diff差值较小的替换，较大的留下，然后进行下一次循环
-                 std::map<float, vector<std::pair<int, int>>> minWeight;//列号，索引位置
-                 std::unordered_map<int,vector<pair<int,int>>>sumId;//id号，（列号，索引号）
-                 std::unordered_map<int,float>idMaxDiff;//id号，最大的差值
-                 for(int i=0;i<ms.size();i++){
-                     int id=ms[i].first;
-                     int index=ms[i].second;
-                     sumId[id].emplace_back(i,index);
-                     if(idMaxDiff.find(id)!=idMaxDiff.end()){
-                         float d = std::get<2>(combinezIsolateVertexs[i][index]) -
-                                   std::get<2>(combinezIsolateVertexs[i][index+1]);
-                         idMaxDiff[id]=std::max(d,idMaxDiff[id]);
-                     }
-                     else{
-                         if (index == combinezIsolateVertexs[i].size() - 1) {
-                           idMaxDiff[id]=-1;
-                         }
-                         else{
-                             float d = std::get<2>(combinezIsolateVertexs[i][index]) -
-                                       std::get<2>(combinezIsolateVertexs[i][index+1]);
-                             idMaxDiff[id]=d;
-                         }
-
-                     }
-                 }
-                 for(auto iter=sumId.begin();iter!=sumId.end();iter++){
-                     if((*iter).second.size()>1){
-                         int vertexId=(*iter).first;
-                         int maxdiff=idMaxDiff[vertexId];
-                         if(maxdiff==-1){
-                             return;
-                         }
-                         auto ids=(*iter).second;
-                         for(auto item:ids){
-                             float d=std::get<2>(combinezIsolateVertexs[item.first][item.second]) -
-                                     std::get<2>(combinezIsolateVertexs[item.first][item.second+1]);
-                             if(d<maxdiff){
-                              ms[item.first]= make_pair(vertexId,item.second+1);
-                             }
-                         }
-
-                     }
-                 }
-                 que.push(ms);
-             }
-
-         }*/
-
-
-    //先剪枝再笛卡尔积
-    /*starttime=Get_Time();
-
-    std::vector<float>colmax;
-    if(topKSet.size()==k){
-        float topkdensity=topKSet.back()->getDensity();
-        for(int i=0;i<combinezIsolateVertexs.size();i++){
-            int max=0;
-            for(int j=0;j<combinezIsolateVertexs.size();j++){
-                if(j==i)
-                    continue;
-                max+=std::get<2>(combinezIsolateVertexs[j][0]);
-            }
-            colmax.emplace_back(max);
-        }
-        for(int i=0;i<combinezIsolateVertexs.size();i++){
-            for(int j=1;j<combinezIsolateVertexs[i].size();j++){
-                float weight=wt.second+std::get<2>(combinezIsolateVertexs[i][j])+colmax[i];
-                float density=weight/(sqrt(n)*(n-1));
-                if(density<topkdensity)
-                    combinezIsolateVertexs[i].erase(combinezIsolateVertexs[i].begin()+j,combinezIsolateVertexs[i].end());
-            }
-        }
-    }
-
-    std::vector<tuple<std::vector<int>,int,float>>result= combinationMatchResult(combinezIsolateVertexs);
-    sort(result.begin(),result.end(), tupleResultCmp);
-    Print_Time2("combinationMatchResult ",starttime);
-    bool flag=true;
-    bool isVisted= false;
-    int i;
-    while(flag){
-        for(i=0;i<result.size();i++){
-            for(int j=0;j<isolateVertexs.size();j++){
-                uint v=std::get<0>(result[i])[j];
-                if(visited_[v]==true){
-                    isVisted= true;
-                    break;
-                }
-            }
-            if(isVisted){
-                continue;
-            }
-            //result中的元素可能重复
-            std::vector<int>tmpresult=std::get<0>(result[i]);
-            std::set<int>isrepeat (tmpresult.begin(),tmpresult.end());
-            if(isrepeat.size()!=tmpresult.size())
-            {
-                continue;
-            }
-
-            //更新match record
-            //find weight/tmin before
-
-            uint tmin=std::min(std::get<1>(result[i]),wt.first);
-            float weight=std::get<2>(result[i]);
-            float t=(sqrt(n)*(n-1));
-            float density=(weight+wt.second)/ (sqrt(n)*(n-1));
-            setIsolateVertexMatchResult(std::get<0>(result[i]),isolateVertexs,tmin,density);
-            //设置为已访问
-            setBatchVisited(std::get<0>(result[i]), true);
-            //加入结果集
-            std::vector<uint>m(n);
-            for(int i=0;i<match.size();i++){
-                m[order_vs_[matchorderindex][i]]=std::get<0>(match[i]);
-            }
-            MatchRecord *r=new MatchRecord(density,tmin,m);
-            bool matchResult= addMatchRecords(r);
-            if(!matchResult){
-                flag= false;
-                recoverIsolateVertexMatchResult(isolateVertexs);
-                setBatchVisited(std::get<0>(result[i]), false);
-                break;
-            }
-            else{
-                if(type==positive){
-                    num_positive_results_++;
-                }
-                else if(type==negative){
-                    num_negative_results_++;
-                }
-            }
-            //还原isolatevertex和Visited
-            recoverIsolateVertexMatchResult(isolateVertexs);
-            setBatchVisited(std::get<0>(result[i]), false);
-        }
-        if(i==result.size()){
-            flag= false;
-        }
-    }*/
-
+    delete[]noscan;*/
 }
 
 std::vector<tuple<std::vector<int>, int, float>>
@@ -2389,7 +2273,7 @@ bool Graphflow::isnoNextVertex(int *noscan, int len) {
 }
 
 void Graphflow::addMatchResultWithHeap(uint matchorderindex, searchType type) {
-    std::chrono::high_resolution_clock::time_point starttime;
+   /* std::chrono::high_resolution_clock::time_point starttime;
     int n = query_.NumVertices();
     auto &isolateVertexs = query_.isolatedRecord[matchorderindex];
     std::vector<std::vector<SingleCandidate>> combinezIsolateVertexs;
@@ -2401,31 +2285,6 @@ void Graphflow::addMatchResultWithHeap(uint matchorderindex, searchType type) {
     }
 
     int len = combinezIsolateVertexs.size();
-#ifdef PRINT_DEBUG
-    std::vector<int>testm(this->query_.NumVertices(),-1);
-    for(int i=0;i<n;i++){
-        if(match[i].getVertexId()!=-1){
-            testm[order_vs_[matchorderindex][i]]=match[i].getVertexId();
-        }
-    }
-    std::cout<<"matchorderindex "<<matchorderindex<<endl;
-    for(int i=0;i<n;i++){
-        if(testm[i]!=-1){
-            std::cout<<" m["<<i<<"]= "<<testm[i]<<" ";
-        }
-    }
-    std::cout<<"Candidate"<<endl;
-    for(int i:isolateVertexs){
-        int id=order_vs_[matchorderindex][i];
-        std::cout<<id<<" candidate: ";
-        for(int j=0;j<matchCandidate[i].size();j++){
-            int candi=matchCandidate[i][j].getVertexId();
-            std::cout<<candi<<" ";
-        }
-        std::cout<<endl;
-    }
-    std::cout<<endl;
-#endif
     auto wt = findWeightBeforeIsolated();
     int *hash = new int[len]{};//索引指针
     int *noscan = new int[len]{};//记录是否停止
@@ -2434,73 +2293,6 @@ void Graphflow::addMatchResultWithHeap(uint matchorderindex, searchType type) {
         float weight = combinezIsolateVertexs[i][0].getSumWeight();
         maxHeap.push(std::make_pair(weight, i));
     }
-    //计算全局Tmax//大于 则直接return
-/*    float Tmax=wt;
-    std::unordered_map<int,int>visitedId;
-    int*pmax=new int[len]{};
-    for(int i=0;i<len;i++){
-        int index=0;
-        int id=combinezIsolateVertexs[i][index].getVertexId();
-        bool flag= true;
-        while(visited_[id]){
-            if(index==combinezIsolateVertexs[i].size())
-            {
-                flag= false;
-                break;
-            }
-            combinezIsolateVertexs[i][index].setVertexId(-1);
-           // combinezIsolateVertexs[i].erase(combinezIsolateVertexs[i].begin()+index);
-            index++;
-            id=combinezIsolateVertexs[i][index].getVertexId();
-        }
-        pmax[i]=index;
-        if(!flag)
-        {
-            return;
-        }
-        if(!visitedId.count(id)){
-            visitedId[id]=i;
-        }
-        else{
-            int pre_group_id=visitedId[id];
-            float gap1=combinezIsolateVertexs[pre_group_id][pmax[pre_group_id]].getSumWeight()-combinezIsolateVertexs[pre_group_id][pmax[pre_group_id]+1].getSumWeight();
-            float gap2=combinezIsolateVertexs[i][pmax[i]].getSumWeight()-combinezIsolateVertexs[i][pmax[i]+1].getSumWeight();
-            if(gap1<gap2){
-                if(pmax[pre_group_id]<combinezIsolateVertexs[pre_group_id].size()-1)
-                {
-                    pmax[pre_group_id]++;
-                    visitedId[id]=i;
-                    int preId=combinezIsolateVertexs[pre_group_id][pmax[pre_group_id]].getVertexId();
-                    visitedId[preId]=pre_group_id;
-                }
-                else{
-                    pmax[i]++;
-                }
-            }
-            else{
-                if(pmax[i]<combinezIsolateVertexs[i].size()-1)
-                {
-                    pmax[i]++;
-                }
-                else{
-                    pmax[pre_group_id]++;
-                    visitedId[id]=i;
-                    int preId=combinezIsolateVertexs[pre_group_id][pmax[pre_group_id]].getVertexId();
-                    visitedId[preId]=pre_group_id;
-                }
-            }
-            int curId=combinezIsolateVertexs[i][pmax[i]].getVertexId();
-            visitedId[curId]=i;
-        }
-    }
-    for(int i=0;i<len;i++){
-        Tmax+=combinezIsolateVertexs[i][pmax[i]].getSumWeight();
-    }
-    if(topKSet.size()==k){
-          float density=Tmax/(sqrt(n)*(n-1));
-        if(topKSet.back()->getDensity()>density)
-            return;
-    }*/
     float globalTmax = wt;
     for (int i = 0; i < len; i++)
         globalTmax += combinezIsolateVertexs[i][0].getSumWeight();
@@ -2569,7 +2361,7 @@ void Graphflow::addMatchResultWithHeap(uint matchorderindex, searchType type) {
         }
     }
     delete[]hash;
-    delete[]noscan;
+    delete[]noscan;*/
 }
 
 void Graphflow::CatesianProductWithHeap(int matchorderindex, searchType type, int depth, int len, int *hash,
@@ -2621,91 +2413,184 @@ void Graphflow::createLabelToQueryVertex() {
     }
 }
 
-bool Graphflow::updaterightNeighborCandidate(int matchorderindex, uint uk, uint uk_neigh, bool isFirstEdge, uint vk,
+bool Graphflow::updaterightNeighborCandidate(int depth,std::vector<std::vector<SingleCandidate>>&matchCandidate,std::vector<std::vector<SingleCandidate>>&nextMatchCandidate,
+       std::vector<float>nextLocalStarIndex,int matchorderindex, uint uk, uint uk_neigh, bool isFirstEdge, uint vk,
                                              const std::vector<uint> &uk_neighbor) {
-    const std::vector<Neighbor> &vN = this->data_.vNeighbors[vk];
+    bool isNull= false;
+    const std::vector<Neighbor> &vN = this->data_.vNeighbors2[vk];
     const int n = uk_neighbor.size();
-    //1.对于所有的右邻居，找其候选解
-    for (int i = 0; i < n; i++) {
-        uint query_id = uk_neighbor[i];
-        if (isFirstEdge) {
-            if (query_id == uk_neigh) {
-                isFirstEdge = false;
-                continue;
+    for(int i=depth+1;i<query_.NumVertices();i++){
+        uint query_id=order_vs_[matchorderindex][i];
+        //isNeighbor
+        if(query_.isNeighbor(uk,query_id)){
+            if (isFirstEdge) {
+                if (query_id == uk_neigh) {
+                    isFirstEdge = false;
+                    continue;
+                }
             }
-        }
-        uint query_vertex_label = query_.GetVertexLabel(query_id);
-        int query_order_index = order_vertex_index[matchorderindex][query_id];
-        uint query_elabel = std::get<2>(query_.GetEdgeLabel(uk, query_id));
-        StarGraph *s = globalStarIndex[matchorderindex][query_order_index];
-        bool isFirstVertex = true;
-        bool isCandidateFirstNull = true;
-        float maxweight = 0;
-        float curWeight = 0;
-        if (matchCandidate[query_order_index].size() != 0)
-            isCandidateFirstNull = false;
-        //对于vk的每个邻居neighbor
-        std::chrono::high_resolution_clock::time_point start;
-        start = Get_Time();
-        const std::vector<uint> &vNN = data_.GetNeighbors(vk);
-        for (const auto &neighbor: vN) {
-            uint neighbor_id = neighbor.getVertexId();
-            if (visited_[neighbor_id])
-                continue;
-            uint v_elabel = neighbor.GetEdgelabel();
-            if (neighbor.getVertexLabel() == query_vertex_label && query_elabel == v_elabel) {
-                maxweight = globalVkMatchUk[neighbor_id][matchorderindex][queryVertexIndexInlabel[query_id]];
-                //update LocalStarIndex
-                //add candidate
-                curWeight = neighbor.GetEdgeWeight();
-                if (isCandidateFirstNull) {
-                    if (isFirstVertex) {
-                        isFirstVertex = false;
-                        LocalStarIndex[query_order_index] = maxweight;
-                    } else {
-                        if (LocalStarIndex[query_order_index] < maxweight) {
-                            LocalStarIndex[query_order_index] = maxweight;
-                        }
-                    }
-                    matchCandidate[query_order_index].emplace_back(neighbor_id, curWeight);
+            uint query_vertex_label = query_.GetVertexLabel(query_id);
+            int query_order_index = order_vertex_index[matchorderindex][query_id];
+            uint query_elabel = std::get<2>(query_.GetEdgeLabel(uk, query_id));
+            StarGraph *s = globalStarIndex[matchorderindex][query_order_index];
+            bool isFirstVertex = true;
+            bool isCandidateFirstNull = true;
+            float maxweight = 0;
+            float curWeight = 0;
+            if(matchCandidate[query_order_index].size()==0) {
+                Neighbor neighbor(query_vertex_label, query_elabel);
+                auto lower = std::lower_bound(vN.begin(), vN.end(), neighbor, CompareNeighbors2);
+                std::pair<uint, uint> evl = make_pair(query_elabel, query_vertex_label);
+                if (lower==vN.end()||(*lower).GetelabelAndVertexLabel() != evl) {
+                    break;
                 } else {
-                    std::vector<SingleCandidate> &neigh_candidate = matchCandidate[query_order_index];
-                    for (SingleCandidate &s: neigh_candidate) {
-                        if (s.getVertexId() == neighbor_id) {
-                            if (isFirstVertex) {
-                                isFirstVertex = false;
-                                LocalStarIndex[query_order_index] = maxweight;
-                            } else {
-                                if (LocalStarIndex[query_order_index] < maxweight) {
-                                    LocalStarIndex[query_order_index] = maxweight;
-                                }
-                            }
-                            s.addFlag();
-                            s.addSumWeight(curWeight);
-                            break;
+                    while ((*lower).GetelabelAndVertexLabel() == evl&&(lower!=vN.end())) {
+                        uint neighbor_id = (*lower).getVertexId();
+                        if (visited_[neighbor_id]) {
+                            lower++;
+                            continue;
                         }
+                        uint v_elabel = neighbor.GetEdgelabel();
+                        maxweight = globalVkMatchUk[neighbor_id][matchorderindex][queryVertexIndexInlabel[query_id]];
+                        //update LocalStarIndex
+                        //add candidate
+                        curWeight = (*lower).GetEdgeWeight();
+                        if (isFirstVertex) {
+                            isFirstVertex = false;
+                            nextLocalStarIndex[query_order_index] = maxweight;
+                        } else {
+                            if (nextLocalStarIndex[query_order_index] < maxweight) {
+                                nextLocalStarIndex[query_order_index] = maxweight;
+                            }
+                        }
+                        nextMatchCandidate[query_order_index].emplace_back(neighbor_id, curWeight);
+                        lower++;
                     }
                 }
             }
-        }
-        if (matchCandidate[query_order_index].size() == 0) {
-            //isFirst恢复true;
-            for (int i = 0; i < n; i++) {
-                uint query_id = uk_neighbor[i];
-                int query_order_index = order_vertex_index[matchorderindex][query_id];
-                matchCandidate[query_order_index].clear();
+            else{
+                Neighbor neighbor(query_vertex_label, query_elabel);
+                auto lower = std::lower_bound(vN.begin(), vN.end(), neighbor, CompareNeighbors2);
+                auto upper = std::upper_bound(vN.begin(), vN.end(), neighbor, CompareNeighbors2);
+                if(lower==vN.end()){
+                    break;
+                }
+                std::pair<uint, uint> evl = make_pair(query_elabel, query_vertex_label);
+                int qSize=matchCandidate[query_order_index].size();
+                auto & curMatchCandiate=matchCandidate[query_order_index];
+                int rightV=0;
+                while (lower<upper&&rightV<qSize) {
+                    uint neighbor_id = (*lower).getVertexId();
+                    if (visited_[neighbor_id]) {
+                        lower++;
+                        continue;
+                    }
+                    while((*lower).getVertexId()>curMatchCandiate[rightV].getVertexId()){
+                        lower++;
+                    }
+                    if(lower>=upper){
+                        break;
+                    }
+                    while((*lower).getVertexId()<curMatchCandiate[rightV].getVertexId()){
+                        rightV++;
+                    }
+                    if(rightV>=qSize){
+                        break;
+                    }
+                    if((*lower).getVertexId()==curMatchCandiate[rightV].getVertexId()){
+                        curWeight=(*lower).GetEdgeWeight();
+                        neighbor_id=curMatchCandiate[rightV].getVertexId();
+                        maxweight = globalVkMatchUk[neighbor_id][matchorderindex][queryVertexIndexInlabel[query_id]];
+                        if(isFirstVertex){
+                            isFirstVertex= false;
+                            nextLocalStarIndex[query_order_index]=maxweight;
+                        }
+                        else{
+                            if(nextLocalStarIndex[query_order_index]<maxweight){
+                                nextLocalStarIndex[query_order_index]=maxweight;
+                            }
+                        }
+                        nextMatchCandidate[query_order_index].emplace_back(neighbor_id,curMatchCandiate[rightV].getSumWeight()+curWeight);
+                        lower++;
+                        rightV++;
+                    }
+                }
             }
-            return true;
+
+/*            if (matchCandidate[query_order_index].size() != 0)
+                isCandidateFirstNull = false;
+            //对于vk的每个邻居neighbor
+            for (const auto &neighbor: vN) {
+                uint neighbor_id = neighbor.getVertexId();
+                if (visited_[neighbor_id])
+                    continue;
+                uint v_elabel = neighbor.GetEdgelabel();
+                if (neighbor.getVertexLabel() == query_vertex_label && query_elabel == v_elabel) {
+                    maxweight = globalVkMatchUk[neighbor_id][matchorderindex][queryVertexIndexInlabel[query_id]];
+                    //update LocalStarIndex
+                    //add candidate
+                    curWeight = neighbor.GetEdgeWeight();
+                    if (isCandidateFirstNull) {
+                        if (isFirstVertex) {
+                            isFirstVertex = false;
+                            nextLocalStarIndex[query_order_index] = maxweight;
+                        } else {
+                            if (nextLocalStarIndex[query_order_index] < maxweight) {
+                                nextLocalStarIndex[query_order_index] = maxweight;
+                            }
+                        }
+                        nextMatchCandidate[query_order_index].emplace_back(neighbor_id, curWeight);
+                    } else {
+                        std::vector<SingleCandidate> &neigh_candidate = matchCandidate[query_order_index];
+                        for (SingleCandidate &s: neigh_candidate) {
+                            if (s.getVertexId() == neighbor_id) {
+                                if (isFirstVertex) {
+                                    isFirstVertex = false;
+                                    nextLocalStarIndex[query_order_index] = maxweight;
+                                } else {
+                                    if (nextLocalStarIndex[query_order_index] < maxweight) {
+                                        nextLocalStarIndex[query_order_index] = maxweight;
+                                    }
+                                }
+                                nextMatchCandidate[query_order_index].emplace_back(s.getVertexId(),s.getSumWeight()+curWeight);
+                                *//*s.addFlag();
+                                s.addSumWeight(curWeight);*//*
+                                break;
+                            }
+                        }
+                    }
+                }
+            }*/
+            if (nextMatchCandidate[query_order_index].size() == 0) {
+                //isFirst恢复true;
+                for (int j = depth+1; j <=i; j++) {;
+                    //nt query_order_index = order_vertex_index[matchorderindex][query_id];
+                    nextMatchCandidate[j].resize(0);
+                }
+               isNull= true;
+                break;
+            }
+        }
+        else{
+            if(matchCandidate[i].size()!=0)
+            nextMatchCandidate[i]=matchCandidate[i];
         }
     }
-    return false;
+    return isNull;
+    //1.对于所有的右邻居，找其候选解
+/*    for (int i = 0; i < n; i++) {
+        uint query_id = uk_neighbor[i];
+
+    }
+    return false;*/
 }
 
 void Graphflow::InitialLocalIndex(int matchorderindex) {
     const std::vector<StarGraph *> &gs = globalStarIndex[matchorderindex];
     int n = gs.size();
+    for(int j=0;j<query_.NumVertices();j++)
     for (int i = 1; i < n; i++) {
-        LocalStarIndex[i] = gs[i]->getStarMaxWeight();
+        LocalStarIndex[j][i] = gs[i]->getStarMaxWeight();
     }
 }
 
@@ -2754,6 +2639,8 @@ void Graphflow::PrintAverageTime(int len) {
     std::cout << "num add edge update:" << numupdatestar / query_.NumEdges() << endl;
     std::cout << "num add matchresult:" <<  sumAllMatchFind << endl;
     std::cout << "num delete matchresult:" <<  sumDeleteallMatchFind << endl;
+    std::cout << "num copy time:" << std::fixed << std::setprecision(2) <<toal_copy_context.GetTimer()*1.0 << endl;
+    std::cout << "test:" << std::fixed << std::setprecision(2) <<total_test.GetTimer() << endl;
 #ifdef COMPUTE_TIME
     stringstream _ss;
     _ss<< (total_update_globalIndex_time.GetTimer() * 1.0 / len + total_search_time.GetTimer() * 1.0 / len)<<","

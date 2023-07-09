@@ -16,3 +16,6 @@ void Timer::StopTimer() {
 long long Timer::GetTimer() {
     return time_microseconds.count();
 }
+void Timer::clearTimer() {
+    time_microseconds=std::chrono::microseconds (0);
+}

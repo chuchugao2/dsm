@@ -33,6 +33,10 @@ public:
         this->edgeWeight = 0;
         this->timetamp = 0;
     };
+    Neighbor(uint toVertexLabel_, float edgeLabel_) {
+        this->toVertexLabel = toVertexLabel_;
+        this->edgeLabel = edgeLabel_;
+    };
 
     Neighbor(uint toVertexId_, uint toVertexLabel_, uint edgeLabel_, float edgeWeight_) {
         this->toVertexId = toVertexId_;

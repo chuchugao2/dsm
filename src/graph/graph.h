@@ -88,6 +88,7 @@ public:
     std::vector<uint> vlabels_;//节点标签
     std::vector<Edge> vEdge;//存储初始化载入所有的数据边
     std::vector<std::vector<Neighbor>> vNeighbors;//每个数据节点的邻居信息
+    std::vector<std::vector<Neighbor>> vNeighbors2;//每个数据节点的邻居信息
     std::vector<int *> labelIndex;//记录每个节点邻居节点的点标签和边标签的个数
     // std::vector<std::vector<std::vector<int>>> LDRecord;
     //std::vector<std::vector<std::vector<ForwardNeighbor>>> forwardNeighbors;//前向邻居
@@ -156,6 +157,7 @@ public:
     std::vector<uint> GetIsolateVertexBeforeDepth(uint order_index, uint depth);
 
     void setBatchVertexType(uint order_index, const std::vector<uint> &vertexs, vertexType type);
+    bool isNeighbor(uint u1,uint u2);
 };
 
 
