@@ -10,7 +10,7 @@ class SingleCandidate {
 protected:
     int vertexId = 0;
     float sumWeight = 0;
-    int flag = 1;
+    int flag = 0;
 public:
     SingleCandidate() {};
 

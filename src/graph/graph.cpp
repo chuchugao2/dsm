@@ -9,7 +9,6 @@
 #include "../utils/types.h"
 #include "../utils/utils.h"
 #include "../utils/globals.h"
-
 bool CompareNeighbors(const Neighbor& a, const Neighbor& b) {
     if (a.GetEdgelabel() != b.GetEdgelabel()) {
         return a.GetEdgelabel() >b.GetEdgelabel();
@@ -31,7 +30,7 @@ void Graph::AddVertex(uint id, uint label) {
         weights_.resize(id + 1);
         timestamp_.resize(id + 1);
         vNeighbors.resize(id + 1);
-        vNeighbors2.resize(id+1);
+        vNeighbors2.resize(id + 1);
     } else if (vlabels_[id] == NOT_EXIST) {
         vlabels_[id] = label;
     }

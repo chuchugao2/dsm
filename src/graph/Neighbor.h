@@ -44,6 +44,10 @@ public:
         this->edgeLabel = edgeLabel_;
         this->edgeWeight = edgeWeight_;
     };
+    Neighbor( uint toVertexLabel_, uint edgeLabel_) {
+        this->toVertexLabel = toVertexLabel_;
+        this->edgeLabel = edgeLabel_;
+    };
 
     uint getVertexId() const;
 
