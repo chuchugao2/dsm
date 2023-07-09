@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 
     std::chrono::high_resolution_clock::time_point start, lstart;
 
-    Log::init_track1("/home/gaochuchu/gcc/dsm/src/log/loginfo3.txt");
+    Log::init_track1("/home/gaochuchu/gcc/dsm/src/log/loginfo2.txt");
     Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/compute_time3.txt");
 #ifdef COMPUTE_TIME
     stringstream _ss;

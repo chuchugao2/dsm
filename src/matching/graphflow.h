@@ -33,7 +33,7 @@ public:
     //记录所有匹配的结果
     std::vector<std::vector<StarGraph *>> globalStarIndex;//记录每种匹配下每个节点左邻居以及最大权值
     std::vector<SingleCandidate> match;//每个节点的匹配结果  vertex density
-    std::vector<std::vector<std::vector<SingleCandidate>>> matchCandidate;//id density 一维是depth,二三维表示该层次下所有的查询点的候选节点
+    std::vector<std::vector<SingleCandidate>> matchCandidate;//id density
     std::vector<float> suffixMax;
     std::vector<float> isolatedMax;
     std::vector<std::vector<std::vector<uint>>> rightNeighbor;//匹配索引号，id号
@@ -41,7 +41,7 @@ public:
     std::vector<std::vector<std::vector<int>>> globalVkMatchUk;//<vk,ak,uk>
     std::vector<std::vector<uint>> labelToQueryVertex;//每个标签对应的查询点
     std::vector<uint> queryVertexIndexInlabel;//每个查询点在label数组中的索引号
-    std::vector<std::vector<float>> LocalStarIndex;//局部索引 第一个维度是该层次，第二个维度当前所有的LocalSTarIndex;
+    std::vector<float> LocalStarIndex;//局部索引
     std::vector<std::vector<int>> matchLeftNeighborSum;//所有节点左邻居的个数
     std::vector<std::vector<int>> matchVetexLeftNeighbor;//所有匹配序列中左邻居组合数
     std::vector<vector<float>> matchVetexSumweight;//每种组合更新得到的最大权值
@@ -53,7 +53,8 @@ public:
     long sumDeleteallMatchFind = 0;
     int numupdatestar = 0;
     Timer total_search_time, total_print_time, total_densityFilter_time, total_update_globalIndex_time, total_updaterightNeighborCandidate_time,
-            total_delete_time, total_delete_update_time,toal_copy_context,total_test,total_test2;
+            total_delete_time, total_delete_update_time;
+
 
 public:
     Graphflow(Graph &query_graph, Graph &data_grasph, uint max_num_results,
@@ -175,7 +176,7 @@ private:
 
     void createLabelToQueryVertex();
 
-    bool updaterightNeighborCandidate(int depth,std::vector<std::vector<SingleCandidate>>&matchCandidate,std::vector<std::vector<SingleCandidate>>&nextMatchCandidate,std::vector<float>nextLocalStarIndex,int matchorderindex, uint uk, uint uk_neigh, bool isFirstEdge, uint vk,
+    bool updaterightNeighborCandidate(int matchorderindex, uint uk, uint uk_neigh, bool isFirstEdge, uint vk,
                                       const std::vector<uint> &uk_neighbor);
 
     void InitialLocalIndex(int matchorderindex);
