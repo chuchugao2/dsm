@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/comupute_time2.txt");
 
     std::string path="/home/gaochuchu/gcc/dsm/src/log/";
-    std::string initial_result_path="/home/gaochuchu/gcc/baseline/src/result/";
+    std::string initial_result_path="/home/gaochuchu/gcc/dsm/src/result/";
     if(result_path==""){
         path+="topkResult.txt";
     }else{

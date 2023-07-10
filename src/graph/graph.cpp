@@ -78,6 +78,7 @@ void Graph::AddEdge(uint v1, uint v2, uint label,float weights,uint flag)
     }
 
     lower = std::lower_bound(neighbors_[v2].begin(), neighbors_[v2].end(), v1);
+    if (lower != neighbors_[v2].end() && *lower == v1) return;
     dis = std::distance(neighbors_[v2].begin(), lower);
     neighbors_[v2].insert(lower, v1);
     elabels_[v2].insert(elabels_[v2].begin() + dis, label);
