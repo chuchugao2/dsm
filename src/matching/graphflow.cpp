@@ -2931,12 +2931,14 @@ void Graphflow::deleteGlobalSubgraph(uint v1, uint v2,uint elabel,float weight, 
         if(v1label!=v2label) {
 //            std::chrono::high_resolution_clock::time_point start;
             total_deleteGlobalSubgraphHelp_time.StartTimer();
+            globalsubgraph_.RemoveEdge(v1,v1label,v2,v2label,u1,u2,elabel,weight);
             isMatch=deleteGlobalSubgraphHelp(*it,u1,u2,u1label,u2label,v1,v2,v1label,v2label,elabel,weight,mcandidate);
             total_deleteGlobalSubgraphHelp_time.StopTimer();
         }
         else{
             for(int i=0;i<2;i++){
                 total_deleteGlobalSubgraphHelp_time.StartTimer();
+                globalsubgraph_.RemoveEdge(v1,v1label,v2,v2label,u1,u2,elabel,weight);
                 isMatch=deleteGlobalSubgraphHelp(*it,u1,u2,u1label,u2label,v1,v2,v1label,v2label,elabel,weight,mcandidate);
                 std::swap(v1,v2);
                 total_deleteGlobalSubgraphHelp_time.StopTimer();
@@ -3001,7 +3003,7 @@ void Graphflow::deleteGlobalSubgraph(uint v1, uint v2,uint elabel,float weight, 
          uint v1label=data_.GetVertexLabel(v1);
          uint v2label=data_.GetVertexLabel(v2);
          total_removeEdge.StartTimer();
-         globalsubgraph_.RemoveEdge(v1,v1label,v2,v2label,u1,u2,elabel,weight);
+         //globalsubgraph_.RemoveEdge(v1,v1label,v2,v2label,u1,u2,elabel,weight);
          total_removeEdge.StopTimer();
          if(flag1&&flag2){
              //仍在候选节点中，删除边，更新v1,v2 局部索引
