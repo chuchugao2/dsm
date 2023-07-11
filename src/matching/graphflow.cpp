@@ -2671,7 +2671,7 @@ void Graphflow::PrintAverageTime(int len) {
     //std::cout<<"average sub local index time: "<<std::fixed << std::setprecision(2)<<subtime_in_local_index*1.0/len<<" microseconds"<<endl;
 #ifdef COMPUTE_TRACK
 stringstream _ss;
-    _ss<<std::fixed << std::setprecision(2)<<(total_search_time.GetTimer()*1.0/len+total_update_gloabalsubgraph_time.GetTimer()*1.0/len)<<" microseconds"<<","
+    _ss<<std::fixed << std::setprecision(2)<<(total_search_time.GetTimer()*1.0/len+total_update_gloabalsubgraph_time.GetTimer()*1.0/len)<<","
     <<std::fixed << std::setprecision(2)<<total_update_gloabalsubgraph_time.GetTimer()*1.0/len<<","
     <<std::fixed << std::setprecision(2)<<total_search_time.GetTimer()*1.0/len<<","
     <<std::fixed << std::setprecision(2)<<(total_delete_time.GetTimer()*1.0/len+total_delete_update_time.GetTimer()*1.0/len)<<","
@@ -2679,12 +2679,6 @@ stringstream _ss;
     <<std::fixed << std::setprecision(2)<<total_delete_time.GetTimer()*1.0/len<<","
     <<sumAllMatchFind<<","
     <<sumDeleteallMatchFind<<endl;
-    _ss<<"average delete update global subgraph time:"<<std::fixed << std::setprecision(2)<<(total_delete_update_time*1.0)/len<<" microseconds"<<endl;
-    _ss<<"average delete update time:"<<std::fixed << std::setprecision(2)<<(total_delete_time*1.0/len+total_delete_update_time*1.0/len)<<" microseconds"<<endl;
-    _ss<<"average deleteUpdateglobalVertexStarIndex time:"<<std::fixed << std::setprecision(2)<<(total_deleteUpdateglobalVertexStarIndex_time*1.0)/len<<" microseconds"<<endl;
-    _ss<<"average deleteGlobalGraphCandidateEdges time:"<<std::fixed << std::setprecision(2)<<(total_deleteGlobalGraphCandidateEdges_time*1.0)/len<<" microseconds"<<endl;
-    _ss<<"average deleteGlobalSubgraphHelp time:"<<std::fixed << std::setprecision(2)<<(total_deleteGlobalSubgraphHelp_time*1.0)/len<<" microseconds"<<endl;
-    _ss<<"average globalsubgrah remove edge time: "<<std::fixed << std::setprecision(2)<<total_removeEdge*1.0/len<<" microseconds"<<endl;
     Log::track3(_ss);
 #endif
 }

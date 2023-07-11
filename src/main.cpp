@@ -44,10 +44,10 @@ int main(int argc, char *argv[])
     std::chrono::high_resolution_clock::time_point start, lstart;
 
     Log::init_track1("/home/gaochuchu/gcc/dsm/src/log/loginfo1.txt");
-    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/comupute_time2.txt");
+    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/compute_time4.txt");
 
     std::string path="/home/gaochuchu/gcc/dsm/src/log/";
-    std::string initial_result_path="/home/gaochuchu/gcc/dsm/src/result/";
+    std::string initial_result_path="/home/gaochuchu/gcc/baseline/src/result/";
     if(result_path==""){
         path+="topkResult.txt";
     }else{
@@ -59,7 +59,11 @@ int main(int argc, char *argv[])
         initial_result_path+=query_info;
     }
     Log::init_track2(path);
-    Log::track3(query_info);
+#ifdef COMPUTE_TRACK
+    stringstream _ss;
+    _ss<<query_info<<endl;
+    Log::track3(_ss);
+#endif
 
     start = Get_Time();
     std::cout << "----------- Loading graphs ------------" << std::endl;
