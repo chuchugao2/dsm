@@ -52,6 +52,8 @@ public:
     total_deleteGlobalGraphCandidateEdges_time,total_updaterightNeighborCandidate_time,total_deleteGlobalSubgraphHelp_time,total_removeEdge;
     int numAddTopk=0;
     int allMatchFind=0;
+    int sumAllMatchFind=0;
+    int sumDeleteallMatchFind=0;
     int numupdatestar=0;
 
 public:

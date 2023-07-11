@@ -1206,6 +1206,7 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight) {
     //Print_Time2("SearchMatches ", start);
     END_ENUMERATION:
     total_print_time.StartTimer();
+    sumAllMatchFind+=allMatchFind;
     std::cout<<"num add top k:"<<numAddTopk<<endl;
     std::cout<<"all match find:"<<allMatchFind<<endl;
     updateTopK();
@@ -1455,7 +1456,9 @@ void Graphflow::RemoveEdge(uint v1, uint v2,uint label) {
         }
     }
     total_delete_time.StopTimer();
+
     total_delete_print_time.StartTimer();
+    sumDeleteallMatchFind+=allMatchFind;
     std::cout<<"delete research matches:"<<allMatchFind<<endl;
     deleteUpdateTopK();
     total_delete_print_time.StopTimer();
@@ -2668,10 +2671,14 @@ void Graphflow::PrintAverageTime(int len) {
     //std::cout<<"average sub local index time: "<<std::fixed << std::setprecision(2)<<subtime_in_local_index*1.0/len<<" microseconds"<<endl;
 #ifdef COMPUTE_TRACK
 stringstream _ss;
-    _ss<<"average insert search time: "<<std::fixed << std::setprecision(2)<<total_search_time*1.0/len<<" microseconds"<<endl;
-    _ss<<"average insety update global subgraph time: "<<std::fixed << std::setprecision(2)<<total_update_gloabalsubgraph_time*1.0/len<<" microseconds"<<endl;
-    _ss<<"average insert update time "<<std::fixed << std::setprecision(2)<<(total_search_time*1.0/len+total_update_gloabalsubgraph_time*1.0/len)<<" microseconds"<<endl;
-    _ss<<"average delete search time:"<<std::fixed << std::setprecision(2)<<total_delete_time*1.0/len<<" microseconds"<<endl;
+    _ss<<std::fixed << std::setprecision(2)<<(total_search_time.GetTimer()*1.0/len+total_update_gloabalsubgraph_time.GetTimer()*1.0/len)<<" microseconds"<<","
+    <<std::fixed << std::setprecision(2)<<total_update_gloabalsubgraph_time.GetTimer()*1.0/len<<","
+    <<std::fixed << std::setprecision(2)<<total_search_time.GetTimer()*1.0/len<<","
+    <<std::fixed << std::setprecision(2)<<(total_delete_time.GetTimer()*1.0/len+total_delete_update_time.GetTimer()*1.0/len)<<","
+    <<std::fixed << std::setprecision(2)<<(total_delete_update_time.GetTimer()*1.0)/len<<","
+    <<std::fixed << std::setprecision(2)<<total_delete_time.GetTimer()*1.0/len<<","
+    <<sumAllMatchFind<<","
+    <<sumDeleteallMatchFind<<endl;
     _ss<<"average delete update global subgraph time:"<<std::fixed << std::setprecision(2)<<(total_delete_update_time*1.0)/len<<" microseconds"<<endl;
     _ss<<"average delete update time:"<<std::fixed << std::setprecision(2)<<(total_delete_time*1.0/len+total_delete_update_time*1.0/len)<<" microseconds"<<endl;
     _ss<<"average deleteUpdateglobalVertexStarIndex time:"<<std::fixed << std::setprecision(2)<<(total_deleteUpdateglobalVertexStarIndex_time*1.0)/len<<" microseconds"<<endl;
