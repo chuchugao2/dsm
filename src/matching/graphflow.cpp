@@ -2930,9 +2930,12 @@ void Graphflow::deleteGlobalSubgraph(uint v1, uint v2,uint elabel,float weight, 
         uint v2label=data_.GetVertexLabel(v2);
         uint elabel=std::get<2>(query_.GetEdgeLabel(u1,u2));
         if(v1label!=v2label) {
+            if(v1label!=u1label){
+                std::swap(v1,v2);
+            }
 //            std::chrono::high_resolution_clock::time_point start;
             total_deleteGlobalSubgraphHelp_time.StartTimer();
-            globalsubgraph_.RemoveEdge(v1,v1label,v2,v2label,u1,u2,elabel,weight);
+            globalsubgraph_.RemoveEdge(v1,u1label,v2,u2label,u1,u2,elabel,weight);
             isMatch=deleteGlobalSubgraphHelp(*it,u1,u2,u1label,u2label,v1,v2,v1label,v2label,elabel,weight,mcandidate);
             total_deleteGlobalSubgraphHelp_time.StopTimer();
         }
