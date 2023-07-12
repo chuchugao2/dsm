@@ -797,8 +797,8 @@ void Graphflow::FindMatches(uint flag, uint order_index, uint depth, std::vector
         uint n = query_.NumVertices();
         if (topKSet.size() == k) {
             float weight = topKSet.back()->getDensity();
-            uint tmpdensity = density_s + back_max_result;
-            if (tmpdensity / (sqrt(n) * (n - 1)) < weight)
+            float tmpdensity = (density_s + back_max_result)/(sqrt(n) * (n - 1));
+            if (tmpdensity < weight)
                 return;
         }
     }
@@ -806,7 +806,6 @@ void Graphflow::FindMatches(uint flag, uint order_index, uint depth, std::vector
     uint u_min = NOT_EXIST;
     uint u_min_label = NOT_EXIST;
     uint u_min_size = UINT_MAX;
-
 
     // find u_min
     const auto &q_nbrs = query_.GetNeighbors(u);
@@ -902,6 +901,12 @@ void Graphflow::FindMatches(uint flag, uint order_index, uint depth, std::vector
 
             float lastds = density_s / (sqrt(m.size()) * (m.size() - 1));
             //sort(m.begin(),m.end());
+            if(m[5]==39984&&m[4]==5884&&m[3]==67536&&m[0]==7683&&m[6]==52589&&m[7]==7681&&m[1]==67293&&m[2]==21544)
+            {
+                std::cout<<"find result2"<<endl;
+                std::cout<<"order_index:"<<order_index<<endl;
+
+            }
             num_results++;
             MatchRecord *record = new MatchRecord(lastds, m);
             allMatchFind++;
