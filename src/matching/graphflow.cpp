@@ -1316,7 +1316,6 @@ void Graphflow::RemoveEdge(uint v1, uint v2,uint label) {
     bool flag=deleteMatchRecordWithEdge(v1,v1label,v2,v2label,label);
     if(!flag)
     {
-        total_delete_time.StopTimer();
         return;
     }
     //5 从subgraph中的Edge进行重搜
