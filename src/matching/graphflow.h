@@ -52,9 +52,9 @@ public:
     long sumAllMatchFind = 0;
     long sumDeleteallMatchFind = 0;
     int numupdatestar = 0;
-    Timer total_search_time, total_print_time, total_densityFilter_time, total_update_globalIndex_time, total_updaterightNeighborCandidate_time,
-            total_delete_time, total_delete_update_time;
-
+    long IsearchSpace=0,DsearchSpace=0,IdeterminCandite=0,DdeterminCandite=0;
+   /* Timer total_search_time, total_print_time, total_densityFilter_time, total_update_globalIndex_time, total_updaterightNeighborCandidate_time,
+            total_delete_time, total_delete_update_time;*/
 
 public:
     Graphflow(Graph &query_graph, Graph &data_grasph, uint max_num_results,
@@ -188,6 +188,8 @@ private:
     void deleteUpdateStarIndex(uint v1, uint v2, std::vector<int> &match);
 
     bool deleteMatchRecordWithEdge(uint v1, uint v1label, uint v2, uint v2label, uint label, std::vector<int> &match);
+
+    bool SearchMatchesWithEdge(uint m,uint v1,uint v2,uint weight,uint u1,uint u2,searchType type);
 
 
 };

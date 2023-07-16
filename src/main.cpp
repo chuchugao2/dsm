@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 
     Log::init_track1("/home/gaochuchu/gcc/dsm/src/log/loginfo2.txt");
 #ifdef COMPUTE_TIME
-    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/compute_time3.txt");
+    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/Ccompute_time3.txt");
     stringstream _ss;
     //_ss<<"1"<<endl;
     _ss << query_info << endl;
@@ -115,8 +115,16 @@ int main(int argc, char *argv[]) {
     mm->clearPositiveNum();
     size_t num_v_updates = 0ul, num_e_updates = 0ul;
 
-    auto IncrementalFun = [&data_graph, &mm, &num_v_updates, &num_e_updates]() {
+    auto IncrementalFun = [&data_graph, &mm, &num_v_updates, &num_e_updates,&update_len]() {
         while (!data_graph.updates_.empty()) {
+            if(data_graph.updates_.size()==update_len){
+                mm->isInsert= false;
+                mm->Itotal_updaterightNeighborCandidate_time=mm->total_updaterightNeighborCandidate_time.GetTimer();
+                mm->Itotal_densityfilter_time=mm->total_densityFilter_time.GetTimer();
+                mm->total_updaterightNeighborCandidate_time.clearTimer();
+                mm->total_densityFilter_time.clearTimer();
+                //mm->total_test.clearTimer();
+            }
             std::cout << "update num: " << data_graph.updates_.size() << std::endl;
             stringstream _ss;
             _ss << "update num:" << data_graph.updates_.size() << "\n";
