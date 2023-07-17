@@ -2607,21 +2607,21 @@ bool Graphflow::updaterightNeighborCandidate(int matchorderindex, uint uk, uint 
         bool isCandidateFirstNull = true;
         float maxweight = 0;
         float curWeight = 0;
-        // auto & curMatchCandiate=matchCandidate[query_order_index];
+        Neighbor neighbor(query_vertex_label, query_elabel);
+        auto lower = std::lower_bound(vN.begin(), vN.end(), neighbor, CompareNeighbors2);
+        auto upper = std::upper_bound(vN.begin(), vN.end(), neighbor, CompareNeighbors2);
         if(matchCandidate[query_order_index].size()==0) {
-            Neighbor neighbor(query_vertex_label, query_elabel);
-            auto lower = std::lower_bound(vN.begin(), vN.end(), neighbor, CompareNeighbors2);
+            //auto lower = std::lower_bound(vN.begin(), vN.end(), neighbor, CompareNeighbors2);
             std::pair<uint, uint> evl = make_pair(query_elabel, query_vertex_label);
-            if (lower==vN.end()||(*lower).GetelabelAndVertexLabel() != evl) {
+            if (lower==vN.end()||lower==upper) {
                 return true;
             } else {
-                while ((*lower).GetelabelAndVertexLabel() == evl&&(lower!=vN.end())) {
+                while(lower<upper){
                     uint neighbor_id = (*lower).getVertexId();
                     if (visited_[neighbor_id]) {
                         lower++;
                         continue;
                     }
-                    uint v_elabel = neighbor.GetEdgelabel();
                     maxweight = globalVkMatchUk[neighbor_id][matchorderindex][queryVertexIndexInlabel[query_id]];
                     //update LocalStarIndex
                     //add candidate
@@ -2640,35 +2640,32 @@ bool Graphflow::updaterightNeighborCandidate(int matchorderindex, uint uk, uint 
             }
         }
         else{
-            Neighbor neighbor(query_vertex_label, query_elabel);
-            auto lower = std::lower_bound(vN.begin(), vN.end(), neighbor, CompareNeighbors2);
-            auto upper = std::upper_bound(vN.begin(), vN.end(), neighbor, CompareNeighbors2);
             if(lower==vN.end()||lower==upper){
                 return true;
             }
-            std::pair<uint, uint> evl = make_pair(query_elabel, query_vertex_label);
             int qSize=matchCandidate[query_order_index].size();
             int rightV=0;
             while (lower<upper&&rightV<qSize) {
                 uint neighbor_id = (*lower).getVertexId();
+                uint curmatchCandidateId=matchCandidate[query_order_index][rightV].getVertexId();
                 if (visited_[neighbor_id]) {
                     lower++;
                     continue;
                 }
-                while((*lower).getVertexId()>matchCandidate[query_order_index][rightV].getVertexId()&&lower<upper){
+                while(neighbor_id>curmatchCandidateId&&lower<upper){
                     lower++;
                 }
                 if(lower>=upper){
                     break;
                 }
-                while((*lower).getVertexId()<matchCandidate[query_order_index][rightV].getVertexId()&&rightV<qSize){
+                while(neighbor_id<curmatchCandidateId&&rightV<qSize){
                     matchCandidate[query_order_index][rightV].setFlag(-1);
                     rightV++;
                 }
                 if(rightV>=qSize){
                     break;
                 }
-                if((*lower).getVertexId()==matchCandidate[query_order_index][rightV].getVertexId()){
+                if(neighbor_id==curmatchCandidateId){
                     matchCandidate[query_order_index][rightV].setFlag(1);
                     curWeight=(*lower).GetEdgeWeight();
                     neighbor_id=(*lower).getVertexId();
