@@ -26,14 +26,14 @@ public:
         this->timetamp = timestap_;
     };
 
-    Neighbor(uint toVertexId_, uint toVertexLabel_, float edgeLabel_) {
+    Neighbor(uint toVertexId_, uint toVertexLabel_, uint edgeLabel_) {
         this->toVertexId = toVertexId_;
         this->toVertexLabel = toVertexLabel_;
         this->edgeLabel = edgeLabel_;
         this->edgeWeight = 0;
         this->timetamp = 0;
     };
-    Neighbor(uint toVertexLabel_, float edgeLabel_) {
+    Neighbor(uint toVertexLabel_, uint edgeLabel_) {
         this->toVertexLabel = toVertexLabel_;
         this->edgeLabel = edgeLabel_;
     };
@@ -43,10 +43,6 @@ public:
         this->toVertexLabel = toVertexLabel_;
         this->edgeLabel = edgeLabel_;
         this->edgeWeight = edgeWeight_;
-    };
-    Neighbor( uint toVertexLabel_, uint edgeLabel_) {
-        this->toVertexLabel = toVertexLabel_;
-        this->edgeLabel = edgeLabel_;
     };
 
     uint getVertexId() const;

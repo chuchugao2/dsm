@@ -16,7 +16,15 @@
 #include "Neighbor.h"
 #include "StarGraph.h"
 #include "../utils/Log.h"
-
+inline bool CompareNeighbors(const Neighbor& a, const Neighbor& b) {
+    if (a.GetEdgelabel() != b.GetEdgelabel()) {
+        return a.GetEdgelabel() >b.GetEdgelabel();
+    } else if (a.getVertexLabel() != b.getVertexLabel()) {
+        return a.getVertexLabel() > b.getVertexLabel();
+    } else{
+        return a.getVertexId()>b.getVertexId();
+    }
+}
 
 class Edge {
 private:
@@ -150,7 +158,7 @@ public:
 
     void InitLabelIndex();//邻居节点的点标签和边标签分布，过滤候选解
     void InitMatchOrderType(const std::vector<std::vector<uint> > &order_vs_,
-                            const std::vector<std::vector<std::vector<uint>>> &rightNeighbor);//初始化邻居标签分布
+                            const std::vector<std::vector<std::vector<Neighbor>>> &rightNeighbor);//初始化邻居标签分布
     void UpdateLabelIndex(uint v1, uint v2, uint label, uint flag);//flag=1为增加操作 flag=0为减少操作
     const vertexType GetVertexType(uint order_index, uint depth);
 

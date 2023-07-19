@@ -36,7 +36,7 @@ public:
     std::vector<std::vector<SingleCandidate>> matchCandidate;//id density
     std::vector<float> suffixMax;
     std::vector<float> isolatedMax;
-    std::vector<std::vector<std::vector<uint>>> rightNeighbor;//匹配索引号，id号
+    std::vector<std::vector<std::vector<Neighbor>>> rightNeighbor;//匹配索引号，id号
     //std::vector<LocalIndex>queryLocalIndexs;
     std::vector<std::vector<std::vector<int>>> globalVkMatchUk;//<vk,ak,uk>
     std::vector<std::vector<uint>> labelToQueryVertex;//每个标签对应的查询点
@@ -77,6 +77,7 @@ public:
     void RemoveVertex(uint id) override;
 
     void InitialTopK(const std::string &path) override;//得到初始化之后的Top k结果集合
+
     void updateTopK() override;
 
     void deleteEdge(uint v1, uint v2) override;
@@ -121,7 +122,7 @@ private:
 
     void popVertex(uint depth, uint data_v);
 
-    void popVertex(uint data_v, uint matchorderindex, uint depth, const std::vector<uint> &uk_neighbor);
+    void popVertex(uint data_v, uint matchorderindex, uint depth, const std::vector<Neighbor> &uk_neighbor);
 
     void popVertex(uint depth);
 
@@ -177,7 +178,7 @@ private:
     void createLabelToQueryVertex();
 
     bool updaterightNeighborCandidate(int matchorderindex, uint uk, uint uk_neigh, bool isFirstEdge, uint vk,
-                                      const std::vector<uint> &uk_neighbor);
+                                      const std::vector<Neighbor> &uk_neighbor);
 
     void InitialLocalIndex(int matchorderindex);
 

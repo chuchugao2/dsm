@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
                 mm->Itotal_densityfilter_time=mm->total_densityFilter_time.GetTimer();
                 mm->total_updaterightNeighborCandidate_time.clearTimer();
                 mm->total_densityFilter_time.clearTimer();
-                //mm->total_test.clearTimer();
+                mm->total_test.clearTimer();
             }
             std::cout << "update num: " << data_graph.updates_.size() << std::endl;
             stringstream _ss;

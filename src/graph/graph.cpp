@@ -9,15 +9,7 @@
 #include "../utils/types.h"
 #include "../utils/utils.h"
 #include "../utils/globals.h"
-bool CompareNeighbors(const Neighbor& a, const Neighbor& b) {
-    if (a.GetEdgelabel() != b.GetEdgelabel()) {
-        return a.GetEdgelabel() >b.GetEdgelabel();
-    } else if (a.getVertexLabel() != b.getVertexLabel()) {
-        return a.getVertexLabel() > b.getVertexLabel();
-    } else{
-        return a.getVertexId()>b.getVertexId();
-    }
-}
+
 Graph::Graph()
         : edge_count_(0), vlabel_count_(0), elabel_count_(0), neighbors_{}, elabels_{}, updates_{}, vlabels_{} {}
 void Graph::AddVertex(uint id, uint label) {
@@ -483,7 +475,7 @@ void Graph::InitLabelIndex() {
 }
 
 void Graph::InitMatchOrderType(const std::vector<std::vector<uint> > &order_vs_,
-                               const std::vector<std::vector<std::vector<uint>>> &rightNeighbor) {
+                               const std::vector<std::vector<std::vector<Neighbor>>> &rightNeighbor) {
     //标记所有的查询顶点为自由匹配点和/或者孤立顶点
     for (uint i = 0; i < this->NumEdges(); i++) {
         std::vector<vertexType> currentMatchOrderTypes;
