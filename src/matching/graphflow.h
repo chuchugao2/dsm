@@ -112,7 +112,7 @@ private:
 
     vector<int> EdgeisInMatchOrder(uint v1, uint v2, uint v1label, uint v2label, uint velabel);
 
-    void searchMatches(int depth, uint matchorderindex, searchType flag);
+    void searchMatches(int depth, uint matchorderindex, searchType flag,std::vector<float>LocalStarIndex);
 
     bool LabelFilter(uint data_v, uint query_v);
 
@@ -178,7 +178,7 @@ private:
     void createLabelToQueryVertex();
 
     bool updaterightNeighborCandidate(int matchorderindex, uint uk, uint uk_neigh, bool isFirstEdge, uint vk,
-                                      const std::vector<Neighbor> &uk_neighbor);
+                                      const std::vector<Neighbor> &uk_neighbor,std::vector<float>&LocalStarIndex);
 
     void InitialLocalIndex(int matchorderindex);
 
@@ -191,6 +191,7 @@ private:
     bool deleteMatchRecordWithEdge(uint v1, uint v1label, uint v2, uint v2label, uint label, std::vector<int> &match);
 
     bool SearchMatchesWithEdge(uint m,uint v1,uint v2,uint weight,uint u1,uint u2,searchType type);
+    void myLowerBound(std::vector<Neighbor>::const_iterator&lower,const std::vector<Neighbor> &vN,const pair<uint,uint>&evl);
 
 
 };

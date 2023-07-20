@@ -121,19 +121,28 @@ int main(int argc, char *argv[]) {
                 mm->isInsert= false;
                 mm->Itotal_updaterightNeighborCandidate_time=mm->total_updaterightNeighborCandidate_time.GetTimer();
                 mm->Itotal_densityfilter_time=mm->total_densityFilter_time.GetTimer();
+                mm->Itotal_test1+=mm->total_test1.GetTimer();
+                mm->Itotal_test2+=mm->total_test2.GetTimer();
+                mm->Itotal_test3+=mm->total_test3.GetTimer();
+                mm->Itotal_test4+=mm->total_test4.GetTimer();
+                mm->Itotal_test5+=mm->total_test5.GetTimer();
+                mm->Itotal_test6+=mm->total_test6.GetTimer();
+                mm->Itotal_test7+=mm->total_test7.GetTimer();
                 mm->total_updaterightNeighborCandidate_time.clearTimer();
                 mm->total_densityFilter_time.clearTimer();
-                mm->total_test.clearTimer();
+                mm->total_test1.clearTimer();
+                mm->total_test2.clearTimer();
+                mm->total_test3.clearTimer();
+                mm->total_test4.clearTimer();
+                mm->total_test5.clearTimer();
+                mm->total_test6.clearTimer();
+                mm->total_test7.clearTimer();
             }
             std::cout << "update num: " << data_graph.updates_.size() << std::endl;
             stringstream _ss;
             _ss << "update num:" << data_graph.updates_.size() << "\n";
             Log::track2(_ss);
             Log::track1(_ss);
-#ifdef PRINT_DEBUG
-            Log::track1(_ss);
-
-#endif
             InsertUnit insert = data_graph.updates_.front();
             data_graph.updates_.pop();
 

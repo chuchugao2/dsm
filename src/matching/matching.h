@@ -73,8 +73,9 @@ public:
     void clearPositiveNum(); //清空 正匹配个数
     void PrintCounter();//打印剩余的执行信息
     Timer total_search_time, total_print_time, total_densityFilter_time, total_update_globalIndex_time, total_updaterightNeighborCandidate_time,
-            total_delete_time, total_delete_update_time,total_test;
-    long long Itotal_densityfilter_time=0, Itotal_updaterightNeighborCandidate_time=0;
+            total_delete_time, total_delete_update_time,total_test1,total_test2,total_test3,total_test4,total_test5,total_test6, total_test7;
+    long long Itotal_densityfilter_time=0, Itotal_updaterightNeighborCandidate_time=0,Itotal_test1=0,Itotal_test2=0,
+    Itotal_test3=0,Itotal_test4=0,Itotal_test5=0,Itotal_test6=0,Itotal_test7=0;
     bool isInsert= true;
 
 
