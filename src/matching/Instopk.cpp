@@ -13,8 +13,8 @@ bool edgesCmp(const Edge &e1, const Edge &e2) {
 }
 
 
-Instopk::Instopk(Graph &query_graph, Graph &data_graph, uint max_num_results, bool print_prep, bool print_enum,
-                 bool homo, uint d) : matching(query_graph, data_graph, max_num_results,
+Instopk::Instopk(Graph &query_graph, Graph &data_graph,Subgraph &subgraph,  uint max_num_results, bool print_prep, bool print_enum,
+                 bool homo, uint d) : matching(query_graph, data_graph, subgraph,max_num_results,
                                                print_prep, print_enum, homo), order_vs_(query_.NumEdges()),
                                       order_csrs_(query_.NumEdges()), order_offs_(query_.NumEdges()),
                                       order_vertex_index(query_.NumEdges()), topKSet(0), allMatchRecords(0), dist(d),

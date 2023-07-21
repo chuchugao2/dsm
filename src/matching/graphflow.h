@@ -37,6 +37,7 @@ public:
     std::vector<float> suffixMax;
     std::vector<float> isolatedMax;
     std::vector<std::vector<std::vector<Neighbor>>> rightNeighbor;//匹配索引号，id号
+    std::vector<std::vector<std::vector<uint>>> rightNeighbor1;
     //std::vector<LocalIndex>queryLocalIndexs;
     std::vector<std::vector<std::vector<int>>> globalVkMatchUk;//<vk,ak,uk>
     std::vector<std::vector<uint>> labelToQueryVertex;//每个标签对应的查询点
@@ -57,7 +58,7 @@ public:
             total_delete_time, total_delete_update_time;*/
 
 public:
-    Graphflow(Graph &query_graph, Graph &data_grasph, uint max_num_results,
+    Graphflow(Graph &query_graph, Graph &data_grasph,Subgraph &subgraph, uint max_num_results,
               bool print_prep, bool print_enum, bool homo);
 
     ~Graphflow() override;
@@ -69,9 +70,10 @@ public:
     void AddEdge(uint v1, uint v2, uint label, float weight, uint timestamp) override;
 
     void AddEdgeWithGlobalIndex(uint v1, uint v2, uint label, float weight, uint timestamp) override;
+    void AddEdgeWithGlobalIndexAndSubgraph(uint v1, uint v2, uint label, float weight, uint timestamp) override;
 
     void RemoveEdge(uint v1, uint v2, uint label) override;
-
+    void RemoveEdgeWithGlobalIndexAndSubgraph(uint v1, uint v2, uint label) override;
     void AddVertex(uint id, uint label) override;
 
     void RemoveVertex(uint id) override;
@@ -192,7 +194,19 @@ private:
 
     bool SearchMatchesWithEdge(uint m,uint v1,uint v2,uint weight,uint u1,uint u2,searchType type);
     void myLowerBound(std::vector<Neighbor>::const_iterator&lower,const std::vector<Neighbor> &vN,const pair<uint,uint>&evl);
-
+    bool updateGlobalSubgraph(uint v1,uint v2,uint label,float weight, std::vector<int>&match);
+    bool updateGlobalGraphHelp(int m,uint u1,uint u2,uint u1label,uint u2label, uint v1,uint v2,uint v1label,
+                               uint v2label,uint elabel,const std::vector<std::vector<uint>>&mcandidate,bool &flag);
+    void updateglobalVertexStarIndex(uint u1,uint v1,uint u1label,uint elabel,uint n, const std::vector<std::vector<uint>>&mcandidate);
+    void createGlobalSubgraph();
+    void CreateStarIndexWithGlobalSubgraph();
+    void updateStarIndexWithGlobalSubgraph(uint match_index, uint caddidate_v, uint candidate_u,int candidate_v_index);
+    void updateStarIndexWithGlobalSubgraph(uint match_index,uint caddidate_v,const std::vector<uint>&canditeQueryVertexs);
+    void deleteGlobalSubgraph(uint v1, uint v2,uint elabel,float weight, std::vector<int> &match);
+    bool deleteGlobalSubgraphHelp(int m,uint u1,uint u2,uint u1label,uint u2label, uint v1,uint v2,uint v1label,uint v2label,
+                                  uint elabel,float weight, std::vector<std::vector<uint>>&mcandidate);
+    void deleteUpdateglobalVertexStarIndexWithGlobalSubgraph(uint u1,uint v1,uint v2,uint n);
+    void deleteGlobalGraphCandidateEdges(uint m,uint u1,uint v1,std::vector<std::vector<uint>>&mcandidate);
 
 };
 

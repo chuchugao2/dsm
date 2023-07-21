@@ -98,7 +98,7 @@ void Graph::AddEdge(uint v1, uint v2, uint label, float weights, uint timestamp,
     elabel_count_ = std::max(elabel_count_, label + 1);
 }
 
-void Graph::RemoveEdge(uint v1, uint v2) {
+void Graph::RemoveEdge(uint flag,uint v1, uint v2) {
     auto lower = std::lower_bound(neighbors_[v1].begin(), neighbors_[v1].end(), v2);
     if (lower == neighbors_[v1].end() || *lower != v2) {
         std::cout << "deletion error" << std::endl;
@@ -112,7 +112,7 @@ void Graph::RemoveEdge(uint v1, uint v2) {
     elabels_[v1].erase(elabels_[v1].begin() + std::distance(neighbors_[v1].begin(), lower));
     weights_[v1].erase(weights_[v1].begin() + std::distance(neighbors_[v1].begin(), lower));
     timestamp_[v1].erase(timestamp_[v1].begin() + std::distance(neighbors_[v1].begin(), lower));
-
+#ifndef GLOBALINDEX
     Neighbor neighbor(v2, v2label, label, weight);
     auto lower1 = std::lower_bound(vNeighbors[v1].begin(), vNeighbors[v1].end(), neighbor, std::greater<Neighbor>());
     if (lower1 == vNeighbors[v1].end() || *lower1 != neighbor) {
@@ -125,6 +125,7 @@ void Graph::RemoveEdge(uint v1, uint v2) {
         std::cout << "deletion error" << endl;
     }
     vNeighbors2[v1].erase(copy_lower1);
+#endif
 
     /*for(auto it=vNeighbors[v1].begin();it!=vNeighbors[v1].end();it++){
         if(it->getVertexId()==v2){
@@ -142,6 +143,7 @@ void Graph::RemoveEdge(uint v1, uint v2) {
     weights_[v2].erase(weights_[v2].begin() + std::distance(neighbors_[v2].begin(), lower));
     timestamp_[v2].erase(timestamp_[v2].begin() + std::distance(neighbors_[v2].begin(), lower));
     //vNeighbors[v2].erase(vNeighbors[v2].begin()+std::distance(neighbors_[v2].begin(),lower));
+#ifndef GLOBALINDEX
     Neighbor neighbor2(v1, v1label, label, weight);
     auto lower2 = std::lower_bound(vNeighbors[v2].begin(), vNeighbors[v2].end(), neighbor2, std::greater<Neighbor>());
     if (lower2 == vNeighbors[v2].end() || *lower2 != neighbor2) {
@@ -154,6 +156,19 @@ void Graph::RemoveEdge(uint v1, uint v2) {
         std::cout << "deletion error" << endl;
     }
     vNeighbors2[v2].erase(copy_lower2);
+#endif
+    if(flag){
+        if(v1>v2){
+            std::swap(v1,v2);
+        }
+        for(int i=0;i<vEdge.size();i++){
+            const Edge &edge=vEdge[i];
+            if(edge.GetV1()==v1&&edge.GetV2()==v2){
+                vEdge.erase(vEdge.begin()+i);
+                break;
+            }
+        }
+    }
     edge_count_--;
 }
 

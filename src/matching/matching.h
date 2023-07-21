@@ -6,12 +6,14 @@
 #include "../utils/types.h"
 #include "../graph/graph.h"
 #include "../utils/Timer.h"
+#include "../graph/Subgraph.h"
 
 
 class matching {
 protected:
     Graph &query_; //查询图
     Graph &data_;//数据图
+    Subgraph &globalsubgraph_;
 
 
     // config
@@ -34,7 +36,7 @@ protected:
 
 
 public:
-    matching(Graph &query_graph, Graph &data_graph,
+    matching(Graph &query_graph, Graph &data_graph,Subgraph& global_subgraph,
              size_t max_num_results = ULONG_MAX,
              bool print_preprocessing_results = true,
              bool print_enumeration_results = false,
@@ -47,8 +49,10 @@ public:
 
     virtual void AddEdge(uint v1, uint v2, uint label, float weight, uint timestamp);//增加边
     virtual void AddEdgeWithGlobalIndex(uint v1, uint v2, uint label, float weight, uint timestamp);
+    virtual void AddEdgeWithGlobalIndexAndSubgraph(uint v1, uint v2, uint label, float weight, uint timestamp);
 
     virtual void RemoveEdge(uint v1, uint v2, uint label);//去除边
+    virtual void RemoveEdgeWithGlobalIndexAndSubgraph(uint v1, uint v2, uint label);
     virtual void AddVertex(uint id, uint label);//增加节点
     virtual void RemoveVertex(uint id);//去除节点
 

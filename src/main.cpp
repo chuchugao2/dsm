@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
     data_graph.LoadFromFile(initial_path, 1);
     data_graph.PrintMetaData();
     Print_Time("Load Graphs: ", start);
+    Subgraph globalsubgraph(data_graph.NumVertices(),query_graph.NumVertices());
 
     std::cout << "------------ Preprocessing ------------" << std::endl;
     matching *mm = nullptr;
@@ -82,9 +83,9 @@ int main(int argc, char *argv[]) {
     Instopk *instopk = nullptr;
     start = Get_Time();
     if (algorithm == "graphflow")
-        mm = graphflow = new Graphflow(query_graph, data_graph, max_num_results, print_prep, print_enum, homo);
+        mm = graphflow = new Graphflow(query_graph, data_graph, globalsubgraph,max_num_results, print_prep, print_enum, homo);
     else if (algorithm == "instopk")
-        mm = instopk = new Instopk(query_graph, data_graph, max_num_results, print_prep, print_enum, homo, dist);
+        mm = instopk = new Instopk(query_graph, data_graph, globalsubgraph,max_num_results, print_prep, print_enum, homo, dist);
 
     mm->Preprocessing();
     Print_Time("Preprocessing: ", start);
@@ -161,6 +162,9 @@ int main(int argc, char *argv[]) {
 #ifdef GLOBAL
                 mm->AddEdgeWithGlobalIndex(insert.id1, insert.id2, insert.label, insert.weight, insert.timestamp);
 #endif
+#ifdef GLOBALINDEX
+                mm->AddEdgeWithGlobalIndexAndSubgraph(insert.id1, insert.id2, insert.label,insert.weight,insert.timestamp);
+#endif
 
 //                 data_graph.AddEdge(insert.id1, insert.id2, insert.label,insert.weight,insert.timestamp,1);
                 num_e_updates++;
@@ -168,7 +172,11 @@ int main(int argc, char *argv[]) {
 #ifdef PRINT_DEBUG
 #endif
             } else if (insert.type == 'e' && !insert.is_add) {
+#ifdef GLOBALINDEX
+                 mm->RemoveEdgeWithGlobalIndexAndSubgraph(insert.id1,insert.id2,insert.label);
+#else
                 mm->RemoveEdge(insert.id1, insert.id2, insert.label);
+#endif
 
                 //mm->deleteEdge(insert.id1,insert.id2);
                 num_e_updates++;

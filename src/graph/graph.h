@@ -16,6 +16,7 @@
 #include "Neighbor.h"
 #include "StarGraph.h"
 #include "../utils/Log.h"
+#include "SubNeighbor.h"
 inline bool CompareNeighbors(const Neighbor& a, const Neighbor& b) {
     if (a.GetEdgelabel() != b.GetEdgelabel()) {
         return a.GetEdgelabel() >b.GetEdgelabel();
@@ -122,7 +123,7 @@ public:
     void RemoveVertex(uint id);
 
     void AddEdge(uint v1, uint v2, uint label, float weights, uint timestamp, uint flag);//增加边的权重限制
-    void RemoveEdge(uint v1, uint v2);
+    void RemoveEdge(uint flag,uint v1, uint v2);//0 graphflow 1 instopk
 
     uint GetVertexLabel(uint u) const;
 

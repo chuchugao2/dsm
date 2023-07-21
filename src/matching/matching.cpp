@@ -6,12 +6,12 @@
 #include "matching.h"
 
 
-matching::matching(Graph &query_graph, Graph &data_graph,
+matching::matching(Graph &query_graph, Graph &data_graph,Subgraph& global_subgraph,
                    size_t max_num_results,
                    bool print_prep,
                    bool print_enum,
                    bool homo)
-        : query_(query_graph), data_(data_graph), max_num_results_(max_num_results),
+        : query_(query_graph), data_(data_graph),globalsubgraph_(global_subgraph),max_num_results_(max_num_results),
           print_preprocessing_results_(print_prep), print_enumeration_results_(print_enum), homomorphism_(homo),
           visited_(data_.NumVertices(), false), num_initial_results_(0ul), num_positive_results_(0ul),
           num_negative_results_(0ul), num_intermediate_results_before_index_check_(0ul),
@@ -43,9 +43,14 @@ void matching::AddEdge(uint v1, uint v2, uint label, float weight, uint timestam
 void matching::AddEdgeWithGlobalIndex(uint v1, uint v2, uint label, float weight, uint timestamp) {
 
 }
+void matching::AddEdgeWithGlobalIndexAndSubgraph(uint v1, uint v2, uint label, float weight, uint timestamp) {
+
+}
 
 void matching::RemoveEdge(uint v1, uint v2, uint label) {
-    data_.RemoveEdge(v1, v2);
+    data_.RemoveEdge(0,v1, v2);
+}
+void matching::RemoveEdgeWithGlobalIndexAndSubgraph(uint v1, uint v2, uint label) {
 }
 
 void matching::AddVertex(uint id, uint label) {
