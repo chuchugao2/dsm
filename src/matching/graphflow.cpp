@@ -1224,14 +1224,13 @@ void Graphflow::AddEdgeWithGlobalIndexAndSubgraph(uint v1, uint v2, uint label, 
     uint v2label=data_.GetVertexLabel(v2);
     vector<int>match=EdgeisInMatchOrder(v1,v2,v1label,v2label,label);
     if(match.size()==0){
+        total_update_globalIndex_time.StartTimer();
         return;
     }
     //update globalsubgraph and starIndex
     bool isInGlobalSubgraph=updateGlobalSubgraph(v1,v2,label,weight,match);
     if(!isInGlobalSubgraph){
-        /* start=Get_Time();
-         updateTopK();
-         total_print_time+= Duration2(start);*/
+        total_update_globalIndex_time.StartTimer();
         return;
     }
     total_update_globalIndex_time.StopTimer();
@@ -1664,6 +1663,7 @@ void Graphflow::RemoveEdgeWithGlobalIndexAndSubgraph(uint v1, uint v2, uint labe
     bool flag=deleteMatchRecordWithEdge(v1,v1label,v2,v2label,label,match);
     if(!flag)
     {
+        total_delete_time.StartTimer();
         return;
     }
 
