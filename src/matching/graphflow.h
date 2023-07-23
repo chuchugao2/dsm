@@ -47,14 +47,12 @@ public:
     std::vector<vector<StarGraph*>>matchVetexSumweight;//每种组合更新得到的最大权值
     std::vector<std::vector<size_t>>leftNeighborIdSum;//每个节点左邻居id和
     bool isUpdateIntopkset;
-    Timer total_search_time,total_update_gloabalsubgraph_time,total_updateglobalVertexStarIndex_time,total_updateglobalCandidateEdge_time,total_print_time,
-    total_delete_update_time,total_delete_time,total_delete_print_time,total_densityFilter_time,total_deleteUpdateglobalVertexStarIndex_time,
-    total_deleteGlobalGraphCandidateEdges_time,total_updaterightNeighborCandidate_time,total_deleteGlobalSubgraphHelp_time,total_removeEdge;
     int numAddTopk=0;
     int allMatchFind=0;
     int sumAllMatchFind=0;
     int sumDeleteallMatchFind=0;
     int numupdatestar=0;
+    long IsearchSpace=0,DsearchSpace=0,IdeterminCandite=0,DdeterminCandite=0;
 
 public:
     Graphflow(Graph& query_graph, Graph& data_grasph,Subgraph& global_subgraph, uint max_num_results,
@@ -130,6 +128,7 @@ private:
                                  uint elabel,float weight, std::vector<std::vector<uint>>&mcandidate);
    void deleteGlobalGraphCandidateEdges(uint m,uint u1,uint v1,std::vector<std::vector<uint>>&mcandidate);
    bool deleteMatchRecordWithEdge(uint v1, uint v1label,uint v2, uint v2label,uint label);
+   bool SearchMatchesWithEdge(uint m,uint v1,uint v2,float weight,uint u1,uint u2,searchType type);
 
 };
 

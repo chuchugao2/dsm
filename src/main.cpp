@@ -118,19 +118,27 @@ int main(int argc, char *argv[])
     mm->clearPositiveNum();
     size_t num_v_updates = 0ul, num_e_updates = 0ul;
 
-    auto IncrementalFun = [&data_graph, &mm, &num_v_updates, &num_e_updates]()
+    auto IncrementalFun = [&data_graph, &mm, &num_v_updates, &num_e_updates,&update_len]()
     {
         while (!data_graph.updates_.empty())
         {
+            if(data_graph.updates_.size()==update_len){
+                mm->isInsert= false;
+                if(data_graph.updates_.size()==update_len){
+                    mm->isInsert= false;
+                    mm->Itotal_updaterightNeighborCandidate_time=mm->total_updaterightNeighborCandidate_time.GetTimer();
+                    mm->Itotal_densityfilter_time=mm->total_densityFilter_time.GetTimer();
+                    mm->total_updaterightNeighborCandidate_time.clearTimer();
+                    mm->total_densityFilter_time.clearTimer();
+                }
+            }
+
             std::cout<<"update num: "<<data_graph.updates_.size()<<std::endl;
             stringstream _ss;
             _ss<<"update num:"<<data_graph.updates_.size()<<"\n";
             Log::track2(_ss);
             Log::track1(_ss);
-#ifdef PRINT_DEBUG
-            Log::track1(_ss);
 
-#endif
             InsertUnit insert = data_graph.updates_.front();
             data_graph.updates_.pop();
 

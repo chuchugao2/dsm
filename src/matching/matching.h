@@ -6,6 +6,7 @@
 #include "../utils/types.h"
 #include "../graph/graph.h"
 #include "../graph/Subgraph.h"
+#include "../utils/Timer.h"
 
 
 class matching
@@ -33,7 +34,6 @@ protected:
     size_t num_intermediate_results_after_visit_check_;
     size_t num_intermediate_results_with_empty_candidate_set_;
     size_t num_intermediate_results_without_results_;
-
 
 
 public:
@@ -66,6 +66,10 @@ public:
     void GetNumNegativeResults(size_t &num_negative_results);//负匹配的数量
     void clearPositiveNum(); //清空 正匹配个数
     void PrintCounter();//打印剩余的执行信息
+    Timer total_search_time, total_print_time, total_densityFilter_time, total_update_globalIndex_time, total_updaterightNeighborCandidate_time,
+            total_delete_time, total_delete_update_time;
+    long long Itotal_densityfilter_time=0, Itotal_updaterightNeighborCandidate_time=0;
+    bool isInsert= true;
 
 
 };
