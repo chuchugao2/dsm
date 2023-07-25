@@ -81,6 +81,7 @@ public:
     long long Itotal_densityfilter_time=0, Itotal_updaterightNeighborCandidate_time=0,Itotal_test1=0,Itotal_test2=0,
     Itotal_test3=0,Itotal_test4=0,Itotal_test5=0,Itotal_test6=0,Itotal_test7=0;
     bool isInsert= true;
+    long test_1,test_2=0;
 
 
 };

@@ -56,7 +56,6 @@ public:
     long IsearchSpace=0,DsearchSpace=0,IdeterminCandite=0,DdeterminCandite=0;
    /* Timer total_search_time, total_print_time, total_densityFilter_time, total_update_globalIndex_time, total_updaterightNeighborCandidate_time,
             total_delete_time, total_delete_update_time;*/
-
 public:
     Graphflow(Graph &query_graph, Graph &data_grasph,Subgraph &subgraph, uint max_num_results,
               bool print_prep, bool print_enum, bool homo);
@@ -115,6 +114,7 @@ private:
     vector<int> EdgeisInMatchOrder(uint v1, uint v2, uint v1label, uint v2label, uint velabel);
 
     void searchMatches(int depth, uint matchorderindex, searchType flag,std::vector<float>LocalStarIndex);
+    void searchMatchesWithGLobalIndex(int depth, uint matchorderindex, searchType flag);
 
     bool LabelFilter(uint data_v, uint query_v);
 
@@ -192,7 +192,8 @@ private:
 
     bool deleteMatchRecordWithEdge(uint v1, uint v1label, uint v2, uint v2label, uint label, std::vector<int> &match);
 
-    bool SearchMatchesWithEdge(uint m,uint v1,uint v2,uint weight,uint u1,uint u2,searchType type);
+    bool SearchMatchesWithEdge(uint m,uint v1,uint v2,uint weight,uint u1,uint u2,searchType type,std::vector<float>&LocalStarIndex);
+    void SearchMatchesWithGlobalIndexEdge(uint m, uint v1, uint v2, uint weight, uint u1, uint u2, searchType type);
     void myLowerBound(std::vector<Neighbor>::const_iterator&lower,const std::vector<Neighbor> &vN,const pair<uint,uint>&evl);
     bool updateGlobalSubgraph(uint v1,uint v2,uint label,float weight, std::vector<int>&match);
     bool updateGlobalGraphHelp(int m,uint u1,uint u2,uint u1label,uint u2label, uint v1,uint v2,uint v1label,
