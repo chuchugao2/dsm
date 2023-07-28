@@ -678,7 +678,7 @@ void Graphflow::SearchMatchesWithGlobalIndexEdge(uint m, uint v1, uint v2, uint 
         IsearchSpace+=2;
     else
         DsearchSpace+=2;
-    if(!topKSet.empty()){
+    if(topKSet.size()==k){
         float backWeight=suffixMax[2];
         //test
         backWeight+=weight;
@@ -3491,7 +3491,7 @@ bool Graphflow::SearchMatchesWithEdge(uint m,uint v1,uint v2,uint weight,uint u1
         IsearchSpace+=2;
     else
         DsearchSpace+=2;
-    if(!topKSet.empty()) {
+    if(topKSet.size()==k) {
         float backWeight = GetBackWeight(m, 2);
         //test
         backWeight += weight;
