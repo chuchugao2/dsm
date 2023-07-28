@@ -82,6 +82,7 @@ public:
     Itotal_test3=0,Itotal_test4=0,Itotal_test5=0,Itotal_test6=0,Itotal_test7=0;
     bool isInsert= true;
     long test_1,test_2=0;
+    uint m_id,u_id,update_id;
 
 
 };

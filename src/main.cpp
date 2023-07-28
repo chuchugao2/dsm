@@ -45,16 +45,18 @@ int main(int argc, char *argv[]) {
 
     Log::init_track1("/home/gaochuchu/gcc/dsm/src/log/loginfo4.txt");
 #ifdef COMPUTE_TIME
-
-
-    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/Ccompute_time3.txt");
+/*    size_t pos=query_info.rfind('_');
+    std::string database=query_info.substr(0,pos);
+    std::string track_path = "/home/gaochuchu/gcc/dsm/src/log/distribute4_"+database+".txt";
+    Log::init_track3(track_path);*/
+    std::string track_path = "/home/gaochuchu/gcc/dsm/src/log/WCcompute_time3.txt";
+    Log::init_track3(track_path);
     stringstream _ss;
-    //_ss<<"1"<<endl;
     _ss << query_info << endl;
     Log::track3(_ss);
 #endif
     std::string path = "/home/gaochuchu/gcc/dsm/src/log/";
-    std::string initial_result_path = "/home/gaochuchu/gcc/baseline/src/result/";
+    std::string initial_result_path = "/home/gaochuchu/gcc/dsm/src/result/";
     if (result_path == "") {
         path += "topkResult.txt";
     } else {
@@ -91,27 +93,6 @@ int main(int argc, char *argv[]) {
 
     mm->Preprocessing();
     Print_Time("Preprocessing: ", start);
-    if (report_initial) {
-        std::cout << "----------- Initial Matching ----------" << std::endl;
-
-        start = Get_Time();
-        // data_graph.LoadUpdateStream(initial_path);
-        auto InitialFun = [&mm, &data_graph, &initial_result_path]() {
-            mm->InitialMatching(initial_result_path);
-            std::chrono::high_resolution_clock::time_point s;
-            s = Get_Time();
-            mm->InitialTopK(initial_result_path);
-            Print_Time("InitialTopk ", s);
-        };
-        execute_with_time_limit(InitialFun, initial_time_limit, reach_time_limit);
-        Print_Time("Initial Matching: ", start);
-
-        size_t num_results = 0ul;
-        mm->GetNumInitialResults(num_results);
-        std::cout << num_results << " initial matches.\n";
-//        std::cout<<gs.size()<<std::endl;
-        if (reach_time_limit) return 1;
-    }
     std::cout << "--------- Incremental Matching --------" << std::endl;
     data_graph.LoadUpdateStream(stream_path);
     int update_len = data_graph.updates_.size() / 2;
@@ -141,6 +122,9 @@ int main(int argc, char *argv[]) {
                 mm->total_test6.clearTimer();
                 mm->total_test7.clearTimer();
             }
+#ifdef  COMPUTE_TIME2
+            mm->update_id=data_graph.updates_.size();
+#endif
             std::cout << "update num: " << data_graph.updates_.size() << std::endl;
             stringstream _ss;
             _ss << "update num:" << data_graph.updates_.size() << "\n";

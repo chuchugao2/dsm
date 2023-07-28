@@ -351,7 +351,7 @@ void Graph::LoadFromFile(const std::string &path, const uint flag) {
                 ifs >> from_id >> to_id >> label;
                 AddEdge(from_id, to_id, label, weights, timestamp, flag);
             } else {
-                ifs >> from_id >> to_id >> label >> weights >> timestamp;
+                ifs >> from_id >> to_id >> label >> weights>>timestamp;
                 AddEdge(from_id, to_id, label, weights, timestamp, flag);
             }
 
@@ -460,7 +460,7 @@ void Graph::LoadUpdateStream(const std::string &path) {
             uint from_id, to_id, label, timestamp;
             float weight;
             label = 0;
-            ifs >> from_id >> to_id >> label >> weight >> timestamp;
+            ifs >> from_id >> to_id >> label >> weight>>timestamp;
             updates_.emplace('e', type == "e", from_id, to_id, label, weight, timestamp);
         }
     }

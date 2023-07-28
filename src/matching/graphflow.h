@@ -54,8 +54,8 @@ public:
     long sumDeleteallMatchFind = 0;
     int numupdatestar = 0;
     long IsearchSpace=0,DsearchSpace=0,IdeterminCandite=0,DdeterminCandite=0;
-   /* Timer total_search_time, total_print_time, total_densityFilter_time, total_update_globalIndex_time, total_updaterightNeighborCandidate_time,
-            total_delete_time, total_delete_update_time;*/
+    std::vector<float>local_first,local_last,global_bound;
+    std::vector<bool>isFirstVisited;
 public:
     Graphflow(Graph &query_graph, Graph &data_grasph,Subgraph &subgraph, uint max_num_results,
               bool print_prep, bool print_enum, bool homo);
