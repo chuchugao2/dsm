@@ -45,14 +45,14 @@ int main(int argc, char *argv[]) {
 
     Log::init_track1("/home/gaochuchu/gcc/dsm/src/log/loginfo2.txt");
 #ifdef COMPUTE_TIME
-    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/Ccompute_time3.txt");
+    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/WCcompute_time3i.txt");
     stringstream _ss;
     //_ss<<"1"<<endl;
     _ss << query_info << endl;
     Log::track3(_ss);
 #endif
     std::string path = "/home/gaochuchu/gcc/dsm/src/log/";
-    std::string initial_result_path = "/home/gaochuchu/gcc/baseline/src/result/";
+    std::string initial_result_path = "/home/gaochuchu/gcc/dsm/src/result/";
     if (result_path == "") {
         path += "topkResult.txt";
     } else {
