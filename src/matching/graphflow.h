@@ -22,30 +22,30 @@ class Graphflow : public matching {
 public:
     // a list of matching orders starting from each query edge
     // the first matching order also applies to the initial matching
-    std::vector<std::vector<uint> > order_vs_; //匹配的点顺序
-    std::vector<std::vector<uint> > order_csrs_;//匹配节点前向邻居
-    std::vector<std::vector<uint> > order_offs_;//匹配节点的索引
-    std::vector<std::vector<uint>> order_vertex_index;//每个节点在该匹配序中的位置 order_vertex_index[0][u1]表示第一个匹配序中，u1的索引位置
-//        std::unordered_map<std::pair<uint,uint>,std::vector<MatchRecord*>,pair_hash> edgeMaps;//对应于每条边的辅助索引结构
-    // uint s,t;//findMatch时更新键值
-    //记录top k记录集合
+    std::vector<std::vector<uint> > order_vs_; //????????
+    std::vector<std::vector<uint> > order_csrs_;//???????????
+    std::vector<std::vector<uint> > order_offs_;//??????????
+    std::vector<std::vector<uint>> order_vertex_index;//???????????????е?λ?? order_vertex_index[0][u1]??????????????У?u1??????λ??
+//        std::unordered_map<std::pair<uint,uint>,std::vector<MatchRecord*>,pair_hash> edgeMaps;//????????????????????
+    // uint s,t;//findMatch???????
+    //???top k???????
     std::vector<MatchRecord *> topKSet;
-    //记录所有匹配的结果
-    std::vector<std::vector<StarGraph *>> globalStarIndex;//记录每种匹配下每个节点左邻居以及最大权值
-    std::vector<SingleCandidate> match;//每个节点的匹配结果  vertex density
+    //?????????????
+    std::vector<std::vector<StarGraph *>> globalStarIndex;//??????????????????????????????
+    std::vector<SingleCandidate> match;//????????????  vertex density
     std::vector<std::vector<SingleCandidate>> matchCandidate;//id density
     std::vector<float> suffixMax;
     std::vector<float> isolatedMax;
-    std::vector<std::vector<std::vector<Neighbor>>> rightNeighbor;//匹配索引号，id号
+    std::vector<std::vector<std::vector<Neighbor>>> rightNeighbor;//??????????id??
     //std::vector<LocalIndex>queryLocalIndexs;
     std::vector<std::vector<std::vector<int>>> globalVkMatchUk;//<vk,ak,uk>
-    std::vector<std::vector<uint>> labelToQueryVertex;//每个标签对应的查询点
-    std::vector<uint> queryVertexIndexInlabel;//每个查询点在label数组中的索引号
-    std::vector<float> LocalStarIndex;//局部索引
-    std::vector<std::vector<int>> matchLeftNeighborSum;//所有节点左邻居的个数
-    std::vector<std::vector<int>> matchVetexLeftNeighbor;//所有匹配序列中左邻居组合数
-    std::vector<vector<float>> matchVetexSumweight;//每种组合更新得到的最大权值
-    std::vector<std::vector<int>> leftNeighborIdSum;//每个节点左邻居id和
+    std::vector<std::vector<uint>> labelToQueryVertex;//???????????????
+    std::vector<uint> queryVertexIndexInlabel;//??????????label?????е???????
+    std::vector<float> LocalStarIndex;//???????
+    std::vector<std::vector<int>> matchLeftNeighborSum;//???н???????????
+    std::vector<std::vector<int>> matchVetexLeftNeighbor;//???????????????????????
+    std::vector<vector<float>> matchVetexSumweight;//??????????????????
+    std::vector<std::vector<int>> leftNeighborIdSum;//???????????id??
     bool isUpdateIntopkset = false;
     int numAddTopk = 0;
     int allMatchFind = 0;
@@ -53,8 +53,8 @@ public:
     long sumDeleteallMatchFind = 0;
     int numupdatestar = 0;
     long IsearchSpace=0,DsearchSpace=0,IdeterminCandite=0,DdeterminCandite=0;
-   /* Timer total_search_time, total_print_time, total_densityFilter_time, total_update_globalIndex_time, total_updaterightNeighborCandidate_time,
-            total_delete_time, total_delete_update_time;*/
+    /* Timer total_search_time, total_print_time, total_densityFilter_time, total_update_globalIndex_time, total_updaterightNeighborCandidate_time,
+             total_delete_time, total_delete_update_time;*/
 
 public:
     Graphflow(Graph &query_graph, Graph &data_grasph, uint max_num_results,
@@ -76,7 +76,7 @@ public:
 
     void RemoveVertex(uint id) override;
 
-    void InitialTopK(const std::string &path) override;//得到初始化之后的Top k结果集合
+    void InitialTopK(const std::string &path) override;//????????????Top k???????
 
     void updateTopK() override;
 
