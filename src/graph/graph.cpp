@@ -51,6 +51,8 @@ void Graph::RemoveVertex(uint id) {
 }
 
 void Graph::AddEdge(uint v1, uint v2, uint label, float weights, uint timestamp, uint flag) {
+    uint v1label= GetVertexLabel(v1);
+    uint v2label= GetVertexLabel(v2);
     //找到大于等于v2的迭代器的位置
     auto lower = std::lower_bound(neighbors_[v1].begin(), neighbors_[v1].end(), v2);
     if (lower != neighbors_[v1].end() && *lower == v2) return;
@@ -96,6 +98,27 @@ void Graph::AddEdge(uint v1, uint v2, uint label, float weights, uint timestamp,
     this->vEdge.insert(vEdge.begin()+dis2,edge);*/
     edge_count_++;
     elabel_count_ = std::max(elabel_count_, label + 1);
+#ifdef EDGEINDEX
+    if(flag) {
+        if(v1>v2){
+            swap(v1,v2);
+        }
+        if (v1label > v2label) {
+            std::swap(v1label, v2label);
+        }
+        std::tuple < uint, uint, uint > key(v1label, v2label, label);
+        auto it = globalEdgeIndex.find(key);
+        if (it != globalEdgeIndex.end()) {
+            if (it->second < weights)
+                it->second = weights;
+            globalEdgeTodataVertex[key]=std::make_pair(v1,v2);
+        } else {
+            globalEdgeIndex.emplace(key,weights);
+            globalEdgeTodataVertex.emplace(key,std::make_pair(v1,v2));
+        }
+    }
+#endif
+
 }
 
 void Graph::RemoveEdge(uint v1, uint v2) {
@@ -558,15 +581,3 @@ std::vector<uint> Graph::GetIsolateVertexBeforeDepth(uint order_index, uint dept
     return result;
 }
 
-void Graph::setBatchVertexType(uint order_index, const std::vector<uint> &vertexs, vertexType type) {
-    for (int i = 0; i < vertexs.size(); i++) {
-        this->matchVertexTypes[order_index][vertexs[i]] = type;
-    }
-}
-bool Graph::isNeighbor(uint u1, uint u2) {
-auto lower=std::lower_bound(neighbors_[u1].begin(),neighbors_[u1].end(),u2);
-if(*lower==u2){
-    return true;
-}
-    return false;
-}

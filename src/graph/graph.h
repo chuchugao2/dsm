@@ -25,6 +25,15 @@ inline bool CompareNeighbors(const Neighbor& a, const Neighbor& b) {
         return a.getVertexId()>b.getVertexId();
     }
 }
+struct MyTupleHash {
+    template <typename T, typename U, typename V>
+    std::size_t operator()(const std::tuple<T, U, V>& t) const {
+        auto hash1 = std::hash<T>{}(std::get<0>(t));
+        auto hash2 = std::hash<U>{}(std::get<1>(t));
+        auto hash3 = std::hash<V>{}(std::get<2>(t));
+        return hash1 ^ hash2 ^ hash3;
+    }
+};
 
 class Edge {
 private:
@@ -102,6 +111,8 @@ public:
     //std::vector<std::vector<std::vector<ForwardNeighbor>>> forwardNeighbors;//前向邻居
     std::vector<std::vector<int>> isolatedRecord;//孤立节点的集合索引
     long long test = 0;
+    std::unordered_map<std::tuple<uint,uint,uint>,float,MyTupleHash>globalEdgeIndex;//(v1label,v2label,elabel),weight
+    std::unordered_map<std::tuple<uint,uint,uint>,std::pair<uint,uint>,MyTupleHash>globalEdgeTodataVertex;//(v1label,v2label,elabel),(v1,v2)
 
 
 public:

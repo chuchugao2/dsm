@@ -22,30 +22,27 @@ class Graphflow : public matching {
 public:
     // a list of matching orders starting from each query edge
     // the first matching order also applies to the initial matching
-    std::vector<std::vector<uint> > order_vs_; //????????
-    std::vector<std::vector<uint> > order_csrs_;//???????????
-    std::vector<std::vector<uint> > order_offs_;//??????????
-    std::vector<std::vector<uint>> order_vertex_index;//???????????????§Ö?¦Ë?? order_vertex_index[0][u1]??????????????§µ?u1??????¦Ë??
-//        std::unordered_map<std::pair<uint,uint>,std::vector<MatchRecord*>,pair_hash> edgeMaps;//????????????????????
-    // uint s,t;//findMatch???????
-    //???top k???????
+    std::vector<std::vector<uint> > order_vs_;
+    std::vector<std::vector<uint> > order_csrs_;
+    std::vector<std::vector<uint> > order_offs_;
+    std::vector<std::vector<uint>> order_vertex_index;
     std::vector<MatchRecord *> topKSet;
     //?????????????
-    std::vector<std::vector<StarGraph *>> globalStarIndex;//??????????????????????????????
-    std::vector<SingleCandidate> match;//????????????  vertex density
+    std::vector<std::vector<StarGraph *>> globalStarIndex;
+    std::vector<SingleCandidate> match;//  vertex density
     std::vector<std::vector<SingleCandidate>> matchCandidate;//id density
     std::vector<float> suffixMax;
     std::vector<float> isolatedMax;
-    std::vector<std::vector<std::vector<Neighbor>>> rightNeighbor;//??????????id??
+    std::vector<std::vector<std::vector<Neighbor>>> rightNeighbor;//
     //std::vector<LocalIndex>queryLocalIndexs;
     std::vector<std::vector<std::vector<int>>> globalVkMatchUk;//<vk,ak,uk>
-    std::vector<std::vector<uint>> labelToQueryVertex;//???????????????
-    std::vector<uint> queryVertexIndexInlabel;//??????????label?????§Ö???????
-    std::vector<float> LocalStarIndex;//???????
-    std::vector<std::vector<int>> matchLeftNeighborSum;//???§ß???????????
-    std::vector<std::vector<int>> matchVetexLeftNeighbor;//???????????????????????
-    std::vector<vector<float>> matchVetexSumweight;//??????????????????
-    std::vector<std::vector<int>> leftNeighborIdSum;//???????????id??
+    std::vector<std::vector<uint>> labelToQueryVertex;
+    std::vector<uint> queryVertexIndexInlabel;
+    std::vector<float> LocalStarIndex;
+    std::vector<std::vector<int>> matchLeftNeighborSum;
+    std::vector<std::vector<int>> matchVetexLeftNeighbor;
+    std::vector<vector<float>> matchVetexSumweight;
+    std::vector<std::vector<int>> leftNeighborIdSum;
     bool isUpdateIntopkset = false;
     int numAddTopk = 0;
     int allMatchFind = 0;
@@ -76,7 +73,7 @@ public:
 
     void RemoveVertex(uint id) override;
 
-    void InitialTopK(const std::string &path) override;//????????????Top k???????
+    void InitialTopK(const std::string &path) override;
 
     void updateTopK() override;
 
@@ -107,6 +104,8 @@ private:
     void updateStarIndex(uint match_index, uint caddidate_v, uint candidate_u, int candidate_v_index);
 
     void updateStarIndex(uint match_index, uint caddidate_v, uint candidate_u);
+    void updateGlobalEdgeIndex(uint mindex,uint candidate_u,uint candidate_u_pos,uint v1,uint v2,uint candidate_u_neighbor,float weight);
+    void updateGlobalEdgeIndexInMatches(std::vector<int>&match,uint v1,uint v2,float weight);
 
     vector<int> EdgeisInMatchOrder(Edge *edge);
 
@@ -187,6 +186,7 @@ private:
     void deleteUpdateglobalVertexStarIndex(uint u1, uint v1, uint n);
 
     void deleteUpdateStarIndex(uint v1, uint v2, std::vector<int> &match);
+    void deleteUpdateGLobalEdgeIndex(uint v1, uint v2, std::vector<int> &match);
 
     bool deleteMatchRecordWithEdge(uint v1, uint v1label, uint v2, uint v2label, uint label, std::vector<int> &match);
 
@@ -194,6 +194,7 @@ private:
 
     void SearchMatchesWithGlobalIndexEdge(uint m, uint v1, uint v2, uint weight, uint u1, uint u2, searchType type);
     void searchMatchesWithGLobalIndex(int depth, uint matchorderindex, searchType flag) ;
+    void createGlobalEdgeIndex();
 
 
 };

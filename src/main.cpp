@@ -152,6 +152,9 @@ int main(int argc, char *argv[]) {
 #ifdef GLOBAL
                 mm->AddEdgeWithGlobalIndex(insert.id1, insert.id2, insert.label, insert.weight, insert.timestamp);
 #endif
+#ifdef EDGEINDEX
+                mm->AddEdgeWithGlobalIndex(insert.id1, insert.id2, insert.label, insert.weight, insert.timestamp);
+#endif
 
 //                 data_graph.AddEdge(insert.id1, insert.id2, insert.label,insert.weight,insert.timestamp,1);
                 num_e_updates++;

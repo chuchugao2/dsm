@@ -19,3 +19,11 @@ const uint ForwardNeighbor::GetVetexId() const {
 const uint ForwardNeighbor::GetElabel() const {
     return edgeLabel;
 }
+const uint ForwardNeighbor::GetVertexLabel() const {
+    return toVertexLabel;
+}
+void ForwardNeighbor::setMaxWeight(float m) {
+    maxWeight=m;
+}
+
+

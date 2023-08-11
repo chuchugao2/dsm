@@ -50,6 +50,8 @@ public:
     const uint GetVetexId() const;
 
     const uint GetElabel() const;
+    const uint GetVertexLabel() const;
+    void setMaxWeight(float m);
 };
 
 #endif //BASELINE_FORWARDNEIGHBOR_H
