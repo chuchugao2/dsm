@@ -93,6 +93,27 @@ int main(int argc, char *argv[]) {
 
     mm->Preprocessing();
     Print_Time("Preprocessing: ", start);
+    if (report_initial) {
+        std::cout << "----------- Initial Matching ----------" << std::endl;
+
+        start = Get_Time();
+        // data_graph.LoadUpdateStream(initial_path);
+        auto InitialFun = [&mm, &data_graph, &initial_result_path]() {
+            mm->InitialMatching(initial_result_path);
+            std::chrono::high_resolution_clock::time_point s;
+            s = Get_Time();
+            mm->InitialTopK(initial_result_path);
+            Print_Time("InitialTopk ", s);
+        };
+        execute_with_time_limit(InitialFun, initial_time_limit, reach_time_limit);
+        Print_Time("Initial Matching: ", start);
+
+        size_t num_results = 0ul;
+        mm->GetNumInitialResults(num_results);
+        std::cout << num_results << " initial matches.\n";
+//        std::cout<<gs.size()<<std::endl;
+        if (reach_time_limit) return 1;
+    }
     std::cout << "--------- Incremental Matching --------" << std::endl;
     data_graph.LoadUpdateStream(stream_path);
     int update_len = data_graph.updates_.size() / 2;
