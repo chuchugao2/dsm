@@ -47,8 +47,11 @@ public:
 
     virtual void AddEdge(uint v1, uint v2, uint label, float weight, uint timestamp);//增加边
     virtual void AddEdgeWithGlobalIndex(uint v1, uint v2, uint label, float weight, uint timestamp);
+    virtual void AddEdgeWithEdgeIndex(uint v1, uint v2, uint label, float weight, uint timestamp);
 
     virtual void RemoveEdge(uint v1, uint v2, uint label);//去除边
+    virtual void RemoveEdgeWithGlobal(uint v1, uint v2, uint label);
+    virtual void RemoveEdgeWithEdgeIndex(uint v1, uint v2, uint label);
     virtual void AddVertex(uint id, uint label);//增加节点
     virtual void RemoveVertex(uint id);//去除节点
 
@@ -73,7 +76,7 @@ public:
     void clearPositiveNum(); //清空 正匹配个数
     void PrintCounter();//打印剩余的执行信息
     Timer total_search_time, total_print_time, total_densityFilter_time, total_update_globalIndex_time, total_updaterightNeighborCandidate_time,
-            total_delete_time, total_delete_update_time,total_test;
+            total_delete_time, total_delete_update_time,total_test,test1,test2;
     long long Itotal_densityfilter_time=0, Itotal_updaterightNeighborCandidate_time=0;
     bool isInsert= true;
 

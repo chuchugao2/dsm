@@ -25,5 +25,10 @@ const uint ForwardNeighbor::GetVertexLabel() const {
 void ForwardNeighbor::setMaxWeight(float m) {
     maxWeight=m;
 }
-
+void ForwardNeighbor::setMatchDataVertexId(uint id) {
+    MatchDataVertexId=id;
+}
+const uint ForwardNeighbor::getMatchDataVertexId() {
+    return MatchDataVertexId;
+}
 

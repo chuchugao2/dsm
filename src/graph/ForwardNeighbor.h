@@ -15,6 +15,7 @@ protected:
     uint toVertexLabel;
     uint edgeLabel;
     float maxWeight = mw;
+    uint MatchDataVertexId=UINT_MAX;
 public:
     ForwardNeighbor() {};
 
@@ -51,7 +52,10 @@ public:
 
     const uint GetElabel() const;
     const uint GetVertexLabel() const;
+    const uint getMatchDataVertexId();
     void setMaxWeight(float m);
+    void setMatchDataVertexId(uint id);
+
 };
 
 #endif //BASELINE_FORWARDNEIGHBOR_H

@@ -110,8 +110,11 @@ void Graph::AddEdge(uint v1, uint v2, uint label, float weights, uint timestamp,
         auto it = globalEdgeIndex.find(key);
         if (it != globalEdgeIndex.end()) {
             if (it->second < weights)
+            {
                 it->second = weights;
-            globalEdgeTodataVertex[key]=std::make_pair(v1,v2);
+                globalEdgeTodataVertex[key]=std::make_pair(v1,v2);
+            }
+
         } else {
             globalEdgeIndex.emplace(key,weights);
             globalEdgeTodataVertex.emplace(key,std::make_pair(v1,v2));
@@ -339,7 +342,6 @@ void Graph::LoadFromFile(const std::string &path, const uint flag) {
         exit(-1);
     }
     std::ifstream ifs(path);
-
     char type;
     while (ifs >> type) {
         if (type == 't') {

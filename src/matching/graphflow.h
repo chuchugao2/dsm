@@ -66,9 +66,11 @@ public:
     void AddEdge(uint v1, uint v2, uint label, float weight, uint timestamp) override;
 
     void AddEdgeWithGlobalIndex(uint v1, uint v2, uint label, float weight, uint timestamp) override;
+    void AddEdgeWithEdgeIndex(uint v1, uint v2, uint label, float weight, uint timestamp) override;
 
     void RemoveEdge(uint v1, uint v2, uint label) override;
-
+    void RemoveEdgeWithGlobal(uint v1, uint v2, uint label) override;
+    void RemoveEdgeWithEdgeIndex(uint v1, uint v2, uint label) override;
     void AddVertex(uint id, uint label) override;
 
     void RemoveVertex(uint id) override;
@@ -184,10 +186,11 @@ private:
     void getIntersetSingleCandidate(std::vector<SingleCandidate> &candidates, int matchorderindex, int depth);
 
     void deleteUpdateglobalVertexStarIndex(uint u1, uint v1, uint n);
-
+    void deleteUpdateglobalVertexStarIndexWithGlobal(uint u1, uint v1, uint n) ;
     void deleteUpdateStarIndex(uint v1, uint v2, std::vector<int> &match);
+    void deleteUpdateStarIndexWithGlobal(uint v1, uint v2, std::vector<int> &match);
     void deleteUpdateGLobalEdgeIndex(uint v1, uint v2, std::vector<int> &match);
-
+    void deleteUpdateStarIndexWithEdgeIndex(uint v1, uint v2, std::vector<int> &match);
     bool deleteMatchRecordWithEdge(uint v1, uint v1label, uint v2, uint v2label, uint label, std::vector<int> &match);
 
     void SearchMatchesWithEdge(uint m,uint v1,uint v2,uint weight,uint u1,uint u2,searchType type);
