@@ -44,10 +44,10 @@ int main(int argc, char *argv[])
     std::chrono::high_resolution_clock::time_point start, lstart;
 
     Log::init_track1("/home/gaochuchu/gcc/dsm/src/log/loginfo1.txt");
-    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/compute_time4.txt");
+    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/WCcompute4_1c.txt");
 
     std::string path="/home/gaochuchu/gcc/dsm/src/log/";
-    std::string initial_result_path="/home/gaochuchu/gcc/baseline/src/result/";
+    std::string initial_result_path="/home/gaochuchu/gcc/dsm/src/result3/";
     if(result_path==""){
         path+="topkResult.txt";
     }else{

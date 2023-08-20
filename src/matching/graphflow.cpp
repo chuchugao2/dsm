@@ -2558,14 +2558,24 @@ void Graphflow::PrintAverageTime(int len) {
     std::cout<<"num delete check neighbor:"<<DdeterminCandite<<endl;
 #ifdef COMPUTE_TRACK
 stringstream _ss;
-    _ss<<std::fixed << std::setprecision(2)<<(total_search_time.GetTimer()*1.0/len+total_update_gloabalsubgraph_time.GetTimer()*1.0/len)<<","
-    <<std::fixed << std::setprecision(2)<<total_update_gloabalsubgraph_time.GetTimer()*1.0/len<<","
-    <<std::fixed << std::setprecision(2)<<total_search_time.GetTimer()*1.0/len<<","
-    <<std::fixed << std::setprecision(2)<<(total_delete_time.GetTimer()*1.0/len+total_delete_update_time.GetTimer()*1.0/len)<<","
-    <<std::fixed << std::setprecision(2)<<(total_delete_update_time.GetTimer()*1.0)/len<<","
-    <<std::fixed << std::setprecision(2)<<total_delete_time.GetTimer()*1.0/len<<","
-    <<sumAllMatchFind<<","
-    <<sumDeleteallMatchFind<<endl;
+    _ss<< (total_update_globalIndex_time.GetTimer() * 1.0 / len + total_search_time.GetTimer() * 1.0 / len)<<","
+       <<total_update_globalIndex_time.GetTimer() * 1.0 / len<<","
+       <<total_search_time.GetTimer() * 1.0 / len<<","
+       <<(total_delete_time.GetTimer() * 1.0 / len + total_delete_update_time.GetTimer() * 1.0 / len)<<","
+       <<(total_delete_update_time.GetTimer() * 1.0) / len<<","
+       <<total_delete_time.GetTimer() * 1.0 / len<<","
+       <<sumAllMatchFind<<","
+       <<sumDeleteallMatchFind<<","
+       <<query_.NumEdges()*2.0/query_.NumVertices()<<","
+       <<data_.NumEdges()*2.0/data_.NumVertices()<<","
+       <<Itotal_densityfilter_time * 1.0 / len<<","
+       <<(Itotal_updaterightNeighborCandidate_time* 1.0 / len)<<","
+       <<total_densityFilter_time.GetTimer() * 1.0 / len<<","
+       <<total_updaterightNeighborCandidate_time.GetTimer() * 1.0 / len<<","
+       << IsearchSpace<<","
+       <<DsearchSpace<<","
+       <<IdeterminCandite<<","
+       <<DdeterminCandite<<endl;
     Log::track3(_ss);
 #endif
 }
