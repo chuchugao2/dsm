@@ -18,8 +18,8 @@ int main(int argc, char *argv[]) {
     CLI::App app{"App description"};
 
     std::string query_path = "", initial_path = "", stream_path = "", result_path = "", query_info = "", algorithm = "graphflow";
-    uint max_num_results = UINT_MAX, time_limit = UINT_MAX, initial_time_limit = UINT_MAX;
-    uint dist = 2,update_len=5000;
+    uint max_num_results = UINT_MAX, time_limit = 10800, initial_time_limit = 10800;
+    uint dist = 2,update_len;
     bool print_prep = true, print_enum = false, homo = false, report_initial = true;
     std::vector<std::vector<uint>> orders;
 
@@ -46,14 +46,14 @@ int main(int argc, char *argv[]) {
 
     Log::init_track1("/home/gaochuchu/gcc/dsm/src/log/loginfo1.txt");
 #ifdef COMPUTE_TIME
-    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/WCcompute_time1_1e.txt");
+    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/WCcompute1_3e.txt");
     stringstream _ss;
     //_ss<<"1"<<endl;
     _ss << query_info << endl;
     Log::track3(_ss);
 #endif
     std::string path = "/home/gaochuchu/gcc/dsm/src/log/";
-    std::string initial_result_path = "/home/gaochuchu/gcc/dsm/src/result/";
+    std::string initial_result_path = "/home/gaochuchu/gcc/dsm/src/result3/";
     if (result_path == "") {
         path += "topkResult.txt";
     } else {
@@ -114,10 +114,10 @@ int main(int argc, char *argv[]) {
     data_graph.LoadUpdateStream(stream_path);
     mm->clearPositiveNum();
     size_t num_v_updates = 0ul, num_e_updates = 0ul;
-
-    auto IncrementalFun = [&data_graph, &mm, &num_v_updates, &num_e_updates,&update_len]() {
+    uint uplen=10000-update_len;
+    auto IncrementalFun = [&data_graph, &mm, &num_v_updates, &num_e_updates,&uplen]() {
         while (!data_graph.updates_.empty()) {
-            if(data_graph.updates_.size()==update_len){
+            if(data_graph.updates_.size()==uplen){
                 mm->isInsert= false;
                 mm->Itotal_updaterightNeighborCandidate_time=mm->total_updaterightNeighborCandidate_time.GetTimer();
                 mm->Itotal_densityfilter_time=mm->total_densityFilter_time.GetTimer();
@@ -132,7 +132,6 @@ int main(int argc, char *argv[]) {
             Log::track1(_ss);
 #ifdef PRINT_DEBUG
             Log::track1(_ss);
-
 #endif
             InsertUnit insert = data_graph.updates_.front();
             data_graph.updates_.pop();
@@ -163,9 +162,12 @@ int main(int argc, char *argv[]) {
 #endif
             } else if (insert.type == 'e' && !insert.is_add) {
 #ifdef LOCAL
+                mm->total_test.StartTimer();
                 mm->RemoveEdge(insert.id1, insert.id2, insert.label);
+                mm->total_test.StopTimer();
 #endif
 #ifdef GLOBAL
+
                 mm->RemoveEdgeWithGlobal(insert.id1, insert.id2, insert.label);
 #endif
 #ifdef  EDGEINDEX

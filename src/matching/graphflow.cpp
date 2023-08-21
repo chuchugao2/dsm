@@ -2926,7 +2926,6 @@ bool Graphflow::updaterightNeighborCandidate(int matchorderindex, uint uk, uint 
     const int n = uk_neighbor.size();
     std::vector<Neighbor>::const_iterator iter1,iter2,lower;
     iter1=iter2=vN.begin();
-    //1.???????§Ö???????????????
     for (int i = 0; i < n; i++) {
         uint query_id = uk_neighbor[i].getVertexId();
         if (isFirstEdge) {
@@ -3006,7 +3005,6 @@ bool Graphflow::updaterightNeighborCandidate(int matchorderindex, uint uk, uint 
             int flag=1;
             while (lower<vN.end()&&rightV<qSize) {
                 uint neighbor_id = (*lower).getVertexId();
-                //uint curmatchCandidateId=matchCandidate[query_order_index][rightV].getVertexId();
                 if (visited_[neighbor_id]) {
                     lower++;
                     continue;
@@ -3024,7 +3022,7 @@ bool Graphflow::updaterightNeighborCandidate(int matchorderindex, uint uk, uint 
                 if(!flag)
                     break;
                 if((*lower).GetelabelAndVertexLabel()==evl)
-                {  //?????????
+                {
                     while(lower<vN.end()&&rightV<qSize){
                         if(lower->GetelabelAndVertexLabel()!=evl){
                             flag=0;
@@ -3204,7 +3202,7 @@ void Graphflow::deleteUpdateglobalVertexStarIndex(uint u1, uint v1, uint n) {
                     continue;
                 if (data_.GetVertexLabel(i) == u1label) {
                     if(LabelFilter(i,u1)){
-                        if(globalVkMatchUk[i][j][candidate_index]>s->getStarMaxWeight()||s->getStarMaxWeight()==s->GetForwardNeighborNum()*mw){
+                        if(globalVkMatchUk[i][j][candidate_index]>s->getStarMaxWeight()){
                             s->setStarMaxWeight(globalVkMatchUk[i][j][candidate_index]);
                             s->setMatchDataVertexId(i);
                         }
