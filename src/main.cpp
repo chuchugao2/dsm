@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 
     std::string query_path = "", initial_path = "", stream_path = "",result_path="",query_info="",algorithm="graphflow";
     uint max_num_results = UINT_MAX, time_limit = UINT_MAX, initial_time_limit = UINT_MAX;
-    uint dist=2;
+    uint dist=2,update_len;
     bool print_prep = true, print_enum = false, homo = false, report_initial = true;
     std::vector<std::vector<uint>> orders;
 
@@ -38,13 +38,14 @@ int main(int argc, char *argv[])
     app.add_option("--orders", orders, "pre-defined matching orders");
     app.add_option("--qInfo",query_info,"the path of query graph");
     app.add_option("--dist",dist,"the dist");
+    app.add_option("--ul",update_len,"the deletion len");
 
     CLI11_PARSE(app, argc, argv);
 
     std::chrono::high_resolution_clock::time_point start, lstart;
 
     Log::init_track1("/home/gaochuchu/gcc/dsm/src/log/loginfo1.txt");
-    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/WCcompute4_1c.txt");
+    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/WCcompute4_4000_4c.txt");
 
     std::string path="/home/gaochuchu/gcc/dsm/src/log/";
     std::string initial_result_path="/home/gaochuchu/gcc/dsm/src/result3/";
@@ -114,24 +115,21 @@ int main(int argc, char *argv[])
     }
     std::cout << "--------- Incremental Matching --------" << std::endl;
     data_graph.LoadUpdateStream(stream_path);
-    int update_len=data_graph.updates_.size()/2;
+    uint upl=10000-update_len;
     mm->clearPositiveNum();
     size_t num_v_updates = 0ul, num_e_updates = 0ul;
 
-    auto IncrementalFun = [&data_graph, &mm, &num_v_updates, &num_e_updates,&update_len]()
+    auto IncrementalFun = [&data_graph, &mm, &num_v_updates, &num_e_updates,&upl]()
     {
         while (!data_graph.updates_.empty())
         {
-            if(data_graph.updates_.size()==update_len){
-                mm->isInsert= false;
-                if(data_graph.updates_.size()==update_len){
+                if(data_graph.updates_.size()==upl){
                     mm->isInsert= false;
                     mm->Itotal_updaterightNeighborCandidate_time=mm->total_updaterightNeighborCandidate_time.GetTimer();
                     mm->Itotal_densityfilter_time=mm->total_densityFilter_time.GetTimer();
                     mm->total_updaterightNeighborCandidate_time.clearTimer();
                     mm->total_densityFilter_time.clearTimer();
                 }
-            }
 
             std::cout<<"update num: "<<data_graph.updates_.size()<<std::endl;
             stringstream _ss;
