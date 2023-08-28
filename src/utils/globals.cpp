@@ -4,4 +4,4 @@ std::atomic<bool> reach_time_limit = {false};
 long long windowSize = 500000;
 uint ts = 0;
 uint k = 100;
-float mw = 101;
+float mw = 1000000;

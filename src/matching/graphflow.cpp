@@ -1100,7 +1100,7 @@ void Graphflow::updateGlobalEdgeIndex(uint mindex,uint candidate_u,uint candidat
     std::pair<uint,uint>pair_v(v1,v2);
     for(auto fneighbor:queryVertex){
         if(fneighbor->GetVetexId()==candidate_u_neighbor){
-            uint v1label=data_.GetVertexLabel(candidate_u);
+            uint v1label=query_.GetVertexLabel(candidate_u);
             uint v2label=fneighbor->GetVertexLabel();
             uint elabel=fneighbor->GetElabel();
             if(v1label>v2label)
@@ -1224,6 +1224,9 @@ void Graphflow::AddEdgeWithEdgeIndex(uint v1, uint v2, uint label, float weight,
     }
     updateGlobalEdgeIndexInMatches(match,v1,v2,weight);
     total_update_globalIndex_time.StopTimer();
+if(globalStarIndex[6][4]->getStarMaxWeight()!=2336475){
+    std::cout<<"not equal: "<<globalStarIndex[6][4]->getStarMaxWeight()<<endl;
+}
     total_search_time.StartTimer();
     isUpdateIntopkset = false;
     for (auto ma:match) {
