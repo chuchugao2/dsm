@@ -2523,20 +2523,21 @@ void Graphflow::getIntersetSingleCandidate(std::vector<SingleCandidate> &singleV
     singleVertexCandidate.resize(len);
 }
 void Graphflow::PrintAverageTime(int len) {
+     int ilen=10000-len;
     std::cout <<"average query graph degree:"<< std::fixed << std::setprecision(2)<<query_.NumEdges()*2.0/query_.NumVertices()<<endl;
     std::cout<<"average data graph degree:"<<std::fixed << std::setprecision(2)<<data_.NumEdges()*2.0/data_.NumVertices()<<endl;
     std::cout << "average serach time: " << std::fixed << std::setprecision(2)
-              << total_search_time.GetTimer() * 1.0 / len << " microseconds" << endl;
+              << total_search_time.GetTimer() * 1.0 / ilen << " microseconds" << endl;
     std::cout << "average update global index time: " << std::fixed << std::setprecision(2)
-              << total_update_globalIndex_time.GetTimer() * 1.0 / len << " microseconds" << endl;
+              << total_update_globalIndex_time.GetTimer() * 1.0 / ilen << " microseconds" << endl;
     std::cout << "average update time " << std::fixed << std::setprecision(2)
-              << (total_update_globalIndex_time.GetTimer() * 1.0 / len + total_search_time.GetTimer() * 1.0 / len)
+              << (total_update_globalIndex_time.GetTimer() * 1.0 / ilen + total_search_time.GetTimer() * 1.0 / ilen)
               << " microseconds" << endl;
     std::cout << "average insert density filter time: " << std::fixed << std::setprecision(2)
-              << Itotal_densityfilter_time * 1.0 / len << " microseconds" << endl;
+              << Itotal_densityfilter_time * 1.0 / ilen << " microseconds" << endl;
     std::cout << "average insert updaterightNeighborCandidate time " << std::fixed << std::setprecision(2)
-              <<  (Itotal_updaterightNeighborCandidate_time* 1.0 / len)<< " microseconds" << endl;
-    std::cout << "average print time: " << std::fixed << std::setprecision(2) << total_print_time.GetTimer() * 1.0 / len
+              <<  (Itotal_updaterightNeighborCandidate_time* 1.0 / ilen)<< " microseconds" << endl;
+    std::cout << "average print time: " << std::fixed << std::setprecision(2) << total_print_time.GetTimer() * 1.0 / ilen
               << " microseconds" << endl;
     std::cout << "average delete search time:" << std::fixed << std::setprecision(2)
               << total_delete_time.GetTimer() * 1.0 / len << " microseconds" << endl;
@@ -2558,9 +2559,9 @@ void Graphflow::PrintAverageTime(int len) {
     std::cout<<"num delete check neighbor:"<<DdeterminCandite<<endl;
 #ifdef COMPUTE_TRACK
 stringstream _ss;
-    _ss<< (total_update_globalIndex_time.GetTimer() * 1.0 / len + total_search_time.GetTimer() * 1.0 / len)<<","
-       <<total_update_globalIndex_time.GetTimer() * 1.0 / len<<","
-       <<total_search_time.GetTimer() * 1.0 / len<<","
+    _ss<< (total_update_globalIndex_time.GetTimer() * 1.0 / ilen + total_search_time.GetTimer() * 1.0 / ilen)<<","
+       <<total_update_globalIndex_time.GetTimer() * 1.0 / ilen<<","
+       <<total_search_time.GetTimer() * 1.0 / ilen<<","
        <<(total_delete_time.GetTimer() * 1.0 / len + total_delete_update_time.GetTimer() * 1.0 / len)<<","
        <<(total_delete_update_time.GetTimer() * 1.0) / len<<","
        <<total_delete_time.GetTimer() * 1.0 / len<<","
