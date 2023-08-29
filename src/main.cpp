@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     app.add_option("--orders", orders, "pre-defined matching orders");
     app.add_option("--qInfo", query_info, "the path of query graph");
     app.add_option("--dist", dist, "the dist");
-    app.add_option("--ul",update_len,"the num of insertion");
+    app.add_option("--ul",update_len,"the deletion num");
 
     CLI11_PARSE(app, argc, argv);
 
