@@ -46,9 +46,9 @@ int main(int argc, char *argv[]) {
 
     Log::init_track1("/home/gaochuchu/gcc/dsm/src/log/loginfo1.txt");
 #ifdef COMPUTE_TIME
-    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/WCcompute4_3e.txt");
+    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/WCcompute1_1000_3e.txt");
     stringstream _ss;
-    //_ss<<"1"<<endl;m
+    //_ss<<"1"<<endl;
     _ss << query_info << endl;
     Log::track3(_ss);
 #endif
