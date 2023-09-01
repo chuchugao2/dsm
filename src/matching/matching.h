@@ -5,6 +5,7 @@
 
 #include "../utils/types.h"
 #include "../graph/graph.h"
+#include "../utils/Timer.h"
 
 
 class matching
@@ -31,8 +32,7 @@ protected:
     size_t num_intermediate_results_after_visit_check_;
     size_t num_intermediate_results_with_empty_candidate_set_;
     size_t num_intermediate_results_without_results_;
-
-
+    Timer total_search_time,total_delete_time, total_delete_update_time;
 
 public:
     matching(Graph& query_graph, Graph& data_graph,
@@ -65,7 +65,7 @@ public:
     void GetNumNegativeResults(size_t &num_negative_results);//负匹配的数量
     void clearPositiveNum(); //清空 正匹配个数
     void PrintCounter();//打印剩余的执行信息
-
+    long long InitialSpace=0;
 
 };
 

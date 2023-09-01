@@ -45,7 +45,7 @@ public:
     std::map<std::string,std::vector<Edge>>queryEdgeType2Edges;//查询边每种边的类型对应的查询边id
     std::map<std::string,std::string>queryEdgesToEdgeType;//查询边id对应的查询边类型
     std::map<std::string,int>queryEdgeToIndex;//每条边对应的索引
-
+    bool isUpdateIntopkset = false;
 
 public:
     Instopk(Graph& query_graph, Graph& data_grasph, uint max_num_results,
@@ -62,6 +62,7 @@ public:
     void deleteEdge(uint v1,uint v2) override;
     void deleteUpdateTopK() override;
     void GetMemoryCost(size_t &num_edges, size_t &num_vertices) override;
+    void PrintAverageTime(int len);
 private:
     void CreateSortEdgeList();//创建排序边列表
     void GenerateMatchingOrder();

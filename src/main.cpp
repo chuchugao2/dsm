@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 
     std::string query_path = "", initial_path = "", stream_path = "",result_path="",query_info="",algorithm="instopk";
     uint max_num_results = UINT_MAX, time_limit = UINT_MAX, initial_time_limit = UINT_MAX;
-    uint dist=2;
+    uint dist=2,update_len=5000;
     bool print_prep = true, print_enum = false, homo = false, report_initial = true;
     std::vector<std::vector<uint>> orders;
 
@@ -38,13 +38,19 @@ int main(int argc, char *argv[])
     app.add_option("--orders", orders, "pre-defined matching orders");
     app.add_option("--qInfo",query_info,"the path of query graph");
     app.add_option("--dist",dist,"the dist");
-
+    app.add_option("--ul",update_len,"the deletion num");
     CLI11_PARSE(app, argc, argv);
 
     std::chrono::high_resolution_clock::time_point start, lstart;
 
     Log::init_track1("/home/gaochuchu/gcc/dsm/src/log/loginfo1.txt");
-
+#ifdef COMPUTE_TIME
+    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/WCcomputeIns_1000_3e.txt");
+    stringstream _ss;
+    //_ss<<"1"<<endl;
+    _ss << query_info << endl;
+    Log::track3(_ss);
+#endif
     std::string path="/home/gaochuchu/gcc/dsm/src/log/";
     std::string initial_result_path="/home/gaochuchu/gcc/baseline/src/result/";
     if(result_path==""){
@@ -83,6 +89,11 @@ int main(int argc, char *argv[])
 
     mm->Preprocessing();
     Print_Time("Preprocessing: ", start);
+    std::cout << "\nPeak Virtual Memory: " << mem::getValue() << " KB";
+    std::cout << "\n\n----------------- End -----------------" << std::endl;
+#ifdef COMPUTE_TIME
+    mm->InitialSpace=mem::getValue();
+#endif
     if (report_initial)
     {
         std::cout << "----------- Initial Matching ----------" << std::endl;
@@ -108,7 +119,6 @@ int main(int argc, char *argv[])
     }
     std::cout << "--------- Incremental Matching --------" << std::endl;
     data_graph.LoadUpdateStream(stream_path);
-    int update_len=data_graph.updates_.size();
     mm->clearPositiveNum();
     size_t num_v_updates = 0ul, num_e_updates = 0ul;
 

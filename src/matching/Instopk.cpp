@@ -46,18 +46,22 @@ void Instopk::AddVertex(uint id, uint label) {
     visited_.resize(id + 1, false);
 }
 void Instopk::AddEdge(uint v1, uint v2, uint label, float weight, uint timestamp) {
+    total_search_time.StartTimer();
+    isUpdateIntopkset= false;
     data_.AddEdge(v1, v2, label, weight, timestamp, 1);
     //1.update sortEdgeList and pointers
     updateSortEdgelist(v1,v2, true);
-    //2.update MNWinde Topologyindex
+    //2.update MNWindex Topologyindex
     updateMNWIndexAndDataTopologyIndex(v1,v2,label,weight, true);
     //3.searchTopkResult
     //3.1 updateQueryCandidate
     updateQueryCandidate(v1,v2,label, true);
     InitialPointers();
     SearchMatchesWithSortedList();
+    total_search_time.StopTimer();
     updateTopK(0);
 }
+
 void Instopk::GetMemoryCost(size_t &num_edges, size_t &num_vertices) {
     num_edges = 0ul;
     num_vertices = 0ul;
@@ -120,10 +124,14 @@ void Instopk::deleteUpdateTopK() {
 #endif
 }
 void Instopk::deleteEdge(uint v1, uint v2) {
+//todo deletion
 
 }
 void Instopk::updateTopK(uint num) {
     stringstream _ss;
+    if (!isUpdateIntopkset) {
+        return;
+    }
 #ifdef RESULT_TRACK
     _ss<<"after insert "<<std::endl;
     for(auto d:topKSet){
@@ -166,19 +174,36 @@ void Instopk::InitialMatching(const std::string &path) {
     }
 }
 void Instopk::RemoveEdge(uint v1, uint v2) {
+    total_delete_time.StartTimer();
     uint label=std::get<2>(data_.GetEdgeLabel(v1,v2));
+    float weight=data_.GetEdgeWeight(v1,v2);
+    data_.RemoveEdge(v1, v2);
     updateSortEdgelist(v1,v2, false);
-    updateMNWIndexAndDataTopologyIndex(v1,v2,label, 0,false);
+    updateMNWIndexAndDataTopologyIndex(v1,v2,label, weight,false);
     updateQueryCandidate(v1,v2,label, false);
     InitialPointers();
     SearchMatchesWithSortedList();
-    data_.RemoveEdge(v1, v2);
-   deleteUpdateTopK();
-
-
+    deleteUpdateTopK();
+    total_delete_time.StopTimer();
 }
 void Instopk::RemoveVertex(uint id) {
 
+}
+void Instopk::PrintAverageTime(int len) {
+    int ilen=10000-len;
+    std::cout <<"average query graph degree:"<< std::fixed << std::setprecision(2)<<query_.NumEdges()*2.0/query_.NumVertices()<<endl;
+    std::cout<<"average data graph degree:"<<std::fixed << std::setprecision(2)<<data_.NumEdges()*2.0/data_.NumVertices()<<endl;
+    std::cout << "average serach time: " << std::fixed << std::setprecision(2)
+              << total_search_time.GetTimer() * 1.0 / ilen << " microseconds" << endl;
+    std::cout << "average delete search time:" << std::fixed << std::setprecision(2)
+              << total_delete_time.GetTimer() * 1.0 / len << " microseconds" << endl;
+#ifdef COMPUTE_TIME
+    stringstream _ss;
+    _ss<<total_search_time.GetTimer() * 1.0 / ilen<<","
+       <<InitialSpace<<","
+       <<total_delete_time.GetTimer() * 1.0 / len<<endl;
+    Log::track3(_ss);
+#endif
 }
 void Instopk::Preprocessing() {
     //create sortedlist
@@ -892,7 +917,9 @@ void Instopk::SearchMatchesWithSortedList() {
                 MatchRecord *r = new MatchRecord(density, m);
                 if(!isContainMatchRecord(r))
                 {
-                    addMatchRecords(r);
+                    int flag=addMatchRecords(r);
+                    if(flag)
+                        isUpdateIntopkset= true;
                 }
             }
         }
@@ -1300,63 +1327,42 @@ void Instopk::updateMNWIndexAndDataTopologyIndex(uint v1,uint v2,uint label,floa
         uint v1label=data_.GetVertexLabel(v1);
         uint v2label=data_.GetVertexLabel(v2);
         int n=data_.NumVertices();
+        std::set<uint>updatelabels;
+        updatelabels.insert(v1);
+        updatelabels.insert(v2);
         for(int i=0;i<n;i++){
             if(i==v1){
                 std::string str=std::to_string(v2label);
                 TopologyIndex[1][i][str]--;
                 //update MNW[1][i][str]
                 MNW[1][i][str]=0;
-                const std::vector<uint>&neighbors1=data_.GetNeighbors(i);
-                for(uint n:neighbors1){
-                    uint nlabel=data_.GetVertexLabel(n);
-                    float w=data_.GetEdgeWeight(i,n);
-                    if(nlabel==v2label){
-                        MNW[1][i][str]=std::max( MNW[1][i][str],w);
-                    }
-                }
                 //update MNW[2][i][str]
-                std::set<std::string>keys;
                 const std::vector<uint>&neighbors2=data_.GetNeighbors(v2);
                 for(uint n:neighbors2){
-                    if(!keys.count(str)){
-                        MNW[2][i][str]=0;
-                    }
+                    uint nlabel=data_.GetVertexLabel(n);
                     float w=data_.GetEdgeWeight(v2,n);
                     w=w+weight;
-                    uint nlabel=data_.GetVertexLabel(n);
-                    str=str+"#"+std::to_string(nlabel);
-                    keys.insert(str);
-                    TopologyIndex[2][i][str]--;
-                    MNW[2][i][str]=std::max( MNW[2][i][str],w);
+                    string tmpstr=str+"#"+std::to_string(nlabel);
+                    TopologyIndex[2][i][tmpstr]--;
+                    if(MNW[2][i][tmpstr]==w)
+                        MNW[2][i][tmpstr]=0;
                 }
-
             }
             else if(i==v2){
-                std::string str=std::to_string(v1label);
+                std::string str=std::to_string(v2label);
                 TopologyIndex[1][i][str]--;
                 //update MNW[1][i][str]
                 MNW[1][i][str]=0;
-                const std::vector<uint>&neighbors1=data_.GetNeighbors(i);
-                for(uint n:neighbors1){
-                    uint nlabel=data_.GetVertexLabel(n);
-                    float w=data_.GetEdgeWeight(i,n);
-                    if(nlabel==v2label){
-                        MNW[1][i][str]=std::max( MNW[1][i][str],w);
-                    }
-                }
-                std::set<std::string>keys;
-                const std::vector<uint>&neighbors2=data_.GetNeighbors(v1);
+                //update MNW[2][i][str]
+                const std::vector<uint>&neighbors2=data_.GetNeighbors(v2);
                 for(uint n:neighbors2){
-                    if(!keys.count(str)){
-                        MNW[2][i][str]=0;
-                    }
-                    float w=data_.GetEdgeWeight(v1,n);
-                    w=w+weight;
                     uint nlabel=data_.GetVertexLabel(n);
-                    str=str+"#"+std::to_string(nlabel);
-                    keys.insert(str);
-                    TopologyIndex[2][i][str]++;
-                    MNW[2][i][str]=std::max(MNW[2][i][str],w);
+                    float w=data_.GetEdgeWeight(v2,n);
+                    w=w+weight;
+                    string tmpstr=str+"#"+std::to_string(nlabel);
+                    TopologyIndex[2][i][tmpstr]--;
+                    if(MNW[2][i][tmpstr]==w)
+                        MNW[2][i][tmpstr]=0;
                 }
             }
             else{
@@ -1365,42 +1371,73 @@ void Instopk::updateMNWIndexAndDataTopologyIndex(uint v1,uint v2,uint label,floa
                     TopologyIndex[2][i][str]--;
                     //÷ÿÀ„str=v1label$v2label
                     const std::vector<uint>&neighbors1=data_.GetNeighbors(i);
-                    MNW[2][i][str]=0;
-                    for(uint n:neighbors1){
-                        uint nlabel=data_.GetVertexLabel(n);
-                        float w=data_.GetEdgeWeight(i,n);
-                        if(nlabel==v1label){
-                            const std::vector<uint>&neighbors2=data_.GetNeighbors(n);
-                            for(uint n2:neighbors2){
-                                uint n2label=data_.GetVertexLabel(n2);
-                                if(n2label==v2label){
-                                    float w2=data_.GetEdgeWeight(i,n2)+w;
-                                    MNW[2][i][str]=std::max( MNW[2][i][str],w2);
-                                }
-                            }
-                        }
+                    float w=data_.GetEdgeWeight(i,v1);
+                    w+=weight;
+                    if( MNW[2][i][str]==w){
+                        updatelabels.insert(data_.GetVertexLabel(i));
+                        MNW[2][i][str]=0;
                     }
                 }
                 else if(isNeighbor(i,v2)){
                     std::string str=std::to_string(v2label)+"#"+std::to_string(v1label);
                     TopologyIndex[2][i][str]--;
+                    //÷ÿÀ„str=v1label$v2label
                     const std::vector<uint>&neighbors1=data_.GetNeighbors(i);
-                    MNW[2][i][str]=0;
-                    for(uint n:neighbors1){
-                        uint nlabel=data_.GetVertexLabel(n);
-                        float w=data_.GetEdgeWeight(i,n);
-                        if(nlabel==v2label){
-                            const std::vector<uint>&neighbors2=data_.GetNeighbors(n);
-                            for(uint n2:neighbors2){
-                                uint n2label=data_.GetVertexLabel(n2);
-                                if(n2label==v1label){
-                                    float w2=data_.GetEdgeWeight(i,n2)+w;
-                                    MNW[2][i][str]=std::max( MNW[2][i][str],w2);
-                                }
-                            }
-                        }
+                    float w=data_.GetEdgeWeight(i,v2);
+                    w+=weight;
+                    if( MNW[2][i][str]==w){
+                        updatelabels.insert(data_.GetVertexLabel(i));
+                        MNW[2][i][str]=0;
                     }
                 }
+            }
+        }
+        //update MNW[2][i][str]  start label in updatelabel
+        for (int i = 0; i < data_.NumVertices(); i++) {
+            uint ilabel=data_.GetVertexLabel(i);
+            if(updatelabels.count(i))
+                continue;
+            std::queue<std::tuple<int, std::string, int>> que;//id,type,weight
+            std::queue<int>depth;//id depth
+            depth.push((0));
+            std::queue<std::set<int>> vertexs;
+            std::set<int> verset;
+            verset.insert(i);
+            vertexs.push(verset);
+            que.push(std::make_tuple(i, "", 0));
+            while (!que.empty()) {
+                auto item = que.front();
+                que.pop();
+                auto veritem = vertexs.front();
+                vertexs.pop();
+                int d=depth.front();
+                depth.pop();
+                int id = std::get<0>(item);
+                std::string str = std::get<1>(item);
+                int weight = std::get<2>(item);
+                if (d == dist) {
+                    continue;
+                }
+                auto neighbors = data_.GetNeighbors(id);
+                for (auto n: neighbors) {
+                    if (!veritem.count(n)) {
+                        float newWeight = weight + data_.GetEdgeWeight(id, n);
+                        std::string newStr;
+                        if(str.size()!=0)
+                            newStr= str +"#"+std::to_string(data_.GetVertexLabel(n));
+                        else
+                            newStr = str +std::to_string(data_.GetVertexLabel(n));
+                        que.push(std::make_tuple(n, newStr, newWeight));
+                        std::set<int> newset = veritem;
+                        newset.insert(n);
+                        vertexs.push(newset);
+                        int newd =d+1;
+                        depth.push(newd);
+                        TopologyIndex[d+1][i][newStr]++;
+                        MNW[d+1][i][newStr] = std::max(MNW[d+1][i][newStr], newWeight);
+                    }
+                }
+
             }
         }
     }
