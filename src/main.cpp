@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/WCcompute4_4000_4c.txt");
 
     std::string path="/home/gaochuchu/gcc/dsm/src/log/";
-    std::string initial_result_path="/home/gaochuchu/gcc/dsm/src/result3/";
+    std::string initial_result_path="/home/gaochuchu/gcc/dsm/src/result4/";
     if(result_path==""){
         path+="topkResult.txt";
     }else{

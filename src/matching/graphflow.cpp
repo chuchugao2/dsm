@@ -1083,7 +1083,7 @@ void Graphflow::AddEdge(uint v1, uint v2, uint label, float weight) {
 #endif
     total_update_globalIndex_time.StartTimer();
     int numAddTopk=0;
-    int allMatchFind=0;
+    allMatchFind=0;
     bool flag= true;
     data_.AddEdge(v1, v2, label, weight,  1);
     this->data_.UpdateLabelIndex(v1,v2,label,1);
@@ -1255,7 +1255,7 @@ void Graphflow::RemoveEdge(uint v1, uint v2,uint label) {
 #endif
     //4.ÅÐ¶ÏtopkÖÐÊÇ·ñ°üº¬É¾³ý±ß
     total_delete_time.StartTimer();
-     flag=deleteMatchRecordWithEdge(v1,v1label,v2,v2label,label);
+     flag=deleteMatchRecordWithEdge(v1,v1label,v2,v2label,label,match);
     if(!flag)
     {
         total_delete_time.StartTimer();
@@ -2774,8 +2774,7 @@ void Graphflow::updateglobalVertexStarIndex(uint u1,uint v1,uint u1label,uint el
         }
     }
  }
-bool Graphflow::deleteMatchRecordWithEdge(uint v1, uint v1label,uint v2, uint v2label,uint label) {
-    vector<int> match = EdgeisInMatchOrder(v1, v2, v1label, v2label, label);
+bool Graphflow::deleteMatchRecordWithEdge(uint v1, uint v1label,uint v2, uint v2label,uint label,std::vector<int>&match) {
     bool flag = false;
     for (auto it = topKSet.begin(); it != topKSet.end();) {
         MatchRecord *record = *it;
@@ -2844,7 +2843,7 @@ void Graphflow::deleteGlobalSubgraph(uint v1, uint v2,uint elabel,float weight, 
     uint n=query_.NumEdges();
     bool isMatch= false;
     auto &mcandidate=globalsubgraph_.matchCandidate;
-    for(auto it=match.begin();it!=match.end();){
+    for(auto it=match.begin();it!=match.end();it++){
         uint u1=order_vs_[*it][0];
         uint u2=order_vs_[*it][1];
         uint u1label=query_.GetVertexLabel(u1);
@@ -2867,12 +2866,12 @@ void Graphflow::deleteGlobalSubgraph(uint v1, uint v2,uint elabel,float weight, 
                 std::swap(v1,v2);
             }
         }
-        if(isMatch== false){
+       /* if(isMatch== false){
             it=match.erase(it);
         }
         else{
             ++it;
-        }
+        }*/
     }
     //total_delete_update_time+= Duration2(start);
  }

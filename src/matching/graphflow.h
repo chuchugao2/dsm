@@ -127,7 +127,7 @@ private:
    bool deleteGlobalSubgraphHelp(int m,uint u1,uint u2,uint u1label,uint u2label, uint v1,uint v2,uint v1label,uint v2label,
                                  uint elabel,float weight, std::vector<std::vector<uint>>&mcandidate);
    void deleteGlobalGraphCandidateEdges(uint m,uint u1,uint v1,std::vector<std::vector<uint>>&mcandidate);
-   bool deleteMatchRecordWithEdge(uint v1, uint v1label,uint v2, uint v2label,uint label);
+   bool deleteMatchRecordWithEdge(uint v1, uint v1label,uint v2, uint v2label,uint label,std::vector<int> &match);
    bool SearchMatchesWithEdge(uint m,uint v1,uint v2,float weight,uint u1,uint u2,searchType type);
 
 };
