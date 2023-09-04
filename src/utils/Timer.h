@@ -21,6 +21,7 @@ public:
 
     long long GetTimer();
     void clearTimer();
+    void setTimer(long long tm);
 
 
 };
