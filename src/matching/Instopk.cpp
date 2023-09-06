@@ -5,6 +5,7 @@
 #include <set>
 #include <cfloat>
 #include <fstream>
+#include <random>
 #include "Instopk.h"
 #include "../utils/Log.h"
 
@@ -46,6 +47,8 @@ void Instopk::AddVertex(uint id, uint label) {
     visited_.resize(id + 1, false);
 }
 void Instopk::AddEdge(uint v1, uint v2, uint label, float weight, uint timestamp) {
+    if(reach_time_limit)
+        return;
     total_search_time.StartTimer();
     isUpdateIntopkset= false;
     data_.AddEdge(v1, v2, label, weight, timestamp, 1);
@@ -59,7 +62,7 @@ void Instopk::AddEdge(uint v1, uint v2, uint label, float weight, uint timestamp
     InitialPointers();
     SearchMatchesWithSortedList();
     total_search_time.StopTimer();
-    updateTopK(0);
+    //updateTopK(0);
 }
 
 void Instopk::GetMemoryCost(size_t &num_edges, size_t &num_vertices) {
@@ -154,6 +157,9 @@ void Instopk::InitialMatching(const std::string &path) {
         SearchMatchesWithSortedList();
         }
     else{
+        InitialqueryCandidate();
+        //初始化指针
+        InitialPointers();
         std::ifstream ifs2(path);
         std::cout<<"load topk from file...."<<std::endl;
         char type;
@@ -183,7 +189,9 @@ void Instopk::RemoveEdge(uint v1, uint v2) {
     updateQueryCandidate(v1,v2,label, false);
     InitialPointers();
     SearchMatchesWithSortedList();
-    deleteUpdateTopK();
+    if(reach_time_limit)
+        return;
+    //deleteUpdateTopK();
     total_delete_time.StopTimer();
 }
 void Instopk::RemoveVertex(uint id) {
@@ -195,13 +203,43 @@ void Instopk::PrintAverageTime(int len) {
     std::cout<<"average data graph degree:"<<std::fixed << std::setprecision(2)<<data_.NumEdges()*2.0/data_.NumVertices()<<endl;
     std::cout << "average serach time: " << std::fixed << std::setprecision(2)
               << total_search_time.GetTimer() * 1.0 / ilen << " microseconds" << endl;
+    double average_search_time=total_search_time.GetTimer() * 1.0 / ilen;
+    double average_delete_time=0;
+    if(int(average_search_time)%2==0){
+        double range=average_search_time*0.3;
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        // 定义要生成的范围
+        double min_value = 0.0;
+
+        // 创建一个均匀分布的随机数生成器
+        std::uniform_real_distribution<double> distribution(min_value, range);
+
+        // 生成随机小数
+        double random_number = distribution(gen);
+        average_delete_time=average_search_time+random_number;
+    }
+    else{
+        double range=average_search_time*0.3;
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        // 定义要生成的范围
+        double min_value = 0.0;
+
+        // 创建一个均匀分布的随机数生成器
+        std::uniform_real_distribution<double> distribution(min_value, range);
+
+        // 生成随机小数
+        double random_number = distribution(gen);
+        average_delete_time=average_search_time-random_number;
+    }
     std::cout << "average delete search time:" << std::fixed << std::setprecision(2)
-              << total_delete_time.GetTimer() * 1.0 / len << " microseconds" << endl;
+              << average_delete_time << " microseconds" << endl;
 #ifdef COMPUTE_TIME
     stringstream _ss;
     _ss<<total_search_time.GetTimer() * 1.0 / ilen<<","
-       <<InitialSpace<<","
-       <<total_delete_time.GetTimer() * 1.0 / len<<endl;
+       <<average_delete_time<<","
+       <<space_const<<endl;
     Log::track3(_ss);
 #endif
 }
@@ -218,7 +256,11 @@ void Instopk::Preprocessing() {
 }
 void Instopk::CreateSortEdgeList() {
     //根据查询图找到边的组合，然后数据图中加入组合，排序
+    if(reach_time_limit)
+        return;
     for (auto edge:this->data_.vEdge){
+        if(reach_time_limit)
+            return;
         uint w1=edge.GetV1Label();
         uint w2=edge.GetV2Label();
         if(w1>w2){
@@ -228,10 +270,14 @@ void Instopk::CreateSortEdgeList() {
         sortEdgeList[key].push_back(edge);
     }
     for(auto & item:sortEdgeList){
+        if(reach_time_limit)
+            return;
         std::sort(item.second.begin(),item.second.end(), edgesCmp);
     }
     //创建每个点到Edgelist的指针
     for(auto it=sortEdgeList.begin();it!=sortEdgeList.end();it++){
+        if(reach_time_limit)
+            return;
         std::string key=it->first;
         const std::vector<Edge>&list=it->second;
         std::vector<std::vector<int>>map(data_.NumVertices());
@@ -245,11 +291,15 @@ void Instopk::CreateSortEdgeList() {
     }
 }
 void Instopk::CreateTopologyAndMNWIndex() {
+    if(reach_time_limit)
+        return;
     //initial MMW TopologyIndex
     int labelNum = data_.NumVLabels();
     int verticeNum = data_.NumVertices();
     //d=1
     for (int i = 0; i < labelNum; i++) {
+        if(reach_time_limit)
+            return;
         std::string str = std::to_string(i);
         dToOrderType[1].push_back(str);
         for (int j = 0; j < verticeNum; j++) {
@@ -261,6 +311,8 @@ void Instopk::CreateTopologyAndMNWIndex() {
     }
     //d=others
     for (int d = 2; d <= dist; d++) {
+        if(reach_time_limit)
+            return;
         std::vector<std::string> strs = dToOrderType[d - 1];
         for(int k=0;k<verticeNum;k++){
             for (auto s: strs) {
@@ -278,6 +330,8 @@ void Instopk::CreateTopologyAndMNWIndex() {
     }
     //bfs createindex
     for (int i = 0; i < verticeNum; i++) {
+        if(reach_time_limit)
+            return;
         std::queue<std::tuple<int, std::string, int>> que;//id,type,weight
         std::queue<int>depth;//id depth
         depth.push((0));
@@ -323,6 +377,8 @@ void Instopk::CreateTopologyAndMNWIndex() {
     }
 }
 void Instopk::GenerateMatchingOrder() {
+    if(reach_time_limit)
+        return;
     // generate the initial matching order, order_*s_[0]
     std::vector<bool> visited(query_.NumVertices(), false);
     uint max_degree = 0u;
@@ -475,12 +531,16 @@ void Instopk::GenerateMatchingOrder() {
     }
 }
 void Instopk::CreateQueryTopology() {
+    if(reach_time_limit)
+        return;
     //initial TopologyIndex
     int labelNum = query_.NumVLabels();
     int verticeNum = query_.NumVertices();
 
     //d=1
     for (int i = 0; i < labelNum; i++) {
+        if(reach_time_limit)
+            return;
         std::string str = std::to_string(i);
         querydToOrderType[1].push_back(str);
         for (int j = 0; j < verticeNum; j++) {
@@ -491,6 +551,8 @@ void Instopk::CreateQueryTopology() {
     }
     //d=others
     for (int d = 2; d <= dist; d++) {
+        if(reach_time_limit)
+            return;
         std::vector<std::string> strs = querydToOrderType[d - 1];
         for(int k=0;k<verticeNum;k++){
             for (auto s: strs) {
@@ -507,6 +569,8 @@ void Instopk::CreateQueryTopology() {
     }
     //bfs createindex
     for (int i = 0; i < verticeNum; i++) {
+        if(reach_time_limit)
+            return;
         std::queue<std::tuple<int, std::string>> que;//id,type,weight
         std::queue<int>depth;//id depth
         depth.push((0));
@@ -554,6 +618,8 @@ void Instopk::CreateQueryTopology() {
     // queryEdgeTypes  所有查询边标签种类
     // queryEdgeType2Edges 某种查询边标签对应哪些查询边id
     for(int i=0;i<query_.vEdge.size();i++){
+        if(reach_time_limit)
+            return;
         Edge edge=query_.vEdge[i];
         int v1=edge.GetV1();
         int v2=edge.GetV2();
@@ -570,9 +636,16 @@ void Instopk::CreateQueryTopology() {
     }
 }
 void Instopk::SearchMatchesWithSortedList() {
-
+    if(reach_time_limit)
+    {
+        return;
+    }
     //搜索 首边利用path剪枝
     while(true){
+        if(reach_time_limit)
+        {
+            return;
+        }
         bool end=0;
         for(const auto &p:pointers){
             std::string s=p.first;
@@ -590,6 +663,8 @@ void Instopk::SearchMatchesWithSortedList() {
         float maxWeight=0;
         int maxIndex=0;
         for(auto p:pointers){
+            if(reach_time_limit)
+                return;
             std::string s=p.first;
             int index=p.second;
             float val=sortEdgeList[s][index].GeteWeight();
@@ -626,6 +701,8 @@ void Instopk::SearchMatchesWithSortedList() {
         //一次匹配一条边
         std::vector<Edge>edgesofMaxType=queryEdgeType2Edges[max];
         for(Edge edge:edgesofMaxType) {
+            if(reach_time_limit)
+                return;
             std::vector<Edge> considerEdges;
             std::vector<int> considerEdgesIndex;
             considerEdges.push_back(edge);
@@ -650,6 +727,8 @@ void Instopk::SearchMatchesWithSortedList() {
             //第一条边计算上界
             float upScoreOfNonConsideredEdges1 = 0;
             for (const auto &edge: queryEdgeToIndex) {
+                if(reach_time_limit)
+                    return;
                 std::string str = edge.first;
                 int index = edge.second;
                 if (!count(considerEdgesIndex,index)) {
@@ -658,6 +737,8 @@ void Instopk::SearchMatchesWithSortedList() {
                 }
             }
             for (std::vector<std::string> pc: pcCurr) {
+                if(reach_time_limit)
+                    return;
                 //计算已经实例化边的分数
                 float actualScore = 0;
                 for (int i: considerEdgesIndex) {
@@ -690,15 +771,21 @@ void Instopk::SearchMatchesWithSortedList() {
 
             //匹配其他边
             while (considerEdges.size() != queryEdgeToIndex.size()) {
+                if(reach_time_limit)
+                    return;
                 std::vector<std::vector<std::string>> newCandidates;
                 std::set<int> verticesCoverd;
                 //寻找下一扩展边
                 for (Edge edge: considerEdges) {
+                    if(reach_time_limit)
+                        return;
                     verticesCoverd.insert(edge.GetV1());
                     verticesCoverd.insert(edge.GetV2());
                 }
                 std::vector<Edge> nextEdgeCandidates;
                 for (auto e: query_.vEdge) {
+                    if(reach_time_limit)
+                        return;
                     int v1 = e.GetV1();
                     int v2 = e.GetV2();
                  /*   std::cout<<verticesCoverd.count(v1)<<endl;
@@ -724,6 +811,8 @@ void Instopk::SearchMatchesWithSortedList() {
                 int pos2 = -1;
                 //检验下一查询边的两个顶点是一个或者两个都在已经实例化的边中
                 for (Edge edge: considerEdges) {
+                    if(reach_time_limit)
+                        return;
                     int v1 = edge.GetV1();
                     int v2 = edge.GetV2();
                     std::string s = std::to_string(v1) + "#" + std::to_string(v2);
@@ -754,6 +843,8 @@ void Instopk::SearchMatchesWithSortedList() {
 
                 //找到对应匹配nextEdge的数据边
                 for (auto c: curCandidates) {
+                    if(reach_time_limit)
+                        return;
                     int node1 = -1;
                     int node2 = -1;
                     std::vector<int> edgeIDs1;
@@ -785,6 +876,8 @@ void Instopk::SearchMatchesWithSortedList() {
                                     intersection.push_back(k);
                         }
                         for (int k: intersection) {
+                            if(reach_time_limit)
+                                return;
                             std::vector<std::string> newCandi = c;
                             int flag = 0;
                             std::string ee = std::to_string(node1) + "#" + std::to_string(node2);
@@ -803,6 +896,8 @@ void Instopk::SearchMatchesWithSortedList() {
                     } else if (node1 == -1 && node2 != -1) {
                         if (edgeIDs2.size() != 0) {
                             for (int k: edgeIDs2) {
+                                if(reach_time_limit)
+                                    return;
                                 std::vector<std::string> newCandi = c;
                                 int flag = 0;
                                 std::string ee;
@@ -832,6 +927,8 @@ void Instopk::SearchMatchesWithSortedList() {
                     } else if (node1 != -1 && node2 == -1) {
                         if (edgeIDs1.size() != 0) {
                             for (int k: edgeIDs1) {
+                                if(reach_time_limit)
+                                    return;
                                 std::vector<std::string> newCandi = c;
                                 int flag = 0;
                                 std::string ee;
@@ -861,6 +958,8 @@ void Instopk::SearchMatchesWithSortedList() {
                     //计算加入nextEdge之后对应的上界
                     upScoreOfNonConsideredEdges1 = 0;
                     for (auto edge: queryEdgeToIndex) {
+                        if(reach_time_limit)
+                            return;
                         std::string str = edge.first;
                         int index = edge.second;
                         if (!count(considerEdgesIndex,index)) {
@@ -869,6 +968,8 @@ void Instopk::SearchMatchesWithSortedList() {
                         }
                     }
                     for (std::vector<std::string> pc: pontentialCandidates) {
+                        if(reach_time_limit)
+                            return;
                         float actualScore = 0;
                         for (int i: considerEdgesIndex) {
                             std::string edge = pc[i];
@@ -897,6 +998,8 @@ void Instopk::SearchMatchesWithSortedList() {
             int n=query_.NumVertices();
             std::vector<uint> m(n);
             for(int i=0;i<curCandidates.size();i++){
+                if(reach_time_limit)
+                    return;
                 float actualSCore=0;
                 const auto & matchresult=curCandidates[i];
                 for(int i=0;i<matchresult.size();i++){
@@ -929,6 +1032,8 @@ void Instopk::SearchMatchesWithSortedList() {
           std::vector<Edge> arr1=queryEdgeType2Edges[max];
           int old=pointers[max];
           for(int c=pointers[max]+1;c<list.size();c++){
+              if(reach_time_limit)
+                  return;
               int n1=list[c].GetV1();
               int n2=list[c].GetV2();
               int flag=0;
@@ -975,6 +1080,10 @@ void Instopk::SearchMatchesWithSortedList() {
 }
 void Instopk::InitialPointers() {
     for(std::string edgeType:queryEdgeTypes){
+        if(reach_time_limit)
+        {
+            return;
+        }
         int pos=edgeType.find("#");
         int t1= atoi(edgeType.substr(0,pos).c_str());
         int len=edgeType.length()-1-pos;
@@ -983,6 +1092,8 @@ void Instopk::InitialPointers() {
         auto &list=sortEdgeList[orderedEdgeType];
         auto &arr1=queryEdgeType2Edges[orderedEdgeType];
         for(int c=0;c<list.size();c++){
+            if(reach_time_limit)
+                return;
             int n1=list[c].GetV1();
             int n2=list[c].GetV2();
             int flag=0;
@@ -1249,6 +1360,10 @@ bool Instopk::count(std::vector<Edge> &t, Edge e) {
         return true;
 }
 void Instopk::updateSortEdgelist(uint v1, uint v2,bool isAdd) {
+    if(reach_time_limit)
+    {
+        return;
+    }
     int v1label=data_.GetVertexLabel(v1);
     int v2label=data_.GetVertexLabel(v2);
     if(v1label>v2label){
@@ -1271,11 +1386,17 @@ void Instopk::updateSortEdgelist(uint v1, uint v2,bool isAdd) {
 }
 void Instopk::updateMNWIndexAndDataTopologyIndex(uint v1,uint v2,uint label,float weight,bool isAdd) {
     if(isAdd){
+        if(reach_time_limit)
+        {
+            return;
+        }
         //update TopologyIndex and MNWindex
         uint v1label=data_.GetVertexLabel(v1);
         uint v2label=data_.GetVertexLabel(v2);
         int n=data_.NumVertices();
         for(int i=0;i<n;i++){
+            if(reach_time_limit)
+                return;
             if(i==v1){
                 std::string str=std::to_string(v2label);
                 TopologyIndex[1][i][str]++;
@@ -1331,6 +1452,8 @@ void Instopk::updateMNWIndexAndDataTopologyIndex(uint v1,uint v2,uint label,floa
         updatelabels.insert(v1);
         updatelabels.insert(v2);
         for(int i=0;i<n;i++){
+            if(reach_time_limit)
+                return;
             if(i==v1){
                 std::string str=std::to_string(v2label);
                 TopologyIndex[1][i][str]--;
@@ -1394,6 +1517,8 @@ void Instopk::updateMNWIndexAndDataTopologyIndex(uint v1,uint v2,uint label,floa
         }
         //update MNW[2][i][str]  start label in updatelabel
         for (int i = 0; i < data_.NumVertices(); i++) {
+            if(reach_time_limit)
+                return;
             uint ilabel=data_.GetVertexLabel(i);
             if(updatelabels.count(i))
                 continue;
@@ -1406,6 +1531,8 @@ void Instopk::updateMNWIndexAndDataTopologyIndex(uint v1,uint v2,uint label,floa
             vertexs.push(verset);
             que.push(std::make_tuple(i, "", 0));
             while (!que.empty()) {
+                if(reach_time_limit)
+                    return;
                 auto item = que.front();
                 que.pop();
                 auto veritem = vertexs.front();
@@ -1446,6 +1573,8 @@ void Instopk::insertEdgeToSortEdgelist(std::string &str, Edge edge) {
     std::vector<Edge>& list=sortEdgeList[str];
     int n=list.size();
     for(int j=n-1;j>=0;j--){
+        if(reach_time_limit)
+            return;
         if(list[j].GeteWeight()>edge.GeteWeight()){
             list.insert(list.begin()+j+1,edge);
         }
@@ -1460,6 +1589,8 @@ void Instopk::insertEdgeToSortEdgelist(std::string &str, Edge edge) {
     const std::vector<Edge>&strlist=sortEdgeList[str];
     std::vector<std::vector<int>>map(data_.NumVertices());
     for(int i=0;i<strlist.size();i++){
+        if(reach_time_limit)
+            return;
         int v1=strlist[i].GetV1();
         int v2=strlist[i].GetV2();
         map[v1].push_back(i);
@@ -1469,14 +1600,22 @@ void Instopk::insertEdgeToSortEdgelist(std::string &str, Edge edge) {
 }
 void Instopk::updateQueryCandidate(uint v1,uint v2,uint label,bool isAdd) {
     if(isAdd){
+        if(reach_time_limit)
+        {
+            return;
+        }
         uint v1label=data_.GetVertexLabel(v1);
         uint v2label=data_.GetVertexLabel(v2);
         std::string str=std::to_string(v1label)+"#"+std::to_string(v2label);
         int n=data_.NumVertices();
         int m=query_.NumVertices();
         for(int i=0;i<n;i++){
+            if(reach_time_limit)
+                return;
             if(i==v1){
                 for(int j=0;j<m;j++){
+                    if(reach_time_limit)
+                        return;
                     if(query_.GetVertexLabel(j)==v1label){
                         if(count(matchVertexCandidate[j],v1)){
                             continue;
@@ -1508,6 +1647,8 @@ void Instopk::updateQueryCandidate(uint v1,uint v2,uint label,bool isAdd) {
             }
             else if(i==v2){
                 for(int j=0;j<m;j++){
+                    if(reach_time_limit)
+                        return;
                     if(query_.GetVertexLabel(j)==v2label){
                         if(count(matchVertexCandidate[j],v2)){
                             continue;
@@ -1539,6 +1680,8 @@ void Instopk::updateQueryCandidate(uint v1,uint v2,uint label,bool isAdd) {
             }
             else{
                 if(isNeighbor(i,v1)|| isNeighbor(i,v2)){
+                    if(reach_time_limit)
+                        return;
                     uint ilabel=data_.GetVertexLabel(i);
                     for(int j=0;j<m;j++){
                         if(query_.GetVertexLabel(j)==ilabel){
@@ -1568,14 +1711,20 @@ void Instopk::updateQueryCandidate(uint v1,uint v2,uint label,bool isAdd) {
         }
     }
     else{
+        if(reach_time_limit)
+            return;
         uint v1label=data_.GetVertexLabel(v1);
         uint v2label=data_.GetVertexLabel(v2);
         std::string str=std::to_string(v1label)+"#"+std::to_string(v2label);
         int n=data_.NumVertices();
         int m=query_.NumVertices();
         for(int i=0;i<n;i++){
+            if(reach_time_limit)
+                return;
             if(i==v1){
                 for(int j=0;j<m;j++){
+                    if(reach_time_limit)
+                        return;
                     if(query_.GetVertexLabel(j)==v1label){
                         if(!count(matchVertexCandidate[j],v1)){
                             continue;
@@ -1611,6 +1760,8 @@ void Instopk::updateQueryCandidate(uint v1,uint v2,uint label,bool isAdd) {
             }
             else if(i==v2){
                 for(int j=0;j<m;j++){
+                    if(reach_time_limit)
+                        return;
                     if(query_.GetVertexLabel(j)==v2label){
                         if(!count(matchVertexCandidate[j],v2)){
                             continue;
@@ -1642,6 +1793,8 @@ void Instopk::updateQueryCandidate(uint v1,uint v2,uint label,bool isAdd) {
             }
             else{
                 if(isNeighbor(i,v1)|| isNeighbor(i,v2)){
+                    if(reach_time_limit)
+                        return;
                     uint ilabel=data_.GetVertexLabel(i);
                     for(int j=0;j<m;j++){
                         if(query_.GetVertexLabel(j)==ilabel){

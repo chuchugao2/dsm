@@ -1061,7 +1061,10 @@ void Graphflow::InitialMatching(const std::string &path) {
         std::ifstream ifs2(path);
         std::cout<<"load topk from file...."<<std::endl;
         char type;
+        int cnt=0;
         while (ifs2 >> type){
+            if(cnt==k)
+                break;
             if(type == 't'){
                 float density;
                 uint tmp;
@@ -1074,6 +1077,7 @@ void Graphflow::InitialMatching(const std::string &path) {
                 MatchRecord* matchRecord=new MatchRecord(density,m);
                 addMatchRecords(matchRecord);
             }
+            cnt++;
         }
     }
 }
@@ -1467,7 +1471,6 @@ void Graphflow::RemoveEdge(uint v1, uint v2) {
         }
     }
     END_ENUMERATION:
-
     num_negative_results_ += num_results;
     data_.RemoveEdge(v1, v2);
 }

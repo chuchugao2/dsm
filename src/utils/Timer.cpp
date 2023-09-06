@@ -19,3 +19,6 @@ long long Timer::GetTimer() {
 void Timer::clearTimer() {
     time_microseconds=std::chrono::microseconds (0);
 }
+void Timer::setTimer(long long tm) {
+    time_microseconds=std::chrono::microseconds(tm);
+}
