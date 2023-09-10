@@ -2576,7 +2576,8 @@ stringstream _ss;
        << IsearchSpace<<","
        <<DsearchSpace<<","
        <<IdeterminCandite<<","
-       <<DdeterminCandite<<endl;
+       <<DdeterminCandite<<","
+       <<space_cost<<endl;
     Log::track3(_ss);
 #endif
 }

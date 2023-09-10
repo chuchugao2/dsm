@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 
     std::string query_path = "", initial_path = "", stream_path = "",result_path="",query_info="",algorithm="graphflow";
     uint max_num_results = UINT_MAX, time_limit = UINT_MAX, initial_time_limit = UINT_MAX;
-    uint dist=2,update_len;
+    uint dist=2,update_len,k_size;
     bool print_prep = true, print_enum = false, homo = false, report_initial = true;
     std::vector<std::vector<uint>> orders;
 
@@ -39,13 +39,14 @@ int main(int argc, char *argv[])
     app.add_option("--qInfo",query_info,"the path of query graph");
     app.add_option("--dist",dist,"the dist");
     app.add_option("--ul",update_len,"the deletion len");
+    app.add_option("--ksize",k_size,"the k size of query");
 
     CLI11_PARSE(app, argc, argv);
 
     std::chrono::high_resolution_clock::time_point start, lstart;
-
+    k=k_size;
     Log::init_track1("/home/gaochuchu/gcc/dsm/src/log/loginfo1.txt");
-    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/WCcompute_5000_text.txt");
+    Log::init_track3("/home/gaochuchu/gcc/dsm/src/log/WCcompute4_5000_k"+ to_string(k)+"_time.txt");
 
     std::string path="/home/gaochuchu/gcc/dsm/src/log/";
     std::string initial_result_path="/home/gaochuchu/gcc/dsm/src/result3/";
@@ -186,7 +187,6 @@ int main(int argc, char *argv[])
     mm->GetNumNegativeResults(negative_num_results);
     std::cout << positive_num_results << " positive matches.\n";
     std::cout << negative_num_results << " negative matches.\n";
-    mm->PrintAverageTime(update_len);
     mm->PrintCounter();
 
     size_t num_edges = 0u, num_vertices = 0ul;
@@ -194,7 +194,9 @@ int main(int argc, char *argv[])
     std::cout << "\n# edges in index in total: " << num_edges;
     std::cout << "\n# vertices in index in total: " << num_vertices;
 
-    std::cout << "\nPeak Virtual Memory: " << mem::getValue() << " KB";
+    std::cout << "\nPeak Virtual Memory: " << mem::getValue() << " KB"<<endl;
+    mm->space_cost=mem::getValue()*1.0/1024;
+    mm->PrintAverageTime(update_len);
     std::cout << "\n\n----------------- End -----------------" << std::endl;
 
 

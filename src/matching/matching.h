@@ -70,7 +70,7 @@ public:
             total_delete_time, total_delete_update_time;
     long long Itotal_densityfilter_time=0, Itotal_updaterightNeighborCandidate_time=0;
     bool isInsert= true;
-
+    float space_cost=0;
 
 };
 
